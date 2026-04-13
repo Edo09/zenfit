@@ -101,6 +101,7 @@ export const AnimatedScrollView = (
 function XXTouchableHighlight(
   props: React.ComponentProps<typeof RNTouchableHighlight>
 ) {
+  // @ts-expect-error: underlayColor is injected by CSS runtime, not part of ViewStyle
   const { underlayColor, ...style } = StyleSheet.flatten(props.style) || {};
   return (
     <RNTouchableHighlight
