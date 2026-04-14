@@ -34,12 +34,12 @@ export function MealCard({ meal, onPress, onDelete }: Props) {
   return (
     <Pressable
       onPress={onPress}
-      className="bg-white rounded-2xl p-4"
+      className="bg-surface rounded-2xl p-4"
       style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }}
     >
       <View className="flex-row items-start justify-between">
         <View className="flex-1 gap-1">
-          <Text className="text-base font-semibold text-gray-900">
+          <Text className="text-base font-semibold text-white">
             {meal.name}
           </Text>
           <Text className="text-sm text-gray-400">{meal.date}</Text>

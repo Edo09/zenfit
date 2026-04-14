@@ -89,8 +89,8 @@ export default function RoutineDetailScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-50">
-        <ActivityIndicator size="large" color="#16A34A" />
+      <View className="flex-1 justify-center items-center bg-brand-dark">
+        <ActivityIndicator size="large" color="#2563EB" />
       </View>
     );
   }
@@ -102,16 +102,16 @@ export default function RoutineDetailScreen() {
       <Stack.Screen options={{ title: routine.name }} />
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
-        className="flex-1 bg-gray-50"
+        className="flex-1 bg-brand-dark"
         contentContainerClassName="px-4 py-6 gap-5 pb-10"
       >
         {/* Info */}
         {routine.description && (
-          <Text className="text-gray-500">{routine.description}</Text>
+          <Text className="text-gray-400">{routine.description}</Text>
         )}
         {routine.day_of_week && (
-          <View className="self-start bg-green-50 rounded-full px-3 py-1">
-            <Text className="text-green-700 text-sm font-medium capitalize">
+          <View className="self-start bg-brand-primary/10 rounded-full px-3 py-1">
+            <Text className="text-brand-primary text-sm font-medium capitalize">
               Every {routine.day_of_week}
             </Text>
           </View>
@@ -119,21 +119,21 @@ export default function RoutineDetailScreen() {
 
         {/* Exercises */}
         <View className="gap-3">
-          <Text className="text-lg font-semibold text-gray-900">
+          <Text className="text-lg font-semibold text-white">
             Exercises ({routine.routine_exercises.length})
           </Text>
 
           {routine.routine_exercises.map((ex, index) => (
             <View
               key={ex.id}
-              className="bg-white rounded-2xl px-4 py-3 flex-row items-center justify-between"
+              className="bg-surface rounded-2xl px-4 py-3 flex-row items-center justify-between"
               style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
             >
               <View className="flex-1 gap-0.5">
-                <Text className="font-medium text-gray-900">
+                <Text className="font-medium text-white">
                   {index + 1}. {ex.name}
                 </Text>
-                <Text className="text-gray-500 text-sm">
+                <Text className="text-gray-400 text-sm">
                   {ex.sets} sets × {ex.reps} reps
                   {ex.weight_kg != null ? ` · ${ex.weight_kg} kg` : ""}
                 </Text>
@@ -151,43 +151,43 @@ export default function RoutineDetailScreen() {
           {/* Add exercise form */}
           {showAddExercise ? (
             <View
-              className="bg-white rounded-2xl p-4 gap-3"
+              className="bg-surface rounded-2xl p-4 gap-3"
               style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
             >
-              <Text className="font-semibold text-gray-900">Add Exercise</Text>
+              <Text className="font-semibold text-white">Add Exercise</Text>
               <TextInput
-                className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900"
+                className="bg-brand-dark border border-surface-elevated rounded-xl px-4 py-3 text-white"
                 placeholder="Exercise name"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor="#64748B"
                 value={exName}
                 onChangeText={setExName}
               />
               <View className="flex-row gap-2">
                 <View className="flex-1 gap-1">
-                  <Text className="text-xs text-gray-500">Sets</Text>
+                  <Text className="text-xs text-gray-400">Sets</Text>
                   <TextInput
-                    className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-gray-900 text-center"
+                    className="bg-brand-dark border border-surface-elevated rounded-xl px-3 py-2 text-white text-center"
                     keyboardType="number-pad"
                     value={exSets}
                     onChangeText={setExSets}
                   />
                 </View>
                 <View className="flex-1 gap-1">
-                  <Text className="text-xs text-gray-500">Reps</Text>
+                  <Text className="text-xs text-gray-400">Reps</Text>
                   <TextInput
-                    className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-gray-900 text-center"
+                    className="bg-brand-dark border border-surface-elevated rounded-xl px-3 py-2 text-white text-center"
                     keyboardType="number-pad"
                     value={exReps}
                     onChangeText={setExReps}
                   />
                 </View>
                 <View className="flex-1 gap-1">
-                  <Text className="text-xs text-gray-500">kg (opt)</Text>
+                  <Text className="text-xs text-gray-400">kg (opt)</Text>
                   <TextInput
-                    className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-gray-900 text-center"
+                    className="bg-brand-dark border border-surface-elevated rounded-xl px-3 py-2 text-white text-center"
                     keyboardType="decimal-pad"
                     placeholder="—"
-                    placeholderTextColor="#9CA3AF"
+                    placeholderTextColor="#64748B"
                     value={exWeight}
                     onChangeText={setExWeight}
                   />
@@ -196,13 +196,13 @@ export default function RoutineDetailScreen() {
               <View className="flex-row gap-2">
                 <Pressable
                   onPress={() => setShowAddExercise(false)}
-                  className="flex-1 border border-gray-200 rounded-xl py-3 items-center"
+                  className="flex-1 border border-surface-elevated rounded-xl py-3 items-center"
                 >
-                  <Text className="text-gray-600 font-medium">Cancel</Text>
+                  <Text className="text-gray-400 font-medium">Cancel</Text>
                 </Pressable>
                 <Pressable
                   onPress={handleAddExercise}
-                  className="flex-1 bg-green-600 rounded-xl py-3 items-center"
+                  className="flex-1 bg-brand-primary rounded-xl py-3 items-center"
                 >
                   <Text className="text-white font-medium">Add</Text>
                 </Pressable>
@@ -211,7 +211,7 @@ export default function RoutineDetailScreen() {
           ) : (
             <Pressable
               onPress={() => setShowAddExercise(true)}
-              className="border-2 border-dashed border-gray-200 rounded-2xl py-4 items-center"
+              className="border-2 border-dashed border-surface-elevated rounded-2xl py-4 items-center"
             >
               <Text className="text-gray-400 font-medium">+ Add Exercise</Text>
             </Pressable>
@@ -222,8 +222,8 @@ export default function RoutineDetailScreen() {
         <Pressable
           onPress={handleLogWorkout}
           disabled={loggingWorkout}
-          className="bg-green-600 rounded-2xl py-4 items-center mt-2"
-          style={{ boxShadow: "0 4px 12px rgba(22, 163, 74, 0.35)" }}
+          className="bg-brand-secondary rounded-2xl py-4 items-center mt-2"
+          style={{ boxShadow: "0 4px 12px rgba(34, 197, 94, 0.35)" }}
         >
           {loggingWorkout ? (
             <ActivityIndicator color="white" />

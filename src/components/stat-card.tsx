@@ -8,26 +8,37 @@ type Props = {
   color?: string;
 };
 
-export function StatCard({ label, value, unit, color = "#16A34A" }: Props) {
+export function StatCard({ label, value, unit, color = "#2563EB" }: Props) {
   return (
     <View
-      className="flex-1 bg-white rounded-2xl p-4 gap-1"
-      style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }}
+      className="flex-1 bg-surface rounded-3xl p-5 gap-0 overflow-hidden"
+      style={{
+        borderWidth: 1,
+        borderColor: "rgba(255,255,255,0.05)"
+      }}
     >
-      <Text className="text-xs font-medium text-gray-400 uppercase tracking-wide">
+      <View
+        className="absolute -top-6 -right-6 w-16 h-16 rounded-full opacity-10"
+        style={{ backgroundColor: color }}
+      />
+
+      <Text className="text-[10px] font-black text-gray-400 uppercase tracking-[2px] mb-1">
         {label}
       </Text>
-      <View className="flex-row items-end gap-1">
+
+      <View className="flex-row items-baseline gap-1">
         <Text
-          className="text-2xl font-bold"
+          className="text-3xl font-black tracking-tight"
           style={{ color, fontVariant: ["tabular-nums"] as any }}
         >
           {value}
         </Text>
         {unit != null && (
-          <Text className="text-xs text-gray-400 mb-1">{unit}</Text>
+          <Text className="text-xs font-bold text-gray-500 mb-1">{unit}</Text>
         )}
       </View>
+
+      <View className="h-1 w-8 rounded-full mt-2" style={{ backgroundColor: color, opacity: 0.3 }} />
     </View>
   );
 }

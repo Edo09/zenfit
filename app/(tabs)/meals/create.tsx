@@ -32,32 +32,32 @@ export default function CreateMealScreen() {
   return (
     <ScrollView
       contentInsetAdjustmentBehavior="automatic"
-      className="flex-1 bg-gray-50"
+      className="flex-1 bg-brand-dark"
       contentContainerClassName="px-4 py-6 gap-5"
     >
       <View className="gap-4">
         <View className="gap-1">
-          <Text className="text-sm font-medium text-gray-700">Meal Name *</Text>
+          <Text className="text-sm font-medium text-gray-300">Meal Name *</Text>
           <TextInput
-            className="bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900"
+            className="bg-surface border border-surface-elevated rounded-xl px-4 py-3 text-white"
             placeholder="e.g. Chicken & Rice Bowl"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor="#64748B"
             value={name}
             onChangeText={setName}
           />
         </View>
 
         <View className="gap-2">
-          <Text className="text-sm font-medium text-gray-700">Meal Type</Text>
+          <Text className="text-sm font-medium text-gray-300">Meal Type</Text>
           <View className="flex-row gap-2 flex-wrap">
             {MEAL_TYPES.map((type) => (
               <Pressable
                 key={type}
                 onPress={() => setMealType(type)}
-                className={`rounded-full px-4 py-2 ${mealType === type ? "bg-green-600" : "bg-white border border-gray-200"}`}
+                className={`rounded-full px-4 py-2 ${mealType === type ? "bg-brand-primary" : "bg-surface border border-surface-elevated"}`}
               >
                 <Text
-                  className={`text-sm font-medium capitalize ${mealType === type ? "text-white" : "text-gray-600"}`}
+                  className={`text-sm font-medium capitalize ${mealType === type ? "text-white" : "text-gray-400"}`}
                 >
                   {type}
                 </Text>
@@ -67,15 +67,15 @@ export default function CreateMealScreen() {
         </View>
       </View>
 
-      <Text className="text-gray-400 text-sm text-center">
+      <Text className="text-gray-500 text-sm text-center">
         You can add food items with nutritional info after creating the meal.
       </Text>
 
       <Pressable
         onPress={handleCreate}
         disabled={loading}
-        className="bg-green-600 rounded-2xl py-4 items-center mt-2"
-        style={{ boxShadow: "0 4px 12px rgba(22, 163, 74, 0.35)" }}
+        className="bg-brand-primary rounded-2xl py-4 items-center mt-2"
+        style={{ boxShadow: "0 4px 12px rgba(37, 99, 235, 0.35)" }}
       >
         {loading ? (
           <ActivityIndicator color="white" />

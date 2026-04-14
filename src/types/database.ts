@@ -4,6 +4,16 @@ export type Profile = {
   id: string;
   display_name: string | null;
   avatar_url: string | null;
+  age: number | null;
+  sex: "male" | "female" | "other" | null;
+  height_cm: number | null;
+  weight_kg: number | null;
+  activity_level: "sedentary" | "active" | "very_active" | null;
+  profession_type: "desk" | "physical" | null;
+  days_per_week: number | null;
+  session_duration: number | null;
+  available_days: string[] | null;
+  onboarding_completed: boolean;
   created_at: string;
   updated_at: string;
 };

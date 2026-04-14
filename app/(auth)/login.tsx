@@ -30,21 +30,25 @@ export default function Login() {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
-        className="flex-1 bg-white"
+        className="flex-1 bg-brand-dark"
         contentContainerClassName="flex-1 justify-center px-6 py-12"
       >
         <View className="items-center mb-12">
-          <Text className="text-5xl font-bold text-green-600">ZenFit</Text>
-          <Text className="text-gray-500 mt-2 text-base">Your fitness companion</Text>
+          {/* Logo placeholder — replace with <Image source={require('@/assets/images/logo.png')} /> */}
+          <View className="w-20 h-20 bg-brand-primary rounded-2xl items-center justify-center mb-4">
+            <Text className="text-3xl font-bold text-white">H</Text>
+          </View>
+          <Text className="text-5xl font-bold text-brand-primary">Habbito</Text>
+          <Text className="text-gray-400 mt-2 text-base">Your fitness companion</Text>
         </View>
 
         <View className="gap-4">
           <View className="gap-1">
-            <Text className="text-sm font-medium text-gray-700">Email</Text>
+            <Text className="text-sm font-medium text-gray-300">Email</Text>
             <TextInput
-              className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900"
+              className="bg-surface border border-surface-elevated rounded-xl px-4 py-3 text-white"
               placeholder="you@example.com"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor="#64748B"
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
@@ -54,11 +58,11 @@ export default function Login() {
           </View>
 
           <View className="gap-1">
-            <Text className="text-sm font-medium text-gray-700">Password</Text>
+            <Text className="text-sm font-medium text-gray-300">Password</Text>
             <TextInput
-              className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900"
+              className="bg-surface border border-surface-elevated rounded-xl px-4 py-3 text-white"
               placeholder="••••••••"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor="#64748B"
               secureTextEntry
               value={password}
               onChangeText={setPassword}
@@ -66,7 +70,7 @@ export default function Login() {
           </View>
 
           <Pressable
-            className="bg-green-600 rounded-xl py-4 items-center mt-2"
+            className="bg-brand-primary rounded-xl py-4 items-center mt-2"
             onPress={handleLogin}
             disabled={loading}
           >
@@ -79,9 +83,9 @@ export default function Login() {
         </View>
 
         <View className="flex-row justify-center mt-8">
-          <Text className="text-gray-500">Don't have an account? </Text>
+          <Text className="text-gray-400">Don&apos;t have an account? </Text>
           <Link href="/(auth)/register">
-            <Text className="text-green-600 font-semibold">Sign Up</Text>
+            <Text className="text-brand-primary font-semibold">Sign Up</Text>
           </Link>
         </View>
       </ScrollView>

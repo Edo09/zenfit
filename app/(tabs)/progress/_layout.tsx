@@ -4,8 +4,8 @@ export default function ProgressLayout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: "#FFFFFF" },
-        headerTintColor: "#111827",
+        headerStyle: { backgroundColor: "#0F172A" },
+        headerTintColor: "#F8FAFC",
         headerShadowVisible: false,
       }}
     >

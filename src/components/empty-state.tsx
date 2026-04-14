@@ -12,7 +12,7 @@ export function EmptyState({ title, subtitle, actionLabel, onAction }: Props) {
   return (
     <View className="items-center justify-center py-20 gap-3">
       <Text className="text-5xl">🏋️</Text>
-      <Text className="text-lg font-semibold text-gray-700 text-center">
+      <Text className="text-lg font-semibold text-white text-center">
         {title}
       </Text>
       {subtitle != null && (
@@ -21,7 +21,7 @@ export function EmptyState({ title, subtitle, actionLabel, onAction }: Props) {
       {actionLabel != null && onAction != null && (
         <Pressable
           onPress={onAction}
-          className="bg-green-600 rounded-xl px-6 py-3 mt-2"
+          className="bg-brand-primary rounded-xl px-6 py-3 mt-2"
         >
           <Text className="text-white font-semibold">{actionLabel}</Text>
         </Pressable>

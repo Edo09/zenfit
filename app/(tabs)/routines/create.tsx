@@ -36,27 +36,27 @@ export default function CreateRoutineScreen() {
   return (
     <ScrollView
       contentInsetAdjustmentBehavior="automatic"
-      className="flex-1 bg-gray-50"
+      className="flex-1 bg-brand-dark"
       contentContainerClassName="px-4 py-6 gap-5"
     >
       <View className="gap-4">
         <View className="gap-1">
-          <Text className="text-sm font-medium text-gray-700">Routine Name *</Text>
+          <Text className="text-sm font-medium text-gray-300">Routine Name *</Text>
           <TextInput
-            className="bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900"
+            className="bg-surface border border-surface-elevated rounded-xl px-4 py-3 text-white"
             placeholder="e.g. Upper Body Strength"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor="#64748B"
             value={name}
             onChangeText={setName}
           />
         </View>
 
         <View className="gap-1">
-          <Text className="text-sm font-medium text-gray-700">Description</Text>
+          <Text className="text-sm font-medium text-gray-300">Description</Text>
           <TextInput
-            className="bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900"
+            className="bg-surface border border-surface-elevated rounded-xl px-4 py-3 text-white"
             placeholder="Optional description..."
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor="#64748B"
             multiline
             numberOfLines={3}
             textAlignVertical="top"
@@ -66,16 +66,16 @@ export default function CreateRoutineScreen() {
         </View>
 
         <View className="gap-2">
-          <Text className="text-sm font-medium text-gray-700">Scheduled Day (optional)</Text>
+          <Text className="text-sm font-medium text-gray-300">Scheduled Day (optional)</Text>
           <View className="flex-row flex-wrap gap-2">
             {DAYS.map((day) => (
               <Pressable
                 key={day}
                 onPress={() => setDayOfWeek(dayOfWeek === day ? null : day)}
-                className={`rounded-full px-4 py-2 ${dayOfWeek === day ? "bg-green-600" : "bg-white border border-gray-200"}`}
+                className={`rounded-full px-4 py-2 ${dayOfWeek === day ? "bg-brand-primary" : "bg-surface border border-surface-elevated"}`}
               >
                 <Text
-                  className={`text-sm font-medium capitalize ${dayOfWeek === day ? "text-white" : "text-gray-600"}`}
+                  className={`text-sm font-medium capitalize ${dayOfWeek === day ? "text-white" : "text-gray-400"}`}
                 >
                   {day.slice(0, 3)}
                 </Text>
@@ -88,8 +88,8 @@ export default function CreateRoutineScreen() {
       <Pressable
         onPress={handleCreate}
         disabled={loading}
-        className="bg-green-600 rounded-2xl py-4 items-center mt-2"
-        style={{ boxShadow: "0 4px 12px rgba(22, 163, 74, 0.35)" }}
+        className="bg-brand-primary rounded-2xl py-4 items-center mt-2"
+        style={{ boxShadow: "0 4px 12px rgba(37, 99, 235, 0.35)" }}
       >
         {loading ? (
           <ActivityIndicator color="white" />

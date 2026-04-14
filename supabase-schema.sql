@@ -1,5 +1,5 @@
 -- ============================================================
--- ZenFit Database Schema
+-- Habbito Database Schema
 -- Run this in Supabase SQL Editor: https://supabase.com/dashboard
 -- ============================================================
 
@@ -9,6 +9,16 @@ create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   display_name text,
   avatar_url text,
+  age integer,
+  sex text check (sex in ('male', 'female', 'other')),
+  height_cm numeric,
+  weight_kg numeric,
+  activity_level text check (activity_level in ('sedentary', 'active', 'very_active')),
+  profession_type text check (profession_type in ('desk', 'physical')),
+  days_per_week integer,
+  session_duration integer, -- minutes
+  available_days text[], -- e.g. {'Mon','Tue','Thu','Sat'}
+  onboarding_completed boolean default false not null,
   created_at timestamptz default now() not null,
   updated_at timestamptz default now() not null
 );
@@ -209,3 +219,21 @@ create index idx_routine_exercises_routine_id on public.routine_exercises(routin
 create index idx_meals_user_id_date on public.meals(user_id, date);
 create index idx_meal_items_meal_id on public.meal_items(meal_id);
 create index idx_workout_logs_user_id_date on public.workout_logs(user_id, date);
+
+
+-- 7. BODY PARTS (Reference Table)
+create table public.bodyparts (
+  id uuid primary key default gen_random_uuid(),
+  name text unique not null,
+  created_at timestamptz default now() not null
+);
+
+alter table public.bodyparts enable row level security;
+
+create policy "Body parts are viewable by everyone"
+  on public.bodyparts for select
+  using (true);
+
+insert into public.bodyparts (name) values
+  ('back'), ('cardio'), ('chest'), ('lower arms'), ('lower legs'),
+  ('neck'), ('shoulders'), ('upper arms'), ('upper legs'), ('waist');

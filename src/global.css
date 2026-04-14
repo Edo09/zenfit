@@ -2,13 +2,31 @@
 @import "tailwindcss/preflight.css" layer(base);
 @import "tailwindcss/utilities.css";
 
-/* Platform-specific font families */
+@theme {
+  /* Habbito Brand Colors */
+  --color-brand-primary: #2563eb;
+  --color-brand-secondary: #22c55e;
+  --color-brand-dark: #0f172a;
+  --color-brand-light: #f8fafc;
+
+  /* Extended brand palette */
+  --color-brand-primary-light: #3b82f6;
+  --color-brand-primary-dark: #1d4ed8;
+  --color-brand-secondary-light: #4ade80;
+  --color-brand-secondary-dark: #16a34a;
+
+  /* Surface colors for dark mode */
+  --color-surface: #1e293b;
+  --color-surface-elevated: #334155;
+}
+
+/* Platform-specific font families - Poppins */
 @media android {
   :root {
     --font-mono: monospace;
     --font-rounded: normal;
     --font-serif: serif;
-    --font-sans: normal;
+    --font-sans: Poppins_400Regular;
   }
 }
 
@@ -16,7 +34,7 @@
   :root {
     --font-mono: ui-monospace;
     --font-serif: ui-serif;
-    --font-sans: system-ui;
+    --font-sans: Poppins_400Regular;
     --font-rounded: ui-rounded;
   }
 }
