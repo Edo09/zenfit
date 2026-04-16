@@ -1,6 +1,6 @@
 import "@/src/global.css";
 import { useAuth } from "@/src/hooks/use-auth";
-import "@/src/i18n";
+import i18n from "@/src/i18n";
 import { AuthProvider } from "@/src/providers/auth-provider";
 import {
   Poppins_400Regular,
@@ -14,6 +14,7 @@ import { useFonts } from "expo-font";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect } from "react";
+import { I18nextProvider } from "react-i18next";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -65,14 +66,16 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <AuthProvider>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(onboarding)" />
-        <Stack.Screen name="(tabs)" />
-      </Stack>
-      <AuthGate />
-    </AuthProvider>
+    <I18nextProvider i18n={i18n}>
+      <AuthProvider>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(onboarding)" />
+          <Stack.Screen name="(tabs)" />
+        </Stack>
+        <AuthGate />
+      </AuthProvider>
+    </I18nextProvider>
   );
 }
