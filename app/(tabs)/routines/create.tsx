@@ -2,11 +2,13 @@ import { useRoutines } from "@/src/hooks/use-routines";
 import { Pressable, ScrollView, Text, TextInput, View } from "@/src/tw";
 import { router } from "expo-router";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Alert } from "react-native";
 
 const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 
 export default function CreateRoutineScreen() {
+  const { t } = useTranslation();
   const { createRoutine } = useRoutines();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -15,7 +17,7 @@ export default function CreateRoutineScreen() {
 
   const handleCreate = async () => {
     if (!name.trim()) {
-      Alert.alert("Error", "Routine name is required");
+      Alert.alert(t("common.error"), t("routines.routineNameRequired"));
       return;
     }
     try {
@@ -27,7 +29,7 @@ export default function CreateRoutineScreen() {
       });
       router.back();
     } catch (e: any) {
-      Alert.alert("Error", e.message ?? "Could not create routine");
+      Alert.alert(t("common.error"), e.message ?? t("routines.couldNotCreate"));
     } finally {
       setLoading(false);
     }
@@ -41,10 +43,10 @@ export default function CreateRoutineScreen() {
     >
       <View className="gap-4">
         <View className="gap-1">
-          <Text className="text-sm font-medium text-gray-300">Routine Name *</Text>
+          <Text className="text-sm font-medium text-gray-300">{t("routines.routineName")}</Text>
           <TextInput
             className="bg-surface border border-surface-elevated rounded-xl px-4 py-3 text-white"
-            placeholder="e.g. Upper Body Strength"
+            placeholder={t("routines.routineNamePlaceholder")}
             placeholderTextColor="#64748B"
             value={name}
             onChangeText={setName}
@@ -52,10 +54,10 @@ export default function CreateRoutineScreen() {
         </View>
 
         <View className="gap-1">
-          <Text className="text-sm font-medium text-gray-300">Description</Text>
+          <Text className="text-sm font-medium text-gray-300">{t("routines.description")}</Text>
           <TextInput
             className="bg-surface border border-surface-elevated rounded-xl px-4 py-3 text-white"
-            placeholder="Optional description..."
+            placeholder={t("routines.descriptionPlaceholder")}
             placeholderTextColor="#64748B"
             multiline
             numberOfLines={3}
@@ -66,7 +68,7 @@ export default function CreateRoutineScreen() {
         </View>
 
         <View className="gap-2">
-          <Text className="text-sm font-medium text-gray-300">Scheduled Day (optional)</Text>
+          <Text className="text-sm font-medium text-gray-300">{t("routines.scheduledDay")}</Text>
           <View className="flex-row flex-wrap gap-2">
             {DAYS.map((day) => (
               <Pressable
@@ -94,7 +96,7 @@ export default function CreateRoutineScreen() {
         {loading ? (
           <ActivityIndicator color="white" />
         ) : (
-          <Text className="text-white font-semibold text-base">Create Routine</Text>
+          <Text className="text-white font-semibold text-base">{t("routines.createRoutine")}</Text>
         )}
       </Pressable>
     </ScrollView>

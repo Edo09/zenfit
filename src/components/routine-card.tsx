@@ -1,6 +1,7 @@
 import { Pressable, Text, View } from "@/src/tw";
 import type { Routine } from "@/src/types/database";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Alert } from "react-native";
 
 type Props = {
@@ -10,13 +11,14 @@ type Props = {
 };
 
 export function RoutineCard({ routine, onPress, onDelete }: Props) {
+  const { t } = useTranslation();
   const handleDelete = () => {
     Alert.alert(
-      "Delete Routine",
-      `Delete "${routine.name}"? All exercises in this routine will also be removed.`,
+      t("routines.deleteRoutine"),
+      t("routines.deleteConfirm", { name: routine.name }),
       [
-        { text: "Cancel", style: "cancel" },
-        { text: "Delete", style: "destructive", onPress: onDelete },
+        { text: t("common.cancel"), style: "cancel" },
+        { text: t("common.delete"), style: "destructive", onPress: onDelete },
       ]
     );
   };

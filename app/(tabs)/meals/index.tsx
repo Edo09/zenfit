@@ -5,11 +5,13 @@ import { Pressable, Text, View } from "@/src/tw";
 import type { MealType } from "@/src/types/database";
 import { router, useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, FlatList } from "react-native";
 
 const MEAL_TYPES: MealType[] = ["breakfast", "lunch", "dinner", "snack"];
 
 export default function MealsScreen() {
+  const { t } = useTranslation();
   const { meals, loading, deleteMeal, refresh } = useMeals();
   const [activeFilter, setActiveFilter] = useState<MealType | "all">("all");
 
@@ -40,7 +42,7 @@ export default function MealsScreen() {
           className={`rounded-full px-4 py-2 ${activeFilter === "all" ? "bg-brand-primary" : "bg-surface border border-surface-elevated"}`}
         >
           <Text className={`text-sm font-medium ${activeFilter === "all" ? "text-white" : "text-gray-400"}`}>
-            All
+            {t("meals.all")}
           </Text>
         </Pressable>
         {MEAL_TYPES.map((type) => (
@@ -70,9 +72,9 @@ export default function MealsScreen() {
         )}
         ListEmptyComponent={
           <EmptyState
-            title="No meals yet"
-            subtitle="Start tracking your nutrition today"
-            actionLabel="Log a Meal"
+            title={t("meals.noMealsYet")}
+            subtitle={t("meals.startTracking")}
+            actionLabel={t("meals.logMeal")}
             onAction={() => router.push("/(tabs)/meals/create")}
           />
         }

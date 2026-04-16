@@ -1,13 +1,14 @@
 import "@/src/global.css";
 import { useAuth } from "@/src/hooks/use-auth";
+import "@/src/i18n";
 import { AuthProvider } from "@/src/providers/auth-provider";
 import {
-    Poppins_400Regular,
-    Poppins_500Medium,
-    Poppins_600SemiBold,
-    Poppins_700Bold,
-    Poppins_800ExtraBold,
-    Poppins_900Black,
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_600SemiBold,
+  Poppins_700Bold,
+  Poppins_800ExtraBold,
+  Poppins_900Black,
 } from "@expo-google-fonts/poppins";
 import { useFonts } from "expo-font";
 import { Stack, useRouter, useSegments } from "expo-router";

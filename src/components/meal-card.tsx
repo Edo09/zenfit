@@ -1,6 +1,7 @@
 import { Pressable, Text, View } from "@/src/tw";
 import type { Meal } from "@/src/types/database";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Alert } from "react-native";
 
 type Props = {
@@ -24,10 +25,11 @@ const TYPE_TEXT: Record<string, string> = {
 };
 
 export function MealCard({ meal, onPress, onDelete }: Props) {
+  const { t } = useTranslation();
   const handleDelete = () => {
-    Alert.alert("Delete Meal", `Delete "${meal.name}"?`, [
-      { text: "Cancel", style: "cancel" },
-      { text: "Delete", style: "destructive", onPress: onDelete },
+    Alert.alert(t("meals.deleteMeal"), t("meals.deleteConfirm", { name: meal.name }), [
+      { text: t("common.cancel"), style: "cancel" },
+      { text: t("common.delete"), style: "destructive", onPress: onDelete },
     ]);
   };
 

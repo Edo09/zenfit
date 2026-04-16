@@ -4,6 +4,7 @@ import { useRoutines } from "@/src/hooks/use-routines";
 import { Pressable, Text, TextInput, View } from "@/src/tw";
 import { router } from "expo-router";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Alert, FlatList } from "react-native";
 
 function formatDate(dateStr: string) {
@@ -16,6 +17,7 @@ function formatDate(dateStr: string) {
 }
 
 export default function ProgressScreen() {
+  const { t } = useTranslation();
   const { logs, loading, createLog, deleteLog } = useProgress();
   const { routines } = useRoutines();
   const [showLogForm, setShowLogForm] = useState(false);
@@ -26,7 +28,7 @@ export default function ProgressScreen() {
 
   const handleLogWorkout = async () => {
     if (!selectedRoutineId) {
-      Alert.alert("Error", "Please select a routine");
+      Alert.alert(t("common.error"), t("progress.selectRoutine"));
       return;
     }
     const routine = routines.find((r) => r.id === selectedRoutineId);
@@ -45,17 +47,17 @@ export default function ProgressScreen() {
       setDuration("");
       setNotes("");
     } catch (e: any) {
-      Alert.alert("Error", e.message);
+      Alert.alert(t("common.error"), e.message);
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDelete = (id: string, name: string) => {
-    Alert.alert("Delete Log", `Remove workout log for "${name}"?`, [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("progress.deleteLog"), t("progress.deleteConfirm", { name }), [
+      { text: t("common.cancel"), style: "cancel" },
       {
-        text: "Delete",
+        text: t("common.delete"),
         style: "destructive",
         onPress: () => deleteLog(id),
       },
@@ -78,18 +80,18 @@ export default function ProgressScreen() {
           className="bg-surface mx-4 mt-4 rounded-2xl p-4 gap-3"
           style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
         >
-          <Text className="font-semibold text-white">Log a Workout</Text>
+          <Text className="font-semibold text-white">{t("progress.logAWorkout")}</Text>
 
           {routines.length === 0 ? (
             <View className="items-center gap-2 py-2">
-              <Text className="text-gray-400 text-sm">No routines yet.</Text>
+              <Text className="text-gray-400 text-sm">{t("progress.noRoutinesYet")}</Text>
               <Pressable onPress={() => { setShowLogForm(false); router.push("/(tabs)/routines/create"); }}>
-                <Text className="text-brand-primary font-medium text-sm">Create a routine first</Text>
+                <Text className="text-brand-primary font-medium text-sm">{t("progress.createRoutineFirst")}</Text>
               </Pressable>
             </View>
           ) : (
             <>
-              <Text className="text-sm text-gray-400">Select Routine</Text>
+              <Text className="text-sm text-gray-400">{t("progress.selectRoutine")}</Text>
               <View className="flex-row flex-wrap gap-2">
                 {routines.map((r) => (
                   <Pressable
@@ -108,7 +110,7 @@ export default function ProgressScreen() {
 
           <View className="flex-row gap-2">
             <View className="flex-1 gap-1">
-              <Text className="text-xs text-gray-400">Duration (min)</Text>
+              <Text className="text-xs text-gray-400">{t("progress.duration")}</Text>
               <TextInput
                 className="bg-brand-dark border border-surface-elevated rounded-xl px-3 py-2 text-white"
                 keyboardType="number-pad"
@@ -119,10 +121,10 @@ export default function ProgressScreen() {
               />
             </View>
             <View className="flex-2 gap-1" style={{ flex: 2 }}>
-              <Text className="text-xs text-gray-400">Notes (optional)</Text>
+              <Text className="text-xs text-gray-400">{t("progress.notes")}</Text>
               <TextInput
                 className="bg-brand-dark border border-surface-elevated rounded-xl px-3 py-2 text-white"
-                placeholder="How did it go?"
+                placeholder={t("progress.notesPlaceholder")}
                 placeholderTextColor="#64748B"
                 value={notes}
                 onChangeText={setNotes}
@@ -145,7 +147,7 @@ export default function ProgressScreen() {
               {submitting ? (
                 <ActivityIndicator color="white" size="small" />
               ) : (
-                <Text className="text-white font-medium">Save</Text>
+                <Text className="text-white font-medium">{t("common.save")}</Text>
               )}
             </Pressable>
           </View>
@@ -187,9 +189,9 @@ export default function ProgressScreen() {
         )}
         ListEmptyComponent={
           <EmptyState
-            title="No workouts logged"
-            subtitle="Log your first workout to track your progress"
-            actionLabel="Log Workout"
+            title={t("progress.noWorkoutsLogged")}
+            subtitle={t("progress.logFirstWorkout")}
+            actionLabel={t("progress.logWorkout")}
             onAction={() => setShowLogForm(true)}
           />
         }

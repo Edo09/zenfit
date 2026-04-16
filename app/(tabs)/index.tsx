@@ -4,13 +4,16 @@ import { useAuth } from "@/src/hooks/use-auth";
 import { useMeals } from "@/src/hooks/use-meals";
 import { useProgress } from "@/src/hooks/use-progress";
 import { useRoutines } from "@/src/hooks/use-routines";
+import { setLanguage } from "@/src/i18n";
 import { Pressable, ScrollView, Text, View } from "@/src/tw";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function HomeScreen() {
+  const { t, i18n } = useTranslation();
   const { user, signOut } = useAuth();
   const { todaysMeals, refresh: refreshMeals } = useMeals();
   const { todaysLogs, refresh: refreshProgress } = useProgress();
@@ -54,18 +57,28 @@ export default function HomeScreen() {
           <View className="flex-row items-center justify-between mb-2">
             <View>
               <Text className="text-brand-primary text-xs font-black uppercase tracking-[3px] mb-1">
-                Welcome back
+                {t("home.welcomeBack")}
               </Text>
               <Text className="text-3xl font-black text-white tracking-tighter">
-                Hey, {displayName}! 👋
+                {t("home.hey", { name: displayName })}
               </Text>
             </View>
-            <Pressable 
-              onPress={signOut} 
-              className="w-10 h-10 rounded-full bg-surface items-center justify-center border border-surface-elevated"
-            >
-              <Ionicons name="log-out-outline" size={20} color="#64748B" />
-            </Pressable>
+            <View className="flex-row items-center gap-2">
+              <Pressable
+                onPress={() => setLanguage(i18n.language === "en" ? "es" : "en")}
+                className="w-10 h-10 rounded-full bg-surface items-center justify-center border border-surface-elevated"
+              >
+                <Text className="text-sm font-bold text-gray-300">
+                  {i18n.language === "en" ? "ES" : "EN"}
+                </Text>
+              </Pressable>
+              <Pressable 
+                onPress={signOut} 
+                className="w-10 h-10 rounded-full bg-surface items-center justify-center border border-surface-elevated"
+              >
+                <Ionicons name="log-out-outline" size={20} color="#64748B" />
+              </Pressable>
+            </View>
           </View>
           <Text className="text-gray-400 font-medium">{today}</Text>
         </View>
@@ -73,15 +86,15 @@ export default function HomeScreen() {
         {/* Stats Grid */}
         <View className="px-6 flex-row gap-4 mb-8">
           <StatCard
-            label="Meals"
+            label={t("home.mealsLabel")}
             value={todaysMeals.length}
-            unit="logged"
+            unit={t("home.mealsUnit")}
             color="#2563EB"
           />
           <StatCard
-            label="Workout"
+            label={t("home.workoutLabel")}
             value={todaysLogs.length}
-            unit="today"
+            unit={t("home.workoutUnit")}
             color="#22C55E"
           />
         </View>
@@ -89,7 +102,7 @@ export default function HomeScreen() {
         {/* Workout Carousel Section */}
         <View className="mb-8">
           <View className="px-6 flex-row items-center justify-between mb-2">
-            <Text className="text-xl font-black text-white tracking-tight">Your Routines</Text>
+            <Text className="text-xl font-black text-white tracking-tight">{t("home.yourRoutines")}</Text>
             <Pressable 
               onPress={toggleTheme}
               className="flex-row items-center gap-1.5 bg-surface px-3 py-1.5 rounded-full"
@@ -100,7 +113,7 @@ export default function HomeScreen() {
                 color={carouselTheme === "dark" ? "#94a3b8" : "#f59e0b"} 
               />
               <Text className="text-[10px] font-bold text-gray-400 uppercase">
-                {carouselTheme === "dark" ? "Dark" : "Light"}
+                {carouselTheme === "dark" ? t("home.dark") : t("home.light")}
               </Text>
             </Pressable>
           </View>
@@ -110,9 +123,9 @@ export default function HomeScreen() {
         {/* Today's Meals Section */}
         <View className="px-6 gap-4 mb-8">
           <View className="flex-row items-center justify-between">
-            <Text className="text-xl font-black text-white tracking-tight">Today's Nutrition</Text>
+            <Text className="text-xl font-black text-white tracking-tight">{t("home.todaysNutrition")}</Text>
             <Pressable onPress={() => router.push("/(tabs)/meals")}>
-              <Text className="text-brand-primary font-black text-xs uppercase tracking-wider">See all</Text>
+              <Text className="text-brand-primary font-black text-xs uppercase tracking-wider">{t("common.seeAll")}</Text>
             </Pressable>
           </View>
 
@@ -124,8 +137,8 @@ export default function HomeScreen() {
               <View className="w-12 h-12 bg-brand-dark rounded-2xl items-center justify-center mb-3 shadow-sm">
                 <Ionicons name="restaurant-outline" size={24} color="#2563EB" />
               </View>
-              <Text className="text-gray-400 font-bold mb-1">Fuel your body</Text>
-              <Text className="text-brand-primary font-black">+ Log a meal</Text>
+              <Text className="text-gray-400 font-bold mb-1">{t("home.fuelYourBody")}</Text>
+              <Text className="text-brand-primary font-black">{t("home.logMeal")}</Text>
             </Pressable>
           ) : (
             <View className="gap-3">
@@ -154,9 +167,9 @@ export default function HomeScreen() {
         {/* Recent Workouts Section */}
         <View className="px-6 gap-4">
           <View className="flex-row items-center justify-between">
-            <Text className="text-xl font-black text-white tracking-tight">Recent Activity</Text>
+            <Text className="text-xl font-black text-white tracking-tight">{t("home.recentActivity")}</Text>
             <Pressable onPress={() => router.push("/(tabs)/progress")}>
-              <Text className="text-brand-primary font-black text-xs uppercase tracking-wider">See all</Text>
+              <Text className="text-brand-primary font-black text-xs uppercase tracking-wider">{t("common.seeAll")}</Text>
             </Pressable>
           </View>
 
@@ -168,8 +181,8 @@ export default function HomeScreen() {
               <View className="w-12 h-12 bg-brand-dark rounded-2xl items-center justify-center mb-3 shadow-sm">
                 <Ionicons name="fitness-outline" size={24} color="#22C55E" />
               </View>
-              <Text className="text-gray-400 font-bold mb-1">No activity logged today</Text>
-              <Text className="text-brand-secondary font-black">Start a routine →</Text>
+              <Text className="text-gray-400 font-bold mb-1">{t("home.noActivityToday")}</Text>
+              <Text className="text-brand-secondary font-black">{t("home.startRoutine")}</Text>
             </Pressable>
           ) : (
             <View className="gap-3">
@@ -185,7 +198,7 @@ export default function HomeScreen() {
                     <View>
                       <Text className="font-black text-white tracking-tight">{log.routine_name}</Text>
                       {log.duration_minutes != null && (
-                        <Text className="text-gray-500 font-bold text-[10px] uppercase tracking-widest">{log.duration_minutes} Minutes</Text>
+                        <Text className="text-gray-500 font-bold text-[10px] uppercase tracking-widest">{log.duration_minutes} {t("home.minutes")}</Text>
                       )}
                     </View>
                   </View>

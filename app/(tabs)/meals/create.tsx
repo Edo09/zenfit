@@ -3,11 +3,13 @@ import { Pressable, ScrollView, Text, TextInput, View } from "@/src/tw";
 import type { MealType } from "@/src/types/database";
 import { router } from "expo-router";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Alert } from "react-native";
 
 const MEAL_TYPES: MealType[] = ["breakfast", "lunch", "dinner", "snack"];
 
 export default function CreateMealScreen() {
+  const { t } = useTranslation();
   const { createMeal } = useMeals();
   const [name, setName] = useState("");
   const [mealType, setMealType] = useState<MealType>("breakfast");
@@ -15,7 +17,7 @@ export default function CreateMealScreen() {
 
   const handleCreate = async () => {
     if (!name.trim()) {
-      Alert.alert("Error", "Meal name is required");
+      Alert.alert(t("common.error"), t("routines.routineNameRequired"));
       return;
     }
     try {
@@ -23,7 +25,7 @@ export default function CreateMealScreen() {
       const meal = await createMeal({ name: name.trim(), meal_type: mealType });
       router.replace(`/(tabs)/meals/${meal.id}`);
     } catch (e: any) {
-      Alert.alert("Error", e.message ?? "Could not create meal");
+      Alert.alert(t("common.error"), e.message ?? t("meals.couldNotCreate"));
     } finally {
       setLoading(false);
     }
@@ -37,10 +39,10 @@ export default function CreateMealScreen() {
     >
       <View className="gap-4">
         <View className="gap-1">
-          <Text className="text-sm font-medium text-gray-300">Meal Name *</Text>
+          <Text className="text-sm font-medium text-gray-300">{t("meals.mealName")}</Text>
           <TextInput
             className="bg-surface border border-surface-elevated rounded-xl px-4 py-3 text-white"
-            placeholder="e.g. Chicken & Rice Bowl"
+            placeholder={t("meals.mealNamePlaceholder")}
             placeholderTextColor="#64748B"
             value={name}
             onChangeText={setName}
@@ -48,7 +50,7 @@ export default function CreateMealScreen() {
         </View>
 
         <View className="gap-2">
-          <Text className="text-sm font-medium text-gray-300">Meal Type</Text>
+          <Text className="text-sm font-medium text-gray-300">{t("meals.mealType")}</Text>
           <View className="flex-row gap-2 flex-wrap">
             {MEAL_TYPES.map((type) => (
               <Pressable
@@ -68,7 +70,7 @@ export default function CreateMealScreen() {
       </View>
 
       <Text className="text-gray-500 text-sm text-center">
-        You can add food items with nutritional info after creating the meal.
+        {t("meals.addItemsNote")}
       </Text>
 
       <Pressable
@@ -80,7 +82,7 @@ export default function CreateMealScreen() {
         {loading ? (
           <ActivityIndicator color="white" />
         ) : (
-          <Text className="text-white font-semibold text-base">Log Meal</Text>
+          <Text className="text-white font-semibold text-base">{t("meals.logMeal")}</Text>
         )}
       </Pressable>
     </ScrollView>

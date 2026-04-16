@@ -4,9 +4,11 @@ import { useRoutines } from "@/src/hooks/use-routines";
 import { Pressable, Text, View } from "@/src/tw";
 import { router, useFocusEffect } from "expo-router";
 import React, { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, FlatList } from "react-native";
 
 export default function RoutinesScreen() {
+  const { t } = useTranslation();
   const { routines, loading, deleteRoutine, refresh } = useRoutines();
 
   useFocusEffect(
@@ -41,9 +43,9 @@ export default function RoutinesScreen() {
         )}
         ListEmptyComponent={
           <EmptyState
-            title="No routines yet"
-            subtitle="Create your first workout routine to get started"
-            actionLabel="Create Routine"
+            title={t("routines.noRoutinesYet")}
+            subtitle={t("routines.createFirstRoutine")}
+            actionLabel={t("routines.createRoutine")}
             onAction={() => router.push("/(tabs)/routines/create")}
           />
         }

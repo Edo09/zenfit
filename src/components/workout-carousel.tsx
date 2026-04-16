@@ -3,6 +3,7 @@ import { Routine } from "@/src/types/database";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Dimensions, FlatList } from "react-native";
 import Animated, {
     Extrapolation,
@@ -38,6 +39,7 @@ function getRoutineImage(routineName: string) {
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 export function WorkoutCarousel({ routines, theme }: Props) {
+  const { t } = useTranslation();
   const scrollX = useSharedValue(0);
 
   const onScroll = useAnimatedScrollHandler((event) => {
@@ -60,12 +62,12 @@ export function WorkoutCarousel({ routines, theme }: Props) {
   if (routines.length === 0) {
     return (
       <View className="px-4 py-8 items-center justify-center bg-surface rounded-3xl border border-dashed border-surface-elevated">
-        <Text className="text-gray-400 font-medium">No routines found</Text>
+        <Text className="text-gray-400 font-medium">{t("routines.noRoutinesFound")}</Text>
         <Pressable 
           onPress={() => router.push("/(tabs)/routines")}
           className="mt-2"
         >
-          <Text className="text-brand-primary font-bold">Create your first routine →</Text>
+          <Text className="text-brand-primary font-bold">{t("routines.createFirstRoutineLink")}</Text>
         </Pressable>
       </View>
     );
@@ -147,7 +149,7 @@ function CarouselItem({
         <View className="flex-1 p-5 justify-end">
           <View className="bg-white/20 self-start px-2 py-1 rounded-full border border-white/30 backdrop-blur-md mb-2">
             <Text className="text-white text-[10px] font-bold uppercase tracking-wider">
-              Ready to start
+              {t("routines.readyToStart")}
             </Text>
           </View>
           <Text className="text-white text-2xl font-extrabold tracking-tight">

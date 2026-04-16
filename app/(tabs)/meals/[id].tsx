@@ -3,6 +3,7 @@ import { Pressable, ScrollView, Text, TextInput, View } from "@/src/tw";
 import type { MealWithItems } from "@/src/types/database";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Alert } from "react-native";
 
 const MACRO_COLORS: Record<string, string> = {
@@ -12,6 +13,7 @@ const MACRO_COLORS: Record<string, string> = {
 };
 
 export default function MealDetailScreen() {
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { getMealWithItems, addMealItem, removeMealItem } = useMeals();
   const [meal, setMeal] = useState<MealWithItems | null>(null);
@@ -32,7 +34,7 @@ export default function MealDetailScreen() {
       const data = await getMealWithItems(id);
       setMeal(data);
     } catch {
-      Alert.alert("Error", "Could not load meal");
+      Alert.alert(t("common.error"), t("meals.couldNotLoad"));
       router.back();
     } finally {
       setLoading(false);
@@ -64,15 +66,15 @@ export default function MealDetailScreen() {
       setShowAddItem(false);
       fetchMeal();
     } catch (e: any) {
-      Alert.alert("Error", e.message);
+      Alert.alert(t("common.error"), e.message);
     }
   };
 
   const handleRemoveItem = (itemId: string, name: string) => {
-    Alert.alert("Remove Item", `Remove "${name}"?`, [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("meals.removeFoodItem"), t("meals.removeConfirm", { name }), [
+      { text: t("common.cancel"), style: "cancel" },
       {
-        text: "Remove",
+        text: t("common.remove"),
         style: "destructive",
         onPress: async () => {
           await removeMealItem(itemId);
@@ -119,7 +121,7 @@ export default function MealDetailScreen() {
             className="bg-surface rounded-2xl p-4 gap-3"
             style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
           >
-            <Text className="font-semibold text-white">Nutrition Summary</Text>
+            <Text className="font-semibold text-white">{t("meals.nutritionSummary")}</Text>
             <View className="flex-row justify-between">
               <View className="items-center">
                 <Text className="text-xl font-bold text-white" style={{ fontVariant: ["tabular-nums"] }}>{totalCalories}</Text>
@@ -147,7 +149,7 @@ export default function MealDetailScreen() {
         {/* Food items */}
         <View className="gap-3">
           <Text className="text-lg font-semibold text-white">
-            Food Items ({meal.meal_items.length})
+            {t("meals.foodItems", { count: meal.meal_items.length })}
           </Text>
 
           {meal.meal_items.map((item) => (
@@ -180,17 +182,17 @@ export default function MealDetailScreen() {
               className="bg-surface rounded-2xl p-4 gap-3"
               style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
             >
-              <Text className="font-semibold text-white">Add Food Item</Text>
+              <Text className="font-semibold text-white">{t("meals.addFoodItem")}</Text>
               <TextInput
                 className="bg-brand-dark border border-surface-elevated rounded-xl px-4 py-3 text-white"
-                placeholder="Food name"
+                placeholder={t("meals.foodName")}
                 placeholderTextColor="#64748B"
                 value={itemName}
                 onChangeText={setItemName}
               />
               <View className="flex-row gap-2">
                 <View className="flex-1 gap-1">
-                  <Text className="text-xs text-gray-400">Calories</Text>
+                  <Text className="text-xs text-gray-400">{t("meals.calories")}</Text>
                   <TextInput
                     className="bg-brand-dark border border-surface-elevated rounded-xl px-3 py-2 text-white text-center"
                     keyboardType="number-pad"
@@ -199,7 +201,7 @@ export default function MealDetailScreen() {
                   />
                 </View>
                 <View className="flex-1 gap-1">
-                  <Text className="text-xs text-gray-400">Protein (g)</Text>
+                  <Text className="text-xs text-gray-400">{t("meals.protein")}</Text>
                   <TextInput
                     className="bg-brand-dark border border-surface-elevated rounded-xl px-3 py-2 text-white text-center"
                     keyboardType="decimal-pad"
@@ -210,7 +212,7 @@ export default function MealDetailScreen() {
               </View>
               <View className="flex-row gap-2">
                 <View className="flex-1 gap-1">
-                  <Text className="text-xs text-gray-400">Carbs (g)</Text>
+                  <Text className="text-xs text-gray-400">{t("meals.carbs")}</Text>
                   <TextInput
                     className="bg-brand-dark border border-surface-elevated rounded-xl px-3 py-2 text-white text-center"
                     keyboardType="decimal-pad"
@@ -219,7 +221,7 @@ export default function MealDetailScreen() {
                   />
                 </View>
                 <View className="flex-1 gap-1">
-                  <Text className="text-xs text-gray-400">Fat (g)</Text>
+                  <Text className="text-xs text-gray-400">{t("meals.fat")}</Text>
                   <TextInput
                     className="bg-brand-dark border border-surface-elevated rounded-xl px-3 py-2 text-white text-center"
                     keyboardType="decimal-pad"
@@ -228,10 +230,10 @@ export default function MealDetailScreen() {
                   />
                 </View>
                 <View className="flex-1 gap-1">
-                  <Text className="text-xs text-gray-400">Portion</Text>
+                  <Text className="text-xs text-gray-400">{t("meals.portion")}</Text>
                   <TextInput
                     className="bg-brand-dark border border-surface-elevated rounded-xl px-3 py-2 text-white text-center"
-                    placeholder="1 cup"
+                    placeholder={t("meals.portionPlaceholder")}
                     placeholderTextColor="#64748B"
                     value={itemPortion}
                     onChangeText={setItemPortion}
@@ -243,13 +245,13 @@ export default function MealDetailScreen() {
                   onPress={() => setShowAddItem(false)}
                   className="flex-1 border border-surface-elevated rounded-xl py-3 items-center"
                 >
-                  <Text className="text-gray-400 font-medium">Cancel</Text>
+                  <Text className="text-gray-400 font-medium">{t("common.cancel")}</Text>
                 </Pressable>
                 <Pressable
                   onPress={handleAddItem}
                   className="flex-1 bg-brand-primary rounded-xl py-3 items-center"
                 >
-                  <Text className="text-white font-medium">Add</Text>
+                  <Text className="text-white font-medium">{t("common.add")}</Text>
                 </Pressable>
               </View>
             </View>
@@ -258,7 +260,7 @@ export default function MealDetailScreen() {
               onPress={() => setShowAddItem(true)}
               className="border-2 border-dashed border-surface-elevated rounded-2xl py-4 items-center"
             >
-              <Text className="text-gray-400 font-medium">+ Add Food Item</Text>
+              <Text className="text-gray-400 font-medium">{t("meals.addFoodItemButton")}</Text>
             </Pressable>
           )}
         </View>

@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
 
@@ -9,6 +10,7 @@ function TabIcon({ name, color }: { name: IoniconName; color: string }) {
 }
 
 export default function TabsLayout() {
+  const { t } = useTranslation();
   return (
     <Tabs
       screenOptions={{
@@ -26,14 +28,14 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: t("tabs.home"),
           tabBarIcon: ({ color }) => <TabIcon name="home" color={color} />,
         }}
       />
       <Tabs.Screen
         name="routines"
         options={{
-          title: "Routines",
+          title: t("tabs.routines"),
           headerShown: false,
           tabBarIcon: ({ color }) => <TabIcon name="barbell" color={color} />,
         }}
@@ -41,7 +43,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="meals"
         options={{
-          title: "Meals",
+          title: t("tabs.meals"),
           headerShown: false,
           tabBarIcon: ({ color }) => <TabIcon name="restaurant" color={color} />,
         }}
@@ -49,7 +51,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="progress"
         options={{
-          title: "Progress",
+          title: t("tabs.progress"),
           headerShown: false,
           tabBarIcon: ({ color }) => <TabIcon name="bar-chart" color={color} />,
         }}

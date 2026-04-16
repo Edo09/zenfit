@@ -4,9 +4,11 @@ import { Pressable, ScrollView, Text, TextInput, View } from "@/src/tw";
 import type { RoutineWithExercises } from "@/src/types/database";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Alert } from "react-native";
 
 export default function RoutineDetailScreen() {
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { getRoutineWithExercises, addExercise, removeExercise } = useRoutines();
   const { createLog } = useProgress();
@@ -28,7 +30,7 @@ export default function RoutineDetailScreen() {
       const data = await getRoutineWithExercises(id);
       setRoutine(data);
     } catch {
-      Alert.alert("Error", "Could not load routine");
+      Alert.alert(t("common.error"), t("routines.couldNotLoad"));
       router.back();
     } finally {
       setLoading(false);
@@ -56,15 +58,15 @@ export default function RoutineDetailScreen() {
       setShowAddExercise(false);
       fetchRoutine();
     } catch (e: any) {
-      Alert.alert("Error", e.message);
+      Alert.alert(t("common.error"), e.message);
     }
   };
 
   const handleRemoveExercise = (exerciseId: string, name: string) => {
-    Alert.alert("Remove Exercise", `Remove "${name}" from this routine?`, [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("routines.removeExercise"), t("routines.removeConfirm", { name }), [
+      { text: t("common.cancel"), style: "cancel" },
       {
-        text: "Remove",
+        text: t("common.remove"),
         style: "destructive",
         onPress: async () => {
           await removeExercise(exerciseId);
@@ -79,9 +81,9 @@ export default function RoutineDetailScreen() {
     setLoggingWorkout(true);
     try {
       await createLog({ routine_id: routine.id, routine_name: routine.name });
-      Alert.alert("Workout Logged! 💪", "Great job completing your routine.");
+      Alert.alert(t("routines.workoutLogged"), t("routines.greatJob"));
     } catch (e: any) {
-      Alert.alert("Error", e.message);
+      Alert.alert(t("common.error"), e.message);
     } finally {
       setLoggingWorkout(false);
     }
@@ -120,7 +122,7 @@ export default function RoutineDetailScreen() {
         {/* Exercises */}
         <View className="gap-3">
           <Text className="text-lg font-semibold text-white">
-            Exercises ({routine.routine_exercises.length})
+            {t("routines.exercises", { count: routine.routine_exercises.length })}
           </Text>
 
           {routine.routine_exercises.map((ex, index) => (
@@ -154,17 +156,17 @@ export default function RoutineDetailScreen() {
               className="bg-surface rounded-2xl p-4 gap-3"
               style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
             >
-              <Text className="font-semibold text-white">Add Exercise</Text>
+              <Text className="font-semibold text-white">{t("routines.addExercise")}</Text>
               <TextInput
                 className="bg-brand-dark border border-surface-elevated rounded-xl px-4 py-3 text-white"
-                placeholder="Exercise name"
+                placeholder={t("routines.exerciseName")}
                 placeholderTextColor="#64748B"
                 value={exName}
                 onChangeText={setExName}
               />
               <View className="flex-row gap-2">
                 <View className="flex-1 gap-1">
-                  <Text className="text-xs text-gray-400">Sets</Text>
+                  <Text className="text-xs text-gray-400">{t("routines.sets")}</Text>
                   <TextInput
                     className="bg-brand-dark border border-surface-elevated rounded-xl px-3 py-2 text-white text-center"
                     keyboardType="number-pad"
@@ -173,7 +175,7 @@ export default function RoutineDetailScreen() {
                   />
                 </View>
                 <View className="flex-1 gap-1">
-                  <Text className="text-xs text-gray-400">Reps</Text>
+                  <Text className="text-xs text-gray-400">{t("routines.reps")}</Text>
                   <TextInput
                     className="bg-brand-dark border border-surface-elevated rounded-xl px-3 py-2 text-white text-center"
                     keyboardType="number-pad"
@@ -182,7 +184,7 @@ export default function RoutineDetailScreen() {
                   />
                 </View>
                 <View className="flex-1 gap-1">
-                  <Text className="text-xs text-gray-400">kg (opt)</Text>
+                  <Text className="text-xs text-gray-400">{t("routines.weightOpt")}</Text>
                   <TextInput
                     className="bg-brand-dark border border-surface-elevated rounded-xl px-3 py-2 text-white text-center"
                     keyboardType="decimal-pad"
@@ -198,13 +200,13 @@ export default function RoutineDetailScreen() {
                   onPress={() => setShowAddExercise(false)}
                   className="flex-1 border border-surface-elevated rounded-xl py-3 items-center"
                 >
-                  <Text className="text-gray-400 font-medium">Cancel</Text>
+                  <Text className="text-gray-400 font-medium">{t("common.cancel")}</Text>
                 </Pressable>
                 <Pressable
                   onPress={handleAddExercise}
                   className="flex-1 bg-brand-primary rounded-xl py-3 items-center"
                 >
-                  <Text className="text-white font-medium">Add</Text>
+                  <Text className="text-white font-medium">{t("common.add")}</Text>
                 </Pressable>
               </View>
             </View>
@@ -213,7 +215,7 @@ export default function RoutineDetailScreen() {
               onPress={() => setShowAddExercise(true)}
               className="border-2 border-dashed border-surface-elevated rounded-2xl py-4 items-center"
             >
-              <Text className="text-gray-400 font-medium">+ Add Exercise</Text>
+              <Text className="text-gray-400 font-medium">{t("routines.addExerciseButton")}</Text>
             </Pressable>
           )}
         </View>
@@ -229,7 +231,7 @@ export default function RoutineDetailScreen() {
             <ActivityIndicator color="white" />
           ) : (
             <Text className="text-white font-semibold text-base">
-              Log Workout 💪
+              {t("routines.logWorkout")}
             </Text>
           )}
         </Pressable>

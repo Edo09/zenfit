@@ -30,6 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .eq("id", userId)
       .single();
     setOnboardingCompleted(data?.onboarding_completed ?? false);
+
   };
 
   useEffect(() => {
