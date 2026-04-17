@@ -7,47 +7,53 @@ import type {
   RoutineWithExercises,
 } from "@/src/types/database";
 import { supabase } from "@/src/utils/supabase";
-import { useCallback, useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useRoutines() {
   const { user } = useAuth();
-  const [routines, setRoutines] = useState<Routine[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const fetchRoutines = useCallback(async () => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("routines")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (!error && data) setRoutines(data);
-    setLoading(false);
-  }, [user]);
+  const {
+    data: routines = [],
+    isPending: loading,
+    refetch,
+  } = useQuery({
+    queryKey: ["routines", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("routines")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as Routine[];
+    },
+    enabled: !!user,
+  });
 
-  useEffect(() => {
-    fetchRoutines();
-  }, [fetchRoutines]);
+  const createRoutineMutation = useMutation({
+    mutationFn: async (data: RoutineInsert) => {
+      const { data: routine, error } = await supabase
+        .from("routines")
+        .insert(data)
+        .select()
+        .single();
+      if (error) throw error;
+      return routine as Routine;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["routines"] });
+    },
+  });
 
-  const createRoutine = async (data: RoutineInsert): Promise<Routine> => {
-    const { data: routine, error } = await supabase
-      .from("routines")
-      .insert(data)
-      .select()
-      .single();
-    if (error) throw error;
-    setRoutines((prev) => [routine, ...prev]);
-    return routine;
-  };
-
-  const deleteRoutine = async (id: string) => {
-    const { error } = await supabase.from("routines").delete().eq("id", id);
-    if (error) throw error;
-    setRoutines((prev) => prev.filter((r) => r.id !== id));
-  };
+  const deleteRoutineMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("routines").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["routines"] });
+    },
+  });
 
   const getRoutineWithExercises = async (
     id: string,
@@ -65,34 +71,36 @@ export function useRoutines() {
     return data as RoutineWithExercises;
   };
 
-  const addExercise = async (
-    data: RoutineExerciseInsert,
-  ): Promise<RoutineExercise> => {
-    const { data: exercise, error } = await supabase
-      .from("routine_exercises")
-      .insert(data)
-      .select()
-      .single();
-    if (error) throw error;
-    return exercise;
-  };
+  const addExerciseMutation = useMutation({
+    mutationFn: async (data: RoutineExerciseInsert) => {
+      const { data: exercise, error } = await supabase
+        .from("routine_exercises")
+        .insert(data)
+        .select()
+        .single();
+      if (error) throw error;
+      return exercise as RoutineExercise;
+    },
+  });
 
-  const removeExercise = async (id: string) => {
-    const { error } = await supabase
-      .from("routine_exercises")
-      .delete()
-      .eq("id", id);
-    if (error) throw error;
-  };
+  const removeExerciseMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("routine_exercises")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    },
+  });
 
   return {
     routines,
     loading,
-    createRoutine,
-    deleteRoutine,
+    createRoutine: createRoutineMutation.mutateAsync,
+    deleteRoutine: deleteRoutineMutation.mutateAsync,
     getRoutineWithExercises,
-    addExercise,
-    removeExercise,
-    refresh: fetchRoutines,
+    addExercise: addExerciseMutation.mutateAsync,
+    removeExercise: removeExerciseMutation.mutateAsync,
+    refresh: refetch,
   };
 }

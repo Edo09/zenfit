@@ -2,20 +2,14 @@ import { EmptyState } from "@/src/components/empty-state";
 import { RoutineCard } from "@/src/components/routine-card";
 import { useRoutines } from "@/src/hooks/use-routines";
 import { Pressable, Text, View } from "@/src/tw";
-import { router, useFocusEffect } from "expo-router";
-import React, { useCallback } from "react";
+import { router } from "expo-router";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, FlatList } from "react-native";
 
 export default function RoutinesScreen() {
   const { t } = useTranslation();
-  const { routines, loading, deleteRoutine, refresh } = useRoutines();
-
-  useFocusEffect(
-    useCallback(() => {
-      refresh();
-    }, [refresh])
-  );
+  const { routines, loading, deleteRoutine } = useRoutines();
 
 
   if (loading) {

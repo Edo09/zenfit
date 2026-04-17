@@ -7,26 +7,18 @@ import { useRoutines } from "@/src/hooks/use-routines";
 import { setLanguage } from "@/src/i18n";
 import { Pressable, ScrollView, Text, View } from "@/src/tw";
 import { Ionicons } from "@expo/vector-icons";
-import { router, useFocusEffect } from "expo-router";
+import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export default function HomeScreen() {
   const { t, i18n } = useTranslation();
   const { user, signOut } = useAuth();
-  const { todaysMeals, refresh: refreshMeals } = useMeals();
-  const { todaysLogs, refresh: refreshProgress } = useProgress();
-  const { routines, refresh: refreshRoutines } = useRoutines();
+  const { todaysMeals } = useMeals();
+  const { todaysLogs } = useProgress();
+  const { routines } = useRoutines();
   const [carouselTheme, setCarouselTheme] = useState<"light" | "dark">("dark");
-
-  useFocusEffect(
-    useCallback(() => {
-      refreshMeals();
-      refreshProgress();
-      refreshRoutines();
-    }, [refreshMeals, refreshProgress, refreshRoutines])
-  );
 
   const displayName =
     (user?.user_metadata?.display_name as string | undefined) ??
@@ -131,6 +123,7 @@ export default function HomeScreen() {
 
           {todaysMeals.length === 0 ? (
             <Pressable 
+              key="meals-empty"
               onPress={() => router.push("/(tabs)/meals/create")}
               className="bg-surface rounded-[32px] p-8 items-center border border-dashed border-surface-elevated"
             >
@@ -141,7 +134,7 @@ export default function HomeScreen() {
               <Text className="text-brand-primary font-black">{t("home.logMeal")}</Text>
             </Pressable>
           ) : (
-            <View className="gap-3">
+            <View key="meals-list" className="gap-3">
               {todaysMeals.slice(0, 3).map((meal) => (
                 <Pressable
                   key={meal.id}
@@ -175,6 +168,7 @@ export default function HomeScreen() {
 
           {todaysLogs.length === 0 ? (
             <Pressable 
+              key="logs-empty"
               onPress={() => router.push("/(tabs)/routines")}
               className="bg-surface rounded-[32px] p-8 items-center border border-dashed border-surface-elevated"
             >
@@ -185,7 +179,7 @@ export default function HomeScreen() {
               <Text className="text-brand-secondary font-black">{t("home.startRoutine")}</Text>
             </Pressable>
           ) : (
-            <View className="gap-3">
+            <View key="logs-list" className="gap-3">
               {todaysLogs.slice(0, 3).map((log) => (
                 <View
                   key={log.id}

@@ -1,47 +1,36 @@
 import { Profile } from "@/src/types/database";
 import { supabase } from "@/src/utils/supabase";
-import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useProfile(userId: string | undefined) {
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (!userId) {
-      setLoading(false);
-      return;
-    }
-
-    let cancelled = false;
-
-    async function fetchProfile() {
+  const { data: profile = null, isPending: loading } = useQuery({
+    queryKey: ["profile", userId],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", userId!)
         .single();
+      if (error) throw error;
+      return data as Profile;
+    },
+    enabled: !!userId,
+  });
 
-      if (!cancelled) {
-        if (!error && data) setProfile(data as Profile);
-        setLoading(false);
-      }
-    }
+  const updateProfileMutation = useMutation({
+    mutationFn: async (updates: Partial<Profile>) => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq("id", userId!);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["profile", userId] });
+    },
+  });
 
-    fetchProfile();
-    return () => {
-      cancelled = true;
-    };
-  }, [userId]);
-
-  const updateProfile = async (updates: Partial<Profile>) => {
-    if (!userId) return;
-    const { error } = await supabase
-      .from("profiles")
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq("id", userId);
-    if (error) throw error;
-    setProfile((prev) => (prev ? { ...prev, ...updates } : prev));
-  };
-
-  return { profile, loading, updateProfile };
+  return { profile, loading, updateProfile: updateProfileMutation.mutateAsync };
 }

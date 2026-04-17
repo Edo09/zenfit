@@ -7,7 +7,8 @@ import type {
     MealWithItems,
 } from "@/src/types/database";
 import { supabase } from "@/src/utils/supabase";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo } from "react";
 
 function todayDateString() {
   return new Date().toISOString().split("T")[0];
@@ -15,45 +16,54 @@ function todayDateString() {
 
 export function useMeals() {
   const { user } = useAuth();
-  const [meals, setMeals] = useState<Meal[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const fetchMeals = useCallback(async () => {
-    if (!user) return;
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("meals")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (!error && data) setMeals(data);
-    setLoading(false);
-  }, [user]);
-
-  useEffect(() => {
-    fetchMeals();
-  }, [fetchMeals]);
+  const {
+    data: meals = [],
+    isPending: loading,
+    refetch,
+  } = useQuery({
+    queryKey: ["meals", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("meals")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as Meal[];
+    },
+    enabled: !!user,
+  });
 
   const todaysMeals = useMemo(
     () => meals.filter((m) => m.date === todayDateString()),
     [meals],
   );
 
-  const createMeal = async (data: MealInsert): Promise<Meal> => {
-    const { data: meal, error } = await supabase
-      .from("meals")
-      .insert({ ...data, date: todayDateString() })
-      .select()
-      .single();
-    if (error) throw error;
-    setMeals((prev) => [meal, ...prev]);
-    return meal;
-  };
+  const createMealMutation = useMutation({
+    mutationFn: async (data: MealInsert) => {
+      const { data: meal, error } = await supabase
+        .from("meals")
+        .insert({ ...data, date: todayDateString() })
+        .select()
+        .single();
+      if (error) throw error;
+      return meal as Meal;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["meals"] });
+    },
+  });
 
-  const deleteMeal = async (id: string) => {
-    const { error } = await supabase.from("meals").delete().eq("id", id);
-    if (error) throw error;
-    setMeals((prev) => prev.filter((m) => m.id !== id));
-  };
+  const deleteMealMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("meals").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["meals"] });
+    },
+  });
 
   const getMealWithItems = async (
     id: string,
@@ -67,30 +77,34 @@ export function useMeals() {
     return data as MealWithItems;
   };
 
-  const addMealItem = async (data: MealItemInsert): Promise<MealItem> => {
-    const { data: item, error } = await supabase
-      .from("meal_items")
-      .insert(data)
-      .select()
-      .single();
-    if (error) throw error;
-    return item;
-  };
+  const addMealItemMutation = useMutation({
+    mutationFn: async (data: MealItemInsert) => {
+      const { data: item, error } = await supabase
+        .from("meal_items")
+        .insert(data)
+        .select()
+        .single();
+      if (error) throw error;
+      return item as MealItem;
+    },
+  });
 
-  const removeMealItem = async (id: string) => {
-    const { error } = await supabase.from("meal_items").delete().eq("id", id);
-    if (error) throw error;
-  };
+  const removeMealItemMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("meal_items").delete().eq("id", id);
+      if (error) throw error;
+    },
+  });
 
   return {
     meals,
     loading,
     todaysMeals,
-    createMeal,
-    deleteMeal,
+    createMeal: createMealMutation.mutateAsync,
+    deleteMeal: deleteMealMutation.mutateAsync,
     getMealWithItems,
-    addMealItem,
-    removeMealItem,
-    refresh: fetchMeals,
+    addMealItem: addMealItemMutation.mutateAsync,
+    removeMealItem: removeMealItemMutation.mutateAsync,
+    refresh: refetch,
   };
 }

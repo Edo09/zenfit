@@ -3,8 +3,8 @@ import { MealCard } from "@/src/components/meal-card";
 import { useMeals } from "@/src/hooks/use-meals";
 import { Pressable, Text, View } from "@/src/tw";
 import type { MealType } from "@/src/types/database";
-import { router, useFocusEffect } from "expo-router";
-import React, { useCallback, useState } from "react";
+import { router } from "expo-router";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, FlatList } from "react-native";
 
@@ -12,14 +12,8 @@ const MEAL_TYPES: MealType[] = ["breakfast", "lunch", "dinner", "snack"];
 
 export default function MealsScreen() {
   const { t } = useTranslation();
-  const { meals, loading, deleteMeal, refresh } = useMeals();
+  const { meals, loading, deleteMeal } = useMeals();
   const [activeFilter, setActiveFilter] = useState<MealType | "all">("all");
-
-  useFocusEffect(
-    useCallback(() => {
-      refresh();
-    }, [refresh])
-  );
 
   const filtered = activeFilter === "all"
     ? meals
