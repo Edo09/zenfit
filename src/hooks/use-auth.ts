@@ -1,9 +1,9 @@
-import React from "react";
 import { AuthContext } from "@/src/providers/auth-provider";
 import { supabase } from "@/src/utils/supabase";
+import React from "react";
 
 export function useAuth() {
-  const context = React.use(AuthContext);
+  const context = React.useContext(AuthContext);
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({

@@ -2,16 +2,17 @@ import { Pressable, Text, View } from "@/src/tw";
 import { Routine } from "@/src/types/database";
 import { Image } from "expo-image";
 import { router } from "expo-router";
+import { t } from "i18next";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Dimensions, FlatList } from "react-native";
 import Animated, {
-    Extrapolation,
-    interpolate,
-    SharedValue,
-    useAnimatedScrollHandler,
-    useAnimatedStyle,
-    useSharedValue
+  Extrapolation,
+  interpolate,
+  SharedValue,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue
 } from "react-native-reanimated";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");

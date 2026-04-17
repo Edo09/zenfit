@@ -23,22 +23,25 @@ function AuthGate() {
   const segments = useSegments();
   const router = useRouter();
 
+
   useEffect(() => {
     if (loading) return;
     // Wait until onboarding status is fetched for logged-in users
     if (session && onboardingCompleted === null) return;
 
-    const inAuthGroup = (segments[0] as string) === "(auth)";
-    const inOnboarding = (segments[0] as string) === "(onboarding)";
+    const inAuthGroup = (segments[0]) === "(auth)";
+    const inOnboarding = (segments[0]) === "(onboarding)";
+    const inTabs = (segments[0]) === "(tabs)";
+
 
     if (!session && !inAuthGroup) {
-      router.replace("/(auth)/login" as any);
+      router.replace("/(auth)/login");
     } else if (session && !onboardingCompleted && !inOnboarding) {
-      router.replace("/(onboarding)" as any);
-    } else if (session && onboardingCompleted && (inAuthGroup || inOnboarding)) {
-      router.replace("/(tabs)" as any);
+      router.replace("/(onboarding)");
+    } else if (session && onboardingCompleted && !inTabs) {
+      router.replace("/(tabs)");
     }
-  }, [session, loading, onboardingCompleted, segments]);
+  }, [session, loading, onboardingCompleted, segments, router]);
 
   return null;
 }

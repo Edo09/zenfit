@@ -24,13 +24,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
 
   const fetchOnboardingStatus = async (userId: string) => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("profiles")
       .select("onboarding_completed")
       .eq("id", userId)
       .single();
+    if (error) {
+    } else {
+    }
     setOnboardingCompleted(data?.onboarding_completed ?? false);
-
   };
 
   useEffect(() => {
@@ -40,6 +42,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (session?.user) {
         fetchOnboardingStatus(session.user.id);
       }
+      setLoading(false);
+    }).catch((error) => {
+      console.error("[Auth] Error getting session:", error);
       setLoading(false);
     });
 
@@ -53,6 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setOnboardingCompleted(null);
       }
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();

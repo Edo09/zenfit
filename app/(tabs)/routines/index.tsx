@@ -17,7 +17,6 @@ export default function RoutinesScreen() {
     }, [refresh])
   );
 
-  console.log(routines);
 
   if (loading) {
     return (

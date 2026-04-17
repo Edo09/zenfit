@@ -1,10 +1,10 @@
 import { useAuth } from "@/src/hooks/use-auth";
 import type {
-    Routine,
-    RoutineExercise,
-    RoutineExerciseInsert,
-    RoutineInsert,
-    RoutineWithExercises,
+  Routine,
+  RoutineExercise,
+  RoutineExerciseInsert,
+  RoutineInsert,
+  RoutineWithExercises,
 } from "@/src/types/database";
 import { supabase } from "@/src/utils/supabase";
 import { useCallback, useEffect, useState } from "react";
@@ -15,7 +15,10 @@ export function useRoutines() {
   const [loading, setLoading] = useState(true);
 
   const fetchRoutines = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const { data, error } = await supabase
       .from("routines")
