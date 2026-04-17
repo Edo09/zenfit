@@ -8,7 +8,7 @@ type Props = {
   color?: string;
 };
 
-export function StatCard({ label, value, unit, color = "#2563EB" }: Props) {
+export function StatCard({ label, value, unit, color = "#0d7ff2" }: Props) {
   return (
     <View
       className="flex-1 bg-surface rounded-3xl p-5 gap-0 overflow-hidden"

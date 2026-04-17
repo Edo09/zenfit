@@ -91,7 +91,7 @@ export default function CreateRoutineScreen() {
         onPress={handleCreate}
         disabled={loading}
         className="bg-brand-primary rounded-2xl py-4 items-center mt-2"
-        style={{ boxShadow: "0 4px 12px rgba(37, 99, 235, 0.35)" }}
+        style={{ boxShadow: "0 4px 12px rgba(13, 127, 242, 0.35)" }}
       >
         {loading ? (
           <ActivityIndicator color="white" />

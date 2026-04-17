@@ -92,7 +92,7 @@ export default function RoutineDetailScreen() {
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center bg-brand-dark">
-        <ActivityIndicator size="large" color="#2563EB" />
+        <ActivityIndicator size="large" color="#0d7ff2" />
       </View>
     );
   }

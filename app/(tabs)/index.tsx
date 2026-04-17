@@ -81,7 +81,7 @@ export default function HomeScreen() {
             label={t("home.mealsLabel")}
             value={todaysMeals.length}
             unit={t("home.mealsUnit")}
-            color="#2563EB"
+            color="#0d7ff2"
           />
           <StatCard
             label={t("home.workoutLabel")}
@@ -128,7 +128,7 @@ export default function HomeScreen() {
               className="bg-surface rounded-[32px] p-8 items-center border border-dashed border-surface-elevated"
             >
               <View className="w-12 h-12 bg-brand-dark rounded-2xl items-center justify-center mb-3 shadow-sm">
-                <Ionicons name="restaurant-outline" size={24} color="#2563EB" />
+                <Ionicons name="restaurant-outline" size={24} color="#0d7ff2" />
               </View>
               <Text className="text-gray-400 font-bold mb-1">{t("home.fuelYourBody")}</Text>
               <Text className="text-brand-primary font-black">{t("home.logMeal")}</Text>

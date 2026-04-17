@@ -67,7 +67,7 @@ export default function ProgressScreen() {
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center bg-brand-dark">
-        <ActivityIndicator size="large" color="#2563EB" />
+        <ActivityIndicator size="large" color="#0d7ff2" />
       </View>
     );
   }
@@ -202,7 +202,7 @@ export default function ProgressScreen() {
         <Pressable
           onPress={() => setShowLogForm(true)}
           className="absolute bottom-8 right-6 bg-brand-primary rounded-full w-14 h-14 items-center justify-center"
-          style={{ boxShadow: "0 4px 12px rgba(37, 99, 235, 0.4)" }}
+          style={{ boxShadow: "0 4px 12px rgba(13, 127, 242, 0.4)" }}
         >
           <Text className="text-white text-3xl font-light leading-none">+</Text>
         </Pressable>
