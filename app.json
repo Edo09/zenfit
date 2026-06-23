@@ -44,12 +44,12 @@
         "expo-font",
         {
           "fonts": [
-            "node_modules/@expo-google-fonts/poppins/Poppins_400Regular.ttf",
-            "node_modules/@expo-google-fonts/poppins/Poppins_500Medium.ttf",
-            "node_modules/@expo-google-fonts/poppins/Poppins_600SemiBold.ttf",
-            "node_modules/@expo-google-fonts/poppins/Poppins_700Bold.ttf",
-            "node_modules/@expo-google-fonts/poppins/Poppins_800ExtraBold.ttf",
-            "node_modules/@expo-google-fonts/poppins/Poppins_900Black.ttf"
+            "node_modules/@expo-google-fonts/inter/400Regular/Inter_400Regular.ttf",
+            "node_modules/@expo-google-fonts/inter/500Medium/Inter_500Medium.ttf",
+            "node_modules/@expo-google-fonts/inter/600SemiBold/Inter_600SemiBold.ttf",
+            "node_modules/@expo-google-fonts/inter/700Bold/Inter_700Bold.ttf",
+            "node_modules/@expo-google-fonts/inter/800ExtraBold/Inter_800ExtraBold.ttf",
+            "node_modules/@expo-google-fonts/inter/900Black/Inter_900Black.ttf"
           ]
         }
       ]
@@ -61,8 +61,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "37bf7586-1f8c-4778-8b48-9e3e312d9da0"
+        "projectId": "ab863b57-5202-4c06-8827-a0cd63b75311"
       }
-    }
+    },
+    "owner": "edo09"
   }
 }
