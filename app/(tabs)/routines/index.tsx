@@ -1,21 +1,52 @@
+import { router } from "expo-router";
+import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { FlatList, RefreshControl } from "react-native";
+
 import { EmptyState } from "@/src/components/empty-state";
 import { RoutineCard } from "@/src/components/routine-card";
+import {
+  ConfirmDialog,
+  ErrorState,
+  FAB,
+  LoadingBlock,
+  useToast,
+} from "@/src/components/ui";
 import { useRoutines } from "@/src/hooks/use-routines";
-import { Pressable, Text, View } from "@/src/tw";
-import { router } from "expo-router";
-import React from "react";
-import { useTranslation } from "react-i18next";
-import { ActivityIndicator, FlatList } from "react-native";
+import { colors } from "@/src/theme/colors";
+import { View } from "@/src/tw";
+import type { Routine } from "@/src/types/database";
 
 export default function RoutinesScreen() {
   const { t } = useTranslation();
-  const { routines, loading, deleteRoutine } = useRoutines();
+  const toast = useToast();
+  const { routines, loading, error, refreshing, refresh, deleteRoutine } = useRoutines();
+  const [pendingDelete, setPendingDelete] = useState<Routine | null>(null);
 
+  const handleConfirmDelete = async () => {
+    const target = pendingDelete;
+    setPendingDelete(null);
+    if (target == null) return;
+    try {
+      await deleteRoutine(target.id);
+      toast.show({ type: "success", message: t("routines.routineDeleted") });
+    } catch {
+      toast.show({ type: "error", message: t("common.somethingWentWrong") });
+    }
+  };
 
-  if (loading) {
+  if (loading && routines.length === 0) {
     return (
-      <View className="flex-1 justify-center items-center bg-brand-dark">
-        <ActivityIndicator size="large" color="#0d7ff2" />
+      <View className="flex-1 bg-brand-dark">
+        <LoadingBlock />
+      </View>
+    );
+  }
+
+  if (error && routines.length === 0) {
+    return (
+      <View className="flex-1 bg-brand-dark">
+        <ErrorState onRetry={refresh} />
       </View>
     );
   }
@@ -27,15 +58,25 @@ export default function RoutinesScreen() {
         contentInsetAdjustmentBehavior="automatic"
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 100 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={refresh}
+            tintColor={colors.brandPrimary}
+            colors={[colors.brandPrimary]}
+            progressBackgroundColor={colors.surface}
+          />
+        }
         renderItem={({ item }) => (
           <RoutineCard
             routine={item}
             onPress={() => router.push(`/(tabs)/routines/${item.id}`)}
-            onDelete={() => deleteRoutine(item.id)}
+            onDelete={() => setPendingDelete(item)}
           />
         )}
         ListEmptyComponent={
           <EmptyState
+            icon="barbell-outline"
             title={t("routines.noRoutinesYet")}
             subtitle={t("routines.createFirstRoutine")}
             actionLabel={t("routines.createRoutine")}
@@ -44,14 +85,20 @@ export default function RoutinesScreen() {
         }
       />
 
-      {/* FAB */}
-      <Pressable
+      <FAB
         onPress={() => router.push("/(tabs)/routines/create")}
-        className="absolute bottom-8 right-6 bg-brand-primary rounded-full w-14 h-14 items-center justify-center"
-        style={{ boxShadow: "0 4px 12px rgba(13, 127, 242, 0.4)" }}
-      >
-        <Text className="text-white text-3xl font-light leading-none">+</Text>
-      </Pressable>
+        accessibilityLabel={t("routines.createRoutine")}
+      />
+
+      <ConfirmDialog
+        visible={pendingDelete != null}
+        destructive
+        title={t("routines.deleteRoutine")}
+        message={pendingDelete != null ? t("routines.deleteConfirm", { name: pendingDelete.name }) : undefined}
+        confirmLabel={t("common.delete")}
+        onConfirm={handleConfirmDelete}
+        onClose={() => setPendingDelete(null)}
+      />
     </View>
   );
 }

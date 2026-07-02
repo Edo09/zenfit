@@ -1,28 +1,59 @@
-import { EmptyState } from "@/src/components/empty-state";
-import { MealCard } from "@/src/components/meal-card";
-import { useMeals } from "@/src/hooks/use-meals";
-import { Pressable, Text, View } from "@/src/tw";
-import type { MealType } from "@/src/types/database";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, FlatList } from "react-native";
+import { FlatList, RefreshControl } from "react-native";
+
+import { EmptyState } from "@/src/components/empty-state";
+import { MealCard } from "@/src/components/meal-card";
+import {
+  Chip,
+  ConfirmDialog,
+  ErrorState,
+  FAB,
+  LoadingBlock,
+  useToast,
+} from "@/src/components/ui";
+import { useMeals } from "@/src/hooks/use-meals";
+import { colors } from "@/src/theme/colors";
+import { View } from "@/src/tw";
+import type { Meal, MealType } from "@/src/types/database";
 
 const MEAL_TYPES: MealType[] = ["breakfast", "lunch", "dinner", "snack"];
 
 export default function MealsScreen() {
   const { t } = useTranslation();
-  const { meals, loading, deleteMeal } = useMeals();
+  const toast = useToast();
+  const { meals, loading, error, refreshing, refresh, deleteMeal } = useMeals();
   const [activeFilter, setActiveFilter] = useState<MealType | "all">("all");
+  const [pendingDelete, setPendingDelete] = useState<Meal | null>(null);
 
-  const filtered = activeFilter === "all"
-    ? meals
-    : meals.filter((m) => m.meal_type === activeFilter);
+  const filtered =
+    activeFilter === "all" ? meals : meals.filter((m) => m.meal_type === activeFilter);
 
-  if (loading) {
+  const handleConfirmDelete = async () => {
+    const target = pendingDelete;
+    setPendingDelete(null);
+    if (target == null) return;
+    try {
+      await deleteMeal(target.id);
+      toast.show({ type: "success", message: t("meals.mealDeleted") });
+    } catch {
+      toast.show({ type: "error", message: t("common.somethingWentWrong") });
+    }
+  };
+
+  if (loading && meals.length === 0) {
     return (
-      <View className="flex-1 justify-center items-center bg-brand-dark">
-        <ActivityIndicator size="large" color="#0d7ff2" />
+      <View className="flex-1 bg-brand-dark">
+        <LoadingBlock />
+      </View>
+    );
+  }
+
+  if (error && meals.length === 0) {
+    return (
+      <View className="flex-1 bg-brand-dark">
+        <ErrorState onRetry={refresh} />
       </View>
     );
   }
@@ -30,25 +61,19 @@ export default function MealsScreen() {
   return (
     <View className="flex-1 bg-brand-dark">
       {/* Filter pills */}
-      <View className="flex-row gap-2 px-4 pt-4 pb-2">
-        <Pressable
+      <View className="flex-row flex-wrap gap-2 px-4 pt-4 pb-2">
+        <Chip
+          label={t("meals.all")}
+          selected={activeFilter === "all"}
           onPress={() => setActiveFilter("all")}
-          className={`rounded-full px-4 py-2 ${activeFilter === "all" ? "bg-brand-primary" : "bg-surface border border-surface-elevated"}`}
-        >
-          <Text className={`text-sm font-medium ${activeFilter === "all" ? "text-white" : "text-gray-400"}`}>
-            {t("meals.all")}
-          </Text>
-        </Pressable>
+        />
         {MEAL_TYPES.map((type) => (
-          <Pressable
+          <Chip
             key={type}
+            label={t(`meals.${type}`, { defaultValue: type })}
+            selected={activeFilter === type}
             onPress={() => setActiveFilter(type)}
-            className={`rounded-full px-4 py-2 ${activeFilter === type ? "bg-brand-primary" : "bg-surface border border-surface-elevated"}`}
-          >
-            <Text className={`text-sm font-medium capitalize ${activeFilter === type ? "text-white" : "text-gray-400"}`}>
-              {type}
-            </Text>
-          </Pressable>
+          />
         ))}
       </View>
 
@@ -57,15 +82,25 @@ export default function MealsScreen() {
         contentInsetAdjustmentBehavior="automatic"
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 100 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={refresh}
+            tintColor={colors.brandPrimary}
+            colors={[colors.brandPrimary]}
+            progressBackgroundColor={colors.surface}
+          />
+        }
         renderItem={({ item }) => (
           <MealCard
             meal={item}
             onPress={() => router.push(`/(tabs)/meals/${item.id}`)}
-            onDelete={() => deleteMeal(item.id)}
+            onDelete={() => setPendingDelete(item)}
           />
         )}
         ListEmptyComponent={
           <EmptyState
+            icon="restaurant-outline"
             title={t("meals.noMealsYet")}
             subtitle={t("meals.startTracking")}
             actionLabel={t("meals.logMeal")}
@@ -74,14 +109,20 @@ export default function MealsScreen() {
         }
       />
 
-      {/* FAB */}
-      <Pressable
+      <FAB
         onPress={() => router.push("/(tabs)/meals/create")}
-        className="absolute bottom-8 right-6 bg-brand-primary rounded-full w-14 h-14 items-center justify-center"
-        style={{ boxShadow: "0 4px 12px rgba(13, 127, 242, 0.4)" }}
-      >
-        <Text className="text-white text-3xl font-light leading-none">+</Text>
-      </Pressable>
+        accessibilityLabel={t("meals.logMeal")}
+      />
+
+      <ConfirmDialog
+        visible={pendingDelete != null}
+        destructive
+        title={t("meals.deleteMeal")}
+        message={pendingDelete != null ? t("meals.deleteConfirm", { name: pendingDelete.name }) : undefined}
+        confirmLabel={t("common.delete")}
+        onConfirm={handleConfirmDelete}
+        onClose={() => setPendingDelete(null)}
+      />
     </View>
   );
 }

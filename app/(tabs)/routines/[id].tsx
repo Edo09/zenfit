@@ -1,14 +1,27 @@
-import { useProgress } from "@/src/hooks/use-progress";
-import { useRoutines } from "@/src/hooks/use-routines";
-import { Pressable, ScrollView, Text, TextInput, View } from "@/src/tw";
-import type { RoutineWithExercises } from "@/src/types/database";
+import * as Haptics from "expo-haptics";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Alert } from "react-native";
+
+import {
+  Button,
+  Card,
+  ConfirmDialog,
+  Input,
+  LoadingBlock,
+  Screen,
+  useToast,
+} from "@/src/components/ui";
+import { useProgress } from "@/src/hooks/use-progress";
+import { useRoutines } from "@/src/hooks/use-routines";
+import { colors } from "@/src/theme/colors";
+import { Pressable, Text, View } from "@/src/tw";
+import type { RoutineExercise, RoutineWithExercises } from "@/src/types/database";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function RoutineDetailScreen() {
   const { t } = useTranslation();
+  const toast = useToast();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { getRoutineWithExercises, addExercise, removeExercise } = useRoutines();
   const { createLog } = useProgress();
@@ -17,9 +30,11 @@ export default function RoutineDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [showAddExercise, setShowAddExercise] = useState(false);
   const [loggingWorkout, setLoggingWorkout] = useState(false);
+  const [pendingRemove, setPendingRemove] = useState<RoutineExercise | null>(null);
 
   // New exercise form state
   const [exName, setExName] = useState("");
+  const [exNameError, setExNameError] = useState<string | undefined>();
   const [exSets, setExSets] = useState("3");
   const [exReps, setExReps] = useState("10");
   const [exWeight, setExWeight] = useState("");
@@ -30,7 +45,7 @@ export default function RoutineDetailScreen() {
       const data = await getRoutineWithExercises(id);
       setRoutine(data);
     } catch {
-      Alert.alert(t("common.error"), t("routines.couldNotLoad"));
+      toast.show({ type: "error", message: t("routines.couldNotLoad") });
       router.back();
     } finally {
       setLoading(false);
@@ -39,10 +54,16 @@ export default function RoutineDetailScreen() {
 
   useEffect(() => {
     fetchRoutine();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const handleAddExercise = async () => {
-    if (!exName.trim() || !routine) return;
+    if (!routine) return;
+    if (!exName.trim()) {
+      setExNameError(t("common.fieldRequired"));
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
+      return;
+    }
     try {
       await addExercise({
         routine_id: routine.id,
@@ -57,23 +78,22 @@ export default function RoutineDetailScreen() {
       setExWeight("");
       setShowAddExercise(false);
       fetchRoutine();
-    } catch (e: any) {
-      Alert.alert(t("common.error"), e.message);
+    } catch {
+      toast.show({ type: "error", message: t("common.somethingWentWrong") });
     }
   };
 
-  const handleRemoveExercise = (exerciseId: string, name: string) => {
-    Alert.alert(t("routines.removeExercise"), t("routines.removeConfirm", { name }), [
-      { text: t("common.cancel"), style: "cancel" },
-      {
-        text: t("common.remove"),
-        style: "destructive",
-        onPress: async () => {
-          await removeExercise(exerciseId);
-          fetchRoutine();
-        },
-      },
-    ]);
+  const handleConfirmRemove = async () => {
+    const target = pendingRemove;
+    setPendingRemove(null);
+    if (target == null) return;
+    try {
+      await removeExercise(target.id);
+      toast.show({ type: "success", message: t("routines.exerciseRemoved") });
+      fetchRoutine();
+    } catch {
+      toast.show({ type: "error", message: t("common.somethingWentWrong") });
+    }
   };
 
   const handleLogWorkout = async () => {
@@ -81,9 +101,9 @@ export default function RoutineDetailScreen() {
     setLoggingWorkout(true);
     try {
       await createLog({ routine_id: routine.id, routine_name: routine.name });
-      Alert.alert(t("routines.workoutLogged"), t("routines.greatJob"));
-    } catch (e: any) {
-      Alert.alert(t("common.error"), e.message);
+      toast.show({ type: "success", message: t("routines.workoutLogged") });
+    } catch {
+      toast.show({ type: "error", message: t("common.somethingWentWrong") });
     } finally {
       setLoggingWorkout(false);
     }
@@ -91,8 +111,8 @@ export default function RoutineDetailScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-brand-dark">
-        <ActivityIndicator size="large" color="#0d7ff2" />
+      <View className="flex-1 bg-brand-dark">
+        <LoadingBlock />
       </View>
     );
   }
@@ -102,140 +122,137 @@ export default function RoutineDetailScreen() {
   return (
     <>
       <Stack.Screen options={{ title: routine.name }} />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        className="flex-1 bg-brand-dark"
-        contentContainerClassName="px-4 py-6 gap-5 pb-10"
-      >
+      <Screen keyboard contentContainerClassName="pb-10">
         {/* Info */}
         {routine.description && (
-          <Text className="text-gray-400">{routine.description}</Text>
+          <Text className="text-content-tertiary">{routine.description}</Text>
         )}
         {routine.day_of_week && (
-          <View className="self-start bg-brand-primary/10 rounded-full px-3 py-1">
+          <View className="self-start bg-info-soft rounded-full px-3 py-1">
             <Text className="text-brand-primary text-sm font-medium capitalize">
-              Every {routine.day_of_week}
+              {t("routines.every", { day: routine.day_of_week })}
             </Text>
           </View>
         )}
 
         {/* Exercises */}
         <View className="gap-3">
-          <Text className="text-lg font-semibold text-white">
+          <Text className="text-lg font-semibold text-content-primary">
             {t("routines.exercises", { count: routine.routine_exercises.length })}
           </Text>
 
           {routine.routine_exercises.map((ex, index) => (
-            <View
-              key={ex.id}
-              className="bg-surface rounded-2xl px-4 py-3 flex-row items-center justify-between"
-              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
-            >
+            <Card key={ex.id} className="px-4 py-3 flex-row items-center justify-between">
               <View className="flex-1 gap-0.5">
-                <Text className="font-medium text-white">
+                <Text className="font-medium text-content-primary">
                   {index + 1}. {ex.name}
                 </Text>
-                <Text className="text-gray-400 text-sm">
-                  {ex.sets} sets × {ex.reps} reps
+                <Text className="text-content-tertiary text-sm">
+                  {ex.sets} × {ex.reps}
                   {ex.weight_kg != null ? ` · ${ex.weight_kg} kg` : ""}
                 </Text>
               </View>
               <Pressable
-                onPress={() => handleRemoveExercise(ex.id, ex.name)}
+                onPress={() => setPendingRemove(ex)}
                 className="p-2 ml-2"
                 hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={t("routines.removeExercise")}
               >
-                <Text className="text-red-400">✕</Text>
+                <Ionicons name="trash-outline" size={18} color={colors.error} />
               </Pressable>
-            </View>
+            </Card>
           ))}
 
           {/* Add exercise form */}
           {showAddExercise ? (
-            <View
-              className="bg-surface rounded-2xl p-4 gap-3"
-              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
-            >
-              <Text className="font-semibold text-white">{t("routines.addExercise")}</Text>
-              <TextInput
-                className="bg-brand-dark border border-surface-elevated rounded-xl px-4 py-3 text-white"
+            <Card className="gap-3">
+              <Text className="font-semibold text-content-primary">
+                {t("routines.addExercise")}
+              </Text>
+              <Input
                 placeholder={t("routines.exerciseName")}
-                placeholderTextColor="#64748B"
                 value={exName}
-                onChangeText={setExName}
+                onChangeText={(text) => {
+                  setExName(text);
+                  if (exNameError != null) setExNameError(undefined);
+                }}
+                error={exNameError}
+                className="bg-brand-dark"
               />
               <View className="flex-row gap-2">
-                <View className="flex-1 gap-1">
-                  <Text className="text-xs text-gray-400">{t("routines.sets")}</Text>
-                  <TextInput
-                    className="bg-brand-dark border border-surface-elevated rounded-xl px-3 py-2 text-white text-center"
-                    keyboardType="number-pad"
-                    value={exSets}
-                    onChangeText={setExSets}
-                  />
-                </View>
-                <View className="flex-1 gap-1">
-                  <Text className="text-xs text-gray-400">{t("routines.reps")}</Text>
-                  <TextInput
-                    className="bg-brand-dark border border-surface-elevated rounded-xl px-3 py-2 text-white text-center"
-                    keyboardType="number-pad"
-                    value={exReps}
-                    onChangeText={setExReps}
-                  />
-                </View>
-                <View className="flex-1 gap-1">
-                  <Text className="text-xs text-gray-400">{t("routines.weightOpt")}</Text>
-                  <TextInput
-                    className="bg-brand-dark border border-surface-elevated rounded-xl px-3 py-2 text-white text-center"
-                    keyboardType="decimal-pad"
-                    placeholder="—"
-                    placeholderTextColor="#64748B"
-                    value={exWeight}
-                    onChangeText={setExWeight}
-                  />
-                </View>
+                <Input
+                  label={t("routines.sets")}
+                  keyboardType="number-pad"
+                  value={exSets}
+                  onChangeText={setExSets}
+                  containerClassName="flex-1"
+                  className="bg-brand-dark text-center"
+                />
+                <Input
+                  label={t("routines.reps")}
+                  keyboardType="number-pad"
+                  value={exReps}
+                  onChangeText={setExReps}
+                  containerClassName="flex-1"
+                  className="bg-brand-dark text-center"
+                />
+                <Input
+                  label={t("routines.weightOpt")}
+                  keyboardType="decimal-pad"
+                  placeholder="—"
+                  value={exWeight}
+                  onChangeText={setExWeight}
+                  containerClassName="flex-1"
+                  className="bg-brand-dark text-center"
+                />
               </View>
               <View className="flex-row gap-2">
-                <Pressable
-                  onPress={() => setShowAddExercise(false)}
-                  className="flex-1 border border-surface-elevated rounded-xl py-3 items-center"
-                >
-                  <Text className="text-gray-400 font-medium">{t("common.cancel")}</Text>
-                </Pressable>
-                <Pressable
-                  onPress={handleAddExercise}
-                  className="flex-1 bg-brand-primary rounded-xl py-3 items-center"
-                >
-                  <Text className="text-white font-medium">{t("common.add")}</Text>
-                </Pressable>
+                <View className="flex-1">
+                  <Button variant="secondary" onPress={() => setShowAddExercise(false)} className="w-full">
+                    {t("common.cancel")}
+                  </Button>
+                </View>
+                <View className="flex-1">
+                  <Button onPress={handleAddExercise} className="w-full">
+                    {t("common.add")}
+                  </Button>
+                </View>
               </View>
-            </View>
+            </Card>
           ) : (
             <Pressable
               onPress={() => setShowAddExercise(true)}
-              className="border-2 border-dashed border-surface-elevated rounded-2xl py-4 items-center"
+              accessibilityRole="button"
+              className="border-2 border-dashed border-border-strong rounded-2xl py-4 items-center"
             >
-              <Text className="text-gray-400 font-medium">{t("routines.addExerciseButton")}</Text>
+              <Text className="text-content-tertiary font-medium">
+                {t("routines.addExerciseButton")}
+              </Text>
             </Pressable>
           )}
         </View>
 
         {/* Log Workout */}
-        <Pressable
+        <Button
+          size="lg"
           onPress={handleLogWorkout}
-          disabled={loggingWorkout}
-          className="bg-brand-secondary rounded-2xl py-4 items-center mt-2"
-          style={{ boxShadow: "0 4px 12px rgba(34, 197, 94, 0.35)" }}
+          loading={loggingWorkout}
+          className="bg-brand-secondary mt-2"
         >
-          {loggingWorkout ? (
-            <ActivityIndicator color="white" />
-          ) : (
-            <Text className="text-white font-semibold text-base">
-              {t("routines.logWorkout")}
-            </Text>
-          )}
-        </Pressable>
-      </ScrollView>
+          {t("routines.logWorkout")}
+        </Button>
+      </Screen>
+
+      <ConfirmDialog
+        visible={pendingRemove != null}
+        destructive
+        title={t("routines.removeExercise")}
+        message={pendingRemove != null ? t("routines.removeConfirm", { name: pendingRemove.name }) : undefined}
+        confirmLabel={t("common.remove")}
+        onConfirm={handleConfirmRemove}
+        onClose={() => setPendingRemove(null)}
+      />
     </>
   );
 }

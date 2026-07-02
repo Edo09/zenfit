@@ -1,15 +1,19 @@
 import { Stack } from "expo-router";
+import { useTranslation } from "react-i18next";
+
+import { colors } from "@/src/theme/colors";
 
 export default function ProgressLayout() {
+  const { t } = useTranslation();
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: "#0F172A" },
-        headerTintColor: "#F8FAFC",
+        headerStyle: { backgroundColor: colors.brandDark },
+        headerTintColor: colors.contentPrimary,
         headerShadowVisible: false,
       }}
     >
-      <Stack.Screen name="index" options={{ title: "Progress" }} />
+      <Stack.Screen name="index" options={{ title: t("tabs.progress") }} />
     </Stack>
   );
 }

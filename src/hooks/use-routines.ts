@@ -16,6 +16,8 @@ export function useRoutines() {
   const {
     data: routines = [],
     isPending: loading,
+    isError: error,
+    isRefetching: refreshing,
     refetch,
   } = useQuery({
     queryKey: ["routines", user?.id],
@@ -96,6 +98,8 @@ export function useRoutines() {
   return {
     routines,
     loading,
+    error,
+    refreshing,
     createRoutine: createRoutineMutation.mutateAsync,
     deleteRoutine: deleteRoutineMutation.mutateAsync,
     getRoutineWithExercises,

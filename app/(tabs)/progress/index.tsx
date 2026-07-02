@@ -1,34 +1,56 @@
-import { EmptyState } from "@/src/components/empty-state";
-import { useProgress } from "@/src/hooks/use-progress";
-import { useRoutines } from "@/src/hooks/use-routines";
-import { Pressable, Text, TextInput, View } from "@/src/tw";
+import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import { useHeaderHeight } from "@react-navigation/elements";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Alert, FlatList } from "react-native";
+import { FlatList, KeyboardAvoidingView, RefreshControl } from "react-native";
 
-function formatDate(dateStr: string) {
-  const date = new Date(dateStr + "T00:00:00");
-  return date.toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-}
+import { EmptyState } from "@/src/components/empty-state";
+import {
+  Button,
+  Card,
+  Chip,
+  ConfirmDialog,
+  ErrorState,
+  FAB,
+  Input,
+  LoadingBlock,
+  useToast,
+} from "@/src/components/ui";
+import { useProgress } from "@/src/hooks/use-progress";
+import { useRoutines } from "@/src/hooks/use-routines";
+import { colors } from "@/src/theme/colors";
+import { Pressable, Text, View } from "@/src/tw";
+import type { WorkoutLog } from "@/src/types/database";
 
 export default function ProgressScreen() {
-  const { t } = useTranslation();
-  const { logs, loading, createLog, deleteLog } = useProgress();
+  const { t, i18n } = useTranslation();
+  const toast = useToast();
+  const headerHeight = useHeaderHeight();
+  const { logs, loading, error, refreshing, refresh, createLog, deleteLog } = useProgress();
   const { routines } = useRoutines();
   const [showLogForm, setShowLogForm] = useState(false);
   const [selectedRoutineId, setSelectedRoutineId] = useState<string | null>(null);
+  const [routineError, setRoutineError] = useState<string | undefined>();
   const [duration, setDuration] = useState("");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<WorkoutLog | null>(null);
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr + "T00:00:00");
+    return date.toLocaleDateString(i18n.language === "es" ? "es-ES" : "en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+  };
 
   const handleLogWorkout = async () => {
     if (!selectedRoutineId) {
-      Alert.alert(t("common.error"), t("progress.selectRoutine"));
+      setRoutineError(t("progress.selectRoutine"));
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
       return;
     }
     const routine = routines.find((r) => r.id === selectedRoutineId);
@@ -46,167 +68,213 @@ export default function ProgressScreen() {
       setSelectedRoutineId(null);
       setDuration("");
       setNotes("");
-    } catch (e: any) {
-      Alert.alert(t("common.error"), e.message);
+      toast.show({ type: "success", message: t("routines.workoutLogged") });
+    } catch {
+      toast.show({ type: "error", message: t("common.somethingWentWrong") });
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleDelete = (id: string, name: string) => {
-    Alert.alert(t("progress.deleteLog"), t("progress.deleteConfirm", { name }), [
-      { text: t("common.cancel"), style: "cancel" },
-      {
-        text: t("common.delete"),
-        style: "destructive",
-        onPress: () => deleteLog(id),
-      },
-    ]);
+  const handleConfirmDelete = async () => {
+    const target = pendingDelete;
+    setPendingDelete(null);
+    if (target == null) return;
+    try {
+      await deleteLog(target.id);
+      toast.show({ type: "success", message: t("progress.logDeleted") });
+    } catch {
+      toast.show({ type: "error", message: t("common.somethingWentWrong") });
+    }
   };
 
-  if (loading) {
+  if (loading && logs.length === 0) {
     return (
-      <View className="flex-1 justify-center items-center bg-brand-dark">
-        <ActivityIndicator size="large" color="#0d7ff2" />
+      <View className="flex-1 bg-brand-dark">
+        <LoadingBlock />
+      </View>
+    );
+  }
+
+  if (error && logs.length === 0) {
+    return (
+      <View className="flex-1 bg-brand-dark">
+        <ErrorState onRetry={refresh} />
       </View>
     );
   }
 
   return (
     <View className="flex-1 bg-brand-dark">
-      {/* Log workout inline form */}
-      {showLogForm && (
-        <View
-          className="bg-surface mx-4 mt-4 rounded-2xl p-4 gap-3"
-          style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
-        >
-          <Text className="font-semibold text-white">{t("progress.logAWorkout")}</Text>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        // "padding" on Android too — edge-to-edge disables adjustResize (see Screen)
+        behavior="padding"
+        keyboardVerticalOffset={headerHeight}
+      >
+        {/* Log workout inline form */}
+        {showLogForm && (
+          <Card className="mx-4 mt-4 gap-3">
+            <Text className="font-semibold text-content-primary">
+              {t("progress.logAWorkout")}
+            </Text>
 
-          {routines.length === 0 ? (
-            <View className="items-center gap-2 py-2">
-              <Text className="text-gray-400 text-sm">{t("progress.noRoutinesYet")}</Text>
-              <Pressable onPress={() => { setShowLogForm(false); router.push("/(tabs)/routines/create"); }}>
-                <Text className="text-brand-primary font-medium text-sm">{t("progress.createRoutineFirst")}</Text>
-              </Pressable>
-            </View>
-          ) : (
-            <>
-              <Text className="text-sm text-gray-400">{t("progress.selectRoutine")}</Text>
-              <View className="flex-row flex-wrap gap-2">
-                {routines.map((r) => (
-                  <Pressable
-                    key={r.id}
-                    onPress={() => setSelectedRoutineId(r.id)}
-                    className={`rounded-full px-3 py-1.5 ${selectedRoutineId === r.id ? "bg-brand-primary" : "bg-brand-dark"}`}
-                  >
-                    <Text className={`text-sm font-medium ${selectedRoutineId === r.id ? "text-white" : "text-gray-300"}`}>
-                      {r.name}
-                    </Text>
-                  </Pressable>
-                ))}
+            {routines.length === 0 ? (
+              <View className="items-center gap-2 py-2">
+                <Text className="text-content-tertiary text-sm">
+                  {t("progress.noRoutinesYet")}
+                </Text>
+                <Pressable
+                  onPress={() => {
+                    setShowLogForm(false);
+                    router.push("/(tabs)/routines/create");
+                  }}
+                  accessibilityRole="button"
+                >
+                  <Text className="text-brand-primary font-medium text-sm">
+                    {t("progress.createRoutineFirst")}
+                  </Text>
+                </Pressable>
               </View>
-            </>
-          )}
+            ) : (
+              <>
+                <Text className="text-sm text-content-tertiary">
+                  {t("progress.selectRoutine")}
+                </Text>
+                <View className="flex-row flex-wrap gap-2">
+                  {routines.map((r) => (
+                    <Chip
+                      key={r.id}
+                      label={r.name}
+                      selected={selectedRoutineId === r.id}
+                      onPress={() => {
+                        setSelectedRoutineId(r.id);
+                        if (routineError != null) setRoutineError(undefined);
+                      }}
+                    />
+                  ))}
+                </View>
+                {routineError != null && (
+                  <Text className="text-xs text-error">{routineError}</Text>
+                )}
+              </>
+            )}
 
-          <View className="flex-row gap-2">
-            <View className="flex-1 gap-1">
-              <Text className="text-xs text-gray-400">{t("progress.duration")}</Text>
-              <TextInput
-                className="bg-brand-dark border border-surface-elevated rounded-xl px-3 py-2 text-white"
+            <View className="flex-row gap-2">
+              <Input
+                label={t("progress.duration")}
                 keyboardType="number-pad"
                 placeholder="45"
-                placeholderTextColor="#64748B"
                 value={duration}
                 onChangeText={setDuration}
+                containerClassName="flex-1"
+                className="bg-brand-dark"
               />
-            </View>
-            <View className="flex-2 gap-1" style={{ flex: 2 }}>
-              <Text className="text-xs text-gray-400">{t("progress.notes")}</Text>
-              <TextInput
-                className="bg-brand-dark border border-surface-elevated rounded-xl px-3 py-2 text-white"
+              <Input
+                label={t("progress.notes")}
                 placeholder={t("progress.notesPlaceholder")}
-                placeholderTextColor="#64748B"
                 value={notes}
                 onChangeText={setNotes}
+                containerClassName="flex-[2]"
+                className="bg-brand-dark"
               />
             </View>
-          </View>
 
-          <View className="flex-row gap-2">
-            <Pressable
-              onPress={() => setShowLogForm(false)}
-              className="flex-1 border border-surface-elevated rounded-xl py-3 items-center"
-            >
-              <Text className="text-gray-400 font-medium">Cancel</Text>
-            </Pressable>
-            <Pressable
-              onPress={handleLogWorkout}
-              disabled={submitting}
-              className="flex-1 bg-brand-primary rounded-xl py-3 items-center"
-            >
-              {submitting ? (
-                <ActivityIndicator color="white" size="small" />
-              ) : (
-                <Text className="text-white font-medium">{t("common.save")}</Text>
-              )}
-            </Pressable>
-          </View>
-        </View>
-      )}
-
-      <FlatList
-        data={logs}
-        contentInsetAdjustmentBehavior="automatic"
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 100 }}
-        renderItem={({ item }) => (
-          <View
-            className="bg-surface rounded-2xl px-4 py-4 flex-row items-start justify-between"
-            style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
-          >
-            <View className="flex-1 gap-1">
-              <Text className="font-semibold text-white">{item.routine_name}</Text>
-              <Text className="text-gray-400 text-sm">{formatDate(item.date)}</Text>
-              {item.duration_minutes != null && (
-                <View className="self-start bg-brand-secondary/10 rounded-full px-3 py-0.5 mt-1">
-                  <Text className="text-brand-secondary text-xs font-medium">
-                    {item.duration_minutes} min
-                  </Text>
-                </View>
-              )}
-              {item.notes && (
-                <Text className="text-gray-400 text-sm mt-1" selectable>{item.notes}</Text>
-              )}
+            <View className="flex-row gap-2">
+              <View className="flex-1">
+                <Button
+                  variant="secondary"
+                  onPress={() => setShowLogForm(false)}
+                  className="w-full"
+                >
+                  {t("common.cancel")}
+                </Button>
+              </View>
+              <View className="flex-1">
+                <Button onPress={handleLogWorkout} loading={submitting} className="w-full">
+                  {t("common.save")}
+                </Button>
+              </View>
             </View>
-            <Pressable
-              onPress={() => handleDelete(item.id, item.routine_name)}
-              className="p-2 ml-2"
-              hitSlop={8}
-            >
-              <Text className="text-red-400">✕</Text>
-            </Pressable>
-          </View>
+          </Card>
         )}
-        ListEmptyComponent={
-          <EmptyState
-            title={t("progress.noWorkoutsLogged")}
-            subtitle={t("progress.logFirstWorkout")}
-            actionLabel={t("progress.logWorkout")}
-            onAction={() => setShowLogForm(true)}
-          />
-        }
-      />
 
-      {/* FAB */}
+        <FlatList
+          data={logs}
+          contentInsetAdjustmentBehavior="automatic"
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 100 }}
+          keyboardShouldPersistTaps="handled"
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={refresh}
+              tintColor={colors.brandPrimary}
+              colors={[colors.brandPrimary]}
+              progressBackgroundColor={colors.surface}
+            />
+          }
+          renderItem={({ item }) => (
+            <Card className="px-4 py-4 flex-row items-start justify-between">
+              <View className="flex-1 gap-1">
+                <Text className="font-semibold text-content-primary">{item.routine_name}</Text>
+                <Text className="text-content-tertiary text-sm">{formatDate(item.date)}</Text>
+                {item.duration_minutes != null && (
+                  <View className="self-start bg-success-soft rounded-full px-3 py-0.5 mt-1">
+                    <Text className="text-brand-secondary text-xs font-medium">
+                      {t("progress.min", { count: item.duration_minutes })}
+                    </Text>
+                  </View>
+                )}
+                {item.notes && (
+                  <Text className="text-content-tertiary text-sm mt-1" selectable>
+                    {item.notes}
+                  </Text>
+                )}
+              </View>
+              <Pressable
+                onPress={() => setPendingDelete(item)}
+                className="p-2 ml-2"
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={t("progress.deleteLog")}
+              >
+                <Ionicons name="trash-outline" size={18} color={colors.error} />
+              </Pressable>
+            </Card>
+          )}
+          ListEmptyComponent={
+            <EmptyState
+              icon="bar-chart-outline"
+              title={t("progress.noWorkoutsLogged")}
+              subtitle={t("progress.logFirstWorkout")}
+              actionLabel={t("progress.logWorkout")}
+              onAction={() => setShowLogForm(true)}
+            />
+          }
+        />
+      </KeyboardAvoidingView>
+
       {!showLogForm && (
-        <Pressable
+        <FAB
           onPress={() => setShowLogForm(true)}
-          className="absolute bottom-8 right-6 bg-brand-primary rounded-full w-14 h-14 items-center justify-center"
-          style={{ boxShadow: "0 4px 12px rgba(13, 127, 242, 0.4)" }}
-        >
-          <Text className="text-white text-3xl font-light leading-none">+</Text>
-        </Pressable>
+          accessibilityLabel={t("progress.logWorkout")}
+        />
       )}
+
+      <ConfirmDialog
+        visible={pendingDelete != null}
+        destructive
+        title={t("progress.deleteLog")}
+        message={
+          pendingDelete != null
+            ? t("progress.deleteConfirm", { name: pendingDelete.routine_name })
+            : undefined
+        }
+        confirmLabel={t("common.delete")}
+        onConfirm={handleConfirmDelete}
+        onClose={() => setPendingDelete(null)}
+      />
     </View>
   );
 }

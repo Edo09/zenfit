@@ -1,14 +1,15 @@
-import { useAuth } from "@/src/hooks/use-auth";
-import { Pressable, ScrollView, Text, TextInput, View } from "@/src/tw";
-import { supabase } from "@/src/utils/supabase";
+import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-} from "react-native";
+
+import { Button, Chip, Input, Screen, useToast } from "@/src/components/ui";
+import { useAuth } from "@/src/hooks/use-auth";
+import { colors } from "@/src/theme/colors";
+import { Pressable, Text, View } from "@/src/tw";
+import { cn } from "@/src/utils/cn";
+import { supabase } from "@/src/utils/supabase";
 
 const TOTAL_STEPS = 4;
 
@@ -36,50 +37,27 @@ function OptionButton({
   selected: boolean;
   onPress: () => void;
 }) {
+  const handlePress = () => {
+    Haptics.selectionAsync().catch(() => {});
+    onPress();
+  };
   return (
     <Pressable
-      className={`flex-1 py-3 rounded-xl items-center border ${
-        selected
-          ? "bg-brand-primary border-brand-primary"
-          : "bg-surface border-surface-elevated"
-      }`}
-      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+      className={cn(
+        "flex-1 py-3 rounded-xl items-center border",
+        selected ? "bg-brand-primary border-brand-primary" : "bg-surface border-border"
+      )}
+      onPress={handlePress}
     >
       <Text
-        className={`font-semibold text-sm ${
-          selected ? "text-white" : "text-gray-300"
-        }`}
+        className={cn(
+          "font-semibold text-sm",
+          selected ? "text-white" : "text-content-secondary"
+        )}
       >
         {label}
-      </Text>
-    </Pressable>
-  );
-}
-
-function DayChip({
-  day,
-  selected,
-  onPress,
-}: {
-  day: string;
-  selected: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      className={`w-11 h-11 rounded-full items-center justify-center border ${
-        selected
-          ? "bg-brand-primary border-brand-primary"
-          : "bg-surface border-surface-elevated"
-      }`}
-      onPress={onPress}
-    >
-      <Text
-        className={`font-semibold text-xs ${
-          selected ? "text-white" : "text-gray-300"
-        }`}
-      >
-        {day}
       </Text>
     </Pressable>
   );
@@ -91,9 +69,10 @@ function ProgressBar({ step }: { step: number }) {
       {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
         <View
           key={i}
-          className={`flex-1 h-1 rounded-full ${
+          className={cn(
+            "flex-1 h-1 rounded-full",
             i <= step ? "bg-brand-primary" : "bg-surface-elevated"
-          }`}
+          )}
         />
       ))}
     </View>
@@ -102,9 +81,11 @@ function ProgressBar({ step }: { step: number }) {
 
 export default function Onboarding() {
   const { t } = useTranslation();
+  const toast = useToast();
   const { user, setOnboardingCompleted } = useAuth();
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [stepError, setStepError] = useState<string | null>(null);
   const [form, setForm] = useState<FormData>({
     age: "",
     sex: null,
@@ -119,6 +100,7 @@ export default function Onboarding() {
 
   const updateForm = <K extends keyof FormData>(key: K, value: FormData[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+    if (stepError != null) setStepError(null);
   };
 
   const toggleDay = (day: string) => {
@@ -128,59 +110,47 @@ export default function Onboarding() {
         ? prev.available_days.filter((d) => d !== day)
         : [...prev.available_days, day],
     }));
+    if (stepError != null) setStepError(null);
+  };
+
+  const failStep = (message: string): false => {
+    setStepError(message);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
+    return false;
   };
 
   const validateStep = (): boolean => {
     switch (step) {
-      case 0:
-        if (!form.age || !form.sex) {
-          Alert.alert(t("onboarding.requiredFields"), t("onboarding.fillAgeSex"));
-          return false;
-        }
-        const age = parseInt(form.age);
-        if (isNaN(age) || age < 13 || age > 120) {
-          Alert.alert(t("onboarding.invalidAge"), t("onboarding.ageBetween"));
-          return false;
-        }
+      case 0: {
+        if (!form.age || !form.sex) return failStep(t("onboarding.fillAgeSex"));
+        const age = parseInt(form.age, 10);
+        if (isNaN(age) || age < 13 || age > 120) return failStep(t("onboarding.ageBetween"));
         return true;
-      case 1:
-        if (!form.height_cm || !form.weight_kg) {
-          Alert.alert(t("onboarding.requiredFields"), t("onboarding.fillHeightWeight"));
-          return false;
-        }
+      }
+      case 1: {
+        if (!form.height_cm || !form.weight_kg)
+          return failStep(t("onboarding.fillHeightWeight"));
         const h = parseFloat(form.height_cm);
         const w = parseFloat(form.weight_kg);
-        if (isNaN(h) || h < 50 || h > 300) {
-          Alert.alert(t("onboarding.invalidHeight"), t("onboarding.heightBetween"));
-          return false;
-        }
-        if (isNaN(w) || w < 20 || w > 500) {
-          Alert.alert(t("onboarding.invalidWeight"), t("onboarding.weightBetween"));
-          return false;
-        }
+        if (isNaN(h) || h < 50 || h > 300) return failStep(t("onboarding.heightBetween"));
+        if (isNaN(w) || w < 20 || w > 500) return failStep(t("onboarding.weightBetween"));
         return true;
-      case 2:
-        if (!form.activity_level || !form.profession_type) {
-          Alert.alert(t("onboarding.requiredFields"), t("onboarding.selectActivityProfession"));
-          return false;
-        }
+      }
+      case 2: {
+        if (!form.activity_level || !form.profession_type)
+          return failStep(t("onboarding.selectActivityProfession"));
         return true;
-      case 3:
-        const dpw = parseInt(form.days_per_week);
-        const sd = parseInt(form.session_duration);
-        if (isNaN(dpw) || dpw < 1 || dpw > 7) {
-          Alert.alert(t("onboarding.invalidDays"), t("onboarding.daysBetween"));
-          return false;
-        }
-        if (isNaN(sd) || sd < 15 || sd > 300) {
-          Alert.alert(t("onboarding.invalidDuration"), t("onboarding.durationBetween"));
-          return false;
-        }
-        if (form.available_days.length === 0) {
-          Alert.alert(t("onboarding.daysRequired"), t("onboarding.selectAtLeastOneDay"));
-          return false;
-        }
+      }
+      case 3: {
+        const dpw = parseInt(form.days_per_week, 10);
+        const sd = parseInt(form.session_duration, 10);
+        if (isNaN(dpw) || dpw < 1 || dpw > 7) return failStep(t("onboarding.daysBetween"));
+        if (isNaN(sd) || sd < 15 || sd > 300)
+          return failStep(t("onboarding.durationBetween"));
+        if (form.available_days.length === 0)
+          return failStep(t("onboarding.selectAtLeastOneDay"));
         return true;
+      }
       default:
         return true;
     }
@@ -189,6 +159,7 @@ export default function Onboarding() {
   const handleNext = () => {
     if (!validateStep()) return;
     if (step < TOTAL_STEPS - 1) {
+      setStepError(null);
       setStep(step + 1);
     } else {
       handleSubmit();
@@ -196,34 +167,36 @@ export default function Onboarding() {
   };
 
   const handleBack = () => {
-    if (step > 0) setStep(step - 1);
+    if (step > 0) {
+      setStepError(null);
+      setStep(step - 1);
+    }
   };
 
   const handleSubmit = async () => {
     if (!user) return;
     try {
       setSaving(true);
-      const { error } = await supabase
-        .from("profiles")
-        .upsert({
-          id: user.id,
-          age: parseInt(form.age),
-          sex: form.sex,
-          height_cm: parseFloat(form.height_cm),
-          weight_kg: parseFloat(form.weight_kg),
-          activity_level: form.activity_level,
-          profession_type: form.profession_type,
-          days_per_week: parseInt(form.days_per_week),
-          session_duration: parseInt(form.session_duration),
-          available_days: form.available_days,
-          onboarding_completed: true,
-          updated_at: new Date().toISOString(),
-        });
+      const { error } = await supabase.from("profiles").upsert({
+        id: user.id,
+        age: parseInt(form.age, 10),
+        sex: form.sex,
+        height_cm: parseFloat(form.height_cm),
+        weight_kg: parseFloat(form.weight_kg),
+        activity_level: form.activity_level,
+        profession_type: form.profession_type,
+        days_per_week: parseInt(form.days_per_week, 10),
+        session_duration: parseInt(form.session_duration, 10),
+        available_days: form.available_days,
+        onboarding_completed: true,
+        updated_at: new Date().toISOString(),
+      });
       if (error) throw error;
       setOnboardingCompleted(true);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       router.replace("/(tabs)");
-    } catch (e: any) {
-      Alert.alert(t("common.error"), e.message ?? t("onboarding.couldNotSave"));
+    } catch {
+      toast.show({ type: "error", message: t("onboarding.couldNotSave") });
     } finally {
       setSaving(false);
     }
@@ -235,28 +208,26 @@ export default function Onboarding() {
         return (
           <View className="gap-6">
             <View className="gap-1">
-              <Text className="text-2xl font-bold text-white">
+              <Text className="text-2xl font-bold text-content-primary">
                 {t("onboarding.personalData")}
               </Text>
-              <Text className="text-gray-400 text-base">
+              <Text className="text-content-tertiary text-base">
                 {t("onboarding.tellUsAboutYou")}
               </Text>
             </View>
 
-            <View className="gap-1">
-              <Text className="text-sm font-medium text-gray-300">{t("onboarding.age")}</Text>
-              <TextInput
-                className="bg-surface border border-surface-elevated rounded-xl px-4 py-3 text-white"
-                placeholder={t("onboarding.agePlaceholder")}
-                placeholderTextColor="#64748B"
-                keyboardType="number-pad"
-                value={form.age}
-                onChangeText={(v) => updateForm("age", v)}
-              />
-            </View>
+            <Input
+              label={t("onboarding.age")}
+              placeholder={t("onboarding.agePlaceholder")}
+              keyboardType="number-pad"
+              value={form.age}
+              onChangeText={(v) => updateForm("age", v)}
+            />
 
             <View className="gap-2">
-              <Text className="text-sm font-medium text-gray-300">{t("onboarding.sex")}</Text>
+              <Text className="text-sm font-medium text-content-secondary">
+                {t("onboarding.sex")}
+              </Text>
               <View className="flex-row gap-2">
                 <OptionButton
                   label={t("onboarding.male")}
@@ -282,41 +253,29 @@ export default function Onboarding() {
         return (
           <View className="gap-6">
             <View className="gap-1">
-              <Text className="text-2xl font-bold text-white">
+              <Text className="text-2xl font-bold text-content-primary">
                 {t("onboarding.bodyMeasurements")}
               </Text>
-              <Text className="text-gray-400 text-base">
+              <Text className="text-content-tertiary text-base">
                 {t("onboarding.measurementsSubtitle")}
               </Text>
             </View>
 
-            <View className="gap-1">
-              <Text className="text-sm font-medium text-gray-300">
-                {t("onboarding.height")}
-              </Text>
-              <TextInput
-                className="bg-surface border border-surface-elevated rounded-xl px-4 py-3 text-white"
-                placeholder={t("onboarding.heightPlaceholder")}
-                placeholderTextColor="#64748B"
-                keyboardType="decimal-pad"
-                value={form.height_cm}
-                onChangeText={(v) => updateForm("height_cm", v)}
-              />
-            </View>
+            <Input
+              label={t("onboarding.height")}
+              placeholder={t("onboarding.heightPlaceholder")}
+              keyboardType="decimal-pad"
+              value={form.height_cm}
+              onChangeText={(v) => updateForm("height_cm", v)}
+            />
 
-            <View className="gap-1">
-              <Text className="text-sm font-medium text-gray-300">
-                {t("onboarding.currentWeight")}
-              </Text>
-              <TextInput
-                className="bg-surface border border-surface-elevated rounded-xl px-4 py-3 text-white"
-                placeholder={t("onboarding.weightPlaceholder")}
-                placeholderTextColor="#64748B"
-                keyboardType="decimal-pad"
-                value={form.weight_kg}
-                onChangeText={(v) => updateForm("weight_kg", v)}
-              />
-            </View>
+            <Input
+              label={t("onboarding.currentWeight")}
+              placeholder={t("onboarding.weightPlaceholder")}
+              keyboardType="decimal-pad"
+              value={form.weight_kg}
+              onChangeText={(v) => updateForm("weight_kg", v)}
+            />
           </View>
         );
 
@@ -324,16 +283,16 @@ export default function Onboarding() {
         return (
           <View className="gap-6">
             <View className="gap-1">
-              <Text className="text-2xl font-bold text-white">
+              <Text className="text-2xl font-bold text-content-primary">
                 {t("onboarding.lifestyle")}
               </Text>
-              <Text className="text-gray-400 text-base">
+              <Text className="text-content-tertiary text-base">
                 {t("onboarding.lifestyleSubtitle")}
               </Text>
             </View>
 
             <View className="gap-2">
-              <Text className="text-sm font-medium text-gray-300">
+              <Text className="text-sm font-medium text-content-secondary">
                 {t("onboarding.activityLevel")}
               </Text>
               <View className="gap-2">
@@ -356,7 +315,7 @@ export default function Onboarding() {
             </View>
 
             <View className="gap-2">
-              <Text className="text-sm font-medium text-gray-300">
+              <Text className="text-sm font-medium text-content-secondary">
                 {t("onboarding.professionType")}
               </Text>
               <View className="flex-row gap-2">
@@ -379,51 +338,39 @@ export default function Onboarding() {
         return (
           <View className="gap-6">
             <View className="gap-1">
-              <Text className="text-2xl font-bold text-white">
+              <Text className="text-2xl font-bold text-content-primary">
                 {t("onboarding.trainingPlan")}
               </Text>
-              <Text className="text-gray-400 text-base">
+              <Text className="text-content-tertiary text-base">
                 {t("onboarding.trainingSubtitle")}
               </Text>
             </View>
 
-            <View className="gap-1">
-              <Text className="text-sm font-medium text-gray-300">
-                {t("onboarding.daysPerWeek")}
-              </Text>
-              <TextInput
-                className="bg-surface border border-surface-elevated rounded-xl px-4 py-3 text-white"
-                placeholder={t("onboarding.daysPlaceholder")}
-                placeholderTextColor="#64748B"
-                keyboardType="number-pad"
-                value={form.days_per_week}
-                onChangeText={(v) => updateForm("days_per_week", v)}
-              />
-            </View>
+            <Input
+              label={t("onboarding.daysPerWeek")}
+              placeholder={t("onboarding.daysPlaceholder")}
+              keyboardType="number-pad"
+              value={form.days_per_week}
+              onChangeText={(v) => updateForm("days_per_week", v)}
+            />
 
-            <View className="gap-1">
-              <Text className="text-sm font-medium text-gray-300">
-                {t("onboarding.sessionDuration")}
-              </Text>
-              <TextInput
-                className="bg-surface border border-surface-elevated rounded-xl px-4 py-3 text-white"
-                placeholder={t("onboarding.durationPlaceholder")}
-                placeholderTextColor="#64748B"
-                keyboardType="number-pad"
-                value={form.session_duration}
-                onChangeText={(v) => updateForm("session_duration", v)}
-              />
-            </View>
+            <Input
+              label={t("onboarding.sessionDuration")}
+              placeholder={t("onboarding.durationPlaceholder")}
+              keyboardType="number-pad"
+              value={form.session_duration}
+              onChangeText={(v) => updateForm("session_duration", v)}
+            />
 
             <View className="gap-2">
-              <Text className="text-sm font-medium text-gray-300">
+              <Text className="text-sm font-medium text-content-secondary">
                 {t("onboarding.availableDays")}
               </Text>
               <View className="flex-row gap-2 flex-wrap">
                 {DAY_KEYS.map((key, i) => (
-                  <DayChip
+                  <Chip
                     key={key}
-                    day={t(`days.${key}`)}
+                    label={t(`days.${key}`)}
                     selected={form.available_days.includes(DAY_VALUES[i])}
                     onPress={() => toggleDay(DAY_VALUES[i])}
                   />
@@ -439,49 +386,36 @@ export default function Onboarding() {
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        className="flex-1 bg-brand-dark"
-        contentContainerClassName="flex-grow"
-      >
-        <View className="px-6 pt-16 pb-4 flex-row items-center gap-3">
-          {/* Logo placeholder — replace with <Image source={require('@/assets/images/logo.png')} /> */}
-          <View className="w-12 h-12 bg-brand-primary rounded-xl items-center justify-center">
-            <Text className="text-xl font-bold text-white">H</Text>
+    <Screen keyboard contentContainerClassName="flex-grow px-0 py-0 gap-0">
+      <View className="px-6 pt-16 pb-4 flex-row items-center gap-3">
+        <View className="w-12 h-12 bg-brand-primary rounded-xl items-center justify-center">
+          <Ionicons name="barbell" size={26} color={colors.white} />
+        </View>
+        <Text className="text-3xl font-extrabold text-brand-primary">Habbito</Text>
+      </View>
+
+      <ProgressBar step={step} />
+
+      <View className="flex-1 px-6 pt-8 pb-6">
+        {renderStep()}
+        {stepError != null && (
+          <View className="bg-error-soft rounded-xl p-3 mt-6">
+            <Text className="text-error text-sm">{stepError}</Text>
           </View>
-          <Text className="text-4xl font-bold text-brand-primary">Habbito</Text>
-        </View>
+        )}
+      </View>
 
-        <ProgressBar step={step} />
+      <View className="px-6 pb-12 gap-3">
+        <Button size="lg" onPress={handleNext} loading={saving}>
+          {step === TOTAL_STEPS - 1 ? t("common.start") : t("common.next")}
+        </Button>
 
-        <View className="flex-1 px-6 pt-8 pb-6">{renderStep()}</View>
-
-        <View className="px-6 pb-12 gap-3">
-          <Pressable
-            className="bg-brand-primary rounded-xl py-4 items-center"
-            onPress={handleNext}
-            disabled={saving}
-          >
-            {saving ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text className="text-white font-semibold text-base">
-                {step === TOTAL_STEPS - 1 ? t("common.start") : t("common.next")}
-              </Text>
-            )}
-          </Pressable>
-
-          {step > 0 && (
-            <Pressable
-              className="rounded-xl py-3 items-center"
-              onPress={handleBack}
-            >
-              <Text className="text-gray-500 font-medium text-base">{t("common.back")}</Text>
-            </Pressable>
-          )}
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        {step > 0 && (
+          <Button variant="ghost" onPress={handleBack} disabled={saving}>
+            {t("common.back")}
+          </Button>
+        )}
+      </View>
+    </Screen>
   );
 }

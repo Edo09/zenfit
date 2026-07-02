@@ -1,90 +1,78 @@
-import { useMeals } from "@/src/hooks/use-meals";
-import { Pressable, ScrollView, Text, TextInput, View } from "@/src/tw";
-import type { MealType } from "@/src/types/database";
+import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Alert } from "react-native";
+
+import { Button, Chip, Input, Screen, useToast } from "@/src/components/ui";
+import { useMeals } from "@/src/hooks/use-meals";
+import { Text, View } from "@/src/tw";
+import type { MealType } from "@/src/types/database";
 
 const MEAL_TYPES: MealType[] = ["breakfast", "lunch", "dinner", "snack"];
 
 export default function CreateMealScreen() {
   const { t } = useTranslation();
+  const toast = useToast();
   const { createMeal } = useMeals();
   const [name, setName] = useState("");
+  const [nameError, setNameError] = useState<string | undefined>();
   const [mealType, setMealType] = useState<MealType>("breakfast");
   const [loading, setLoading] = useState(false);
 
   const handleCreate = async () => {
     if (!name.trim()) {
-      Alert.alert(t("common.error"), t("routines.routineNameRequired"));
+      setNameError(t("meals.mealNameRequired"));
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
       return;
     }
     try {
       setLoading(true);
       const meal = await createMeal({ name: name.trim(), meal_type: mealType });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       router.replace(`/(tabs)/meals/${meal.id}`);
-    } catch (e: any) {
-      Alert.alert(t("common.error"), e.message ?? t("meals.couldNotCreate"));
+    } catch {
+      toast.show({ type: "error", message: t("meals.couldNotCreate") });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <ScrollView
-      contentInsetAdjustmentBehavior="automatic"
-      className="flex-1 bg-brand-dark"
-      contentContainerClassName="px-4 py-6 gap-5"
-    >
+    <Screen keyboard>
       <View className="gap-4">
-        <View className="gap-1">
-          <Text className="text-sm font-medium text-gray-300">{t("meals.mealName")}</Text>
-          <TextInput
-            className="bg-surface border border-surface-elevated rounded-xl px-4 py-3 text-white"
-            placeholder={t("meals.mealNamePlaceholder")}
-            placeholderTextColor="#64748B"
-            value={name}
-            onChangeText={setName}
-          />
-        </View>
+        <Input
+          label={t("meals.mealName")}
+          placeholder={t("meals.mealNamePlaceholder")}
+          value={name}
+          onChangeText={(text) => {
+            setName(text);
+            if (nameError != null) setNameError(undefined);
+          }}
+          error={nameError}
+        />
 
         <View className="gap-2">
-          <Text className="text-sm font-medium text-gray-300">{t("meals.mealType")}</Text>
+          <Text className="text-sm font-medium text-content-secondary">
+            {t("meals.mealType")}
+          </Text>
           <View className="flex-row gap-2 flex-wrap">
             {MEAL_TYPES.map((type) => (
-              <Pressable
+              <Chip
                 key={type}
+                label={t(`meals.${type}`, { defaultValue: type })}
+                selected={mealType === type}
                 onPress={() => setMealType(type)}
-                className={`rounded-full px-4 py-2 ${mealType === type ? "bg-brand-primary" : "bg-surface border border-surface-elevated"}`}
-              >
-                <Text
-                  className={`text-sm font-medium capitalize ${mealType === type ? "text-white" : "text-gray-400"}`}
-                >
-                  {type}
-                </Text>
-              </Pressable>
+              />
             ))}
           </View>
         </View>
       </View>
 
-      <Text className="text-gray-500 text-sm text-center">
-        {t("meals.addItemsNote")}
-      </Text>
+      <Text className="text-content-muted text-sm text-center">{t("meals.addItemsNote")}</Text>
 
-      <Pressable
-        onPress={handleCreate}
-        disabled={loading}
-        className="bg-brand-primary rounded-2xl py-4 items-center mt-2"
-        style={{ boxShadow: "0 4px 12px rgba(13, 127, 242, 0.35)" }}
-      >
-        {loading ? (
-          <ActivityIndicator color="white" />
-        ) : (
-          <Text className="text-white font-semibold text-base">{t("meals.logMeal")}</Text>
-        )}
-      </Pressable>
-    </ScrollView>
+      <Button size="lg" onPress={handleCreate} loading={loading} className="mt-2">
+        {t("meals.logMeal")}
+      </Button>
+    </Screen>
   );
 }

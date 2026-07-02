@@ -15,6 +15,12 @@ export default {
     language: "Language",
     english: "English",
     spanish: "Spanish",
+    retry: "Try again",
+    somethingWentWrong: "Something went wrong",
+    couldNotLoadData: "We couldn't load your data",
+    saved: "Saved",
+    deleted: "Deleted",
+    fieldRequired: "This field is required",
   },
 
   // Auth
@@ -38,6 +44,7 @@ export default {
     hasAccount: "Already have an account? ",
     fitnessCompanion: "Your fitness companion",
     createAccount: "Create your account",
+    invalidCredentials: "Invalid email or password",
   },
 
   // Onboarding
@@ -162,6 +169,12 @@ export default {
     deleteMeal: "Delete Meal",
     deleteConfirm: 'Delete "{{name}}"?',
     addFoodItemButton: "+ Add Food Item",
+    mealNameRequired: "Meal name is required",
+    kcal: "kcal",
+    myMeals: "My Meals",
+    mealDetail: "Meal Detail",
+    itemRemoved: "Item removed",
+    mealDeleted: "Meal deleted",
   },
 
   // Routines
@@ -195,6 +208,11 @@ export default {
     readyToStart: "Ready to start",
     every: "Every {{day}}",
     routineNameRequired: "Routine name is required",
+    myRoutines: "My Routines",
+    routineTitle: "Routine",
+    newRoutine: "New Routine",
+    exerciseRemoved: "Exercise removed",
+    routineDeleted: "Routine deleted",
   },
 
   // Progress
@@ -212,5 +230,6 @@ export default {
     deleteLog: "Delete Log",
     deleteConfirm: 'Remove workout log for "{{name}}"?',
     min: "{{count}} min",
+    logDeleted: "Log deleted",
   },
 } as const;

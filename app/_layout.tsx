@@ -1,4 +1,5 @@
 import "@/src/global.css";
+import { ToastProvider } from "@/src/components/ui";
 import { useAuth } from "@/src/hooks/use-auth";
 import i18n from "@/src/i18n";
 import { AuthProvider } from "@/src/providers/auth-provider";
@@ -75,13 +76,15 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <I18nextProvider i18n={i18n}>
         <AuthProvider>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(onboarding)" />
-            <Stack.Screen name="(tabs)" />
-          </Stack>
-          <AuthGate />
+          <ToastProvider>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="(onboarding)" />
+              <Stack.Screen name="(tabs)" />
+            </Stack>
+            <AuthGate />
+          </ToastProvider>
         </AuthProvider>
       </I18nextProvider>
     </QueryClientProvider>

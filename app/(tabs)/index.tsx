@@ -1,207 +1,230 @@
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import React from "react";
+import { useTranslation } from "react-i18next";
+
 import { StatCard } from "@/src/components/stat-card";
+import {
+  ErrorState,
+  LoadingBlock,
+  Screen,
+  SectionHeader,
+} from "@/src/components/ui";
 import { WorkoutCarousel } from "@/src/components/workout-carousel";
 import { useAuth } from "@/src/hooks/use-auth";
 import { useMeals } from "@/src/hooks/use-meals";
 import { useProgress } from "@/src/hooks/use-progress";
 import { useRoutines } from "@/src/hooks/use-routines";
 import { setLanguage } from "@/src/i18n";
-import { Pressable, ScrollView, Text, View } from "@/src/tw";
-import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { colors } from "@/src/theme/colors";
+import { Pressable, Text, View } from "@/src/tw";
 
 export default function HomeScreen() {
   const { t, i18n } = useTranslation();
   const { user, signOut } = useAuth();
-  const { todaysMeals } = useMeals();
-  const { todaysLogs } = useProgress();
-  const { routines } = useRoutines();
-  const [carouselTheme, setCarouselTheme] = useState<"light" | "dark">("dark");
+  const meals = useMeals();
+  const progress = useProgress();
+  const routinesData = useRoutines();
+
+  const { todaysMeals } = meals;
+  const { todaysLogs } = progress;
+  const { routines } = routinesData;
+
+  const loading = meals.loading || progress.loading || routinesData.loading;
+  const error = meals.error || progress.error || routinesData.error;
+  const refreshing = meals.refreshing || progress.refreshing || routinesData.refreshing;
+  const hasData = meals.meals.length > 0 || progress.logs.length > 0 || routines.length > 0;
+
+  const refreshAll = () => {
+    meals.refresh();
+    progress.refresh();
+    routinesData.refresh();
+  };
 
   const displayName =
     (user?.user_metadata?.display_name as string | undefined) ??
     user?.email?.split("@")[0] ??
     "there";
 
-  const today = new Date().toLocaleDateString("en-US", {
+  const today = new Date().toLocaleDateString(i18n.language === "es" ? "es-ES" : "en-US", {
     weekday: "long",
     month: "long",
     day: "numeric",
   });
 
-  const toggleTheme = () => {
-    setCarouselTheme(prev => prev === "light" ? "dark" : "light");
-  };
-
   return (
-    <View className="flex-1 bg-brand-dark">
+    <Screen
+      refreshing={refreshing}
+      onRefresh={refreshAll}
+      contentContainerClassName="px-0 py-0 pb-12 gap-0"
+    >
       <StatusBar style="light" />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        className="flex-1"
-        contentContainerClassName="pb-12"
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header Section */}
-        <View className="px-6 pt-12 pb-6">
-          <View className="flex-row items-center justify-between mb-2">
-            <View>
-              <Text className="text-brand-primary text-xs font-black uppercase tracking-[3px] mb-1">
-                {t("home.welcomeBack")}
+
+      {/* Header */}
+      <View className="px-6 pt-6 pb-6">
+        <View className="flex-row items-center justify-between mb-2">
+          <View>
+            <Text className="text-brand-primary text-xs font-semibold uppercase tracking-wider mb-1">
+              {t("home.welcomeBack")}
+            </Text>
+            <Text className="text-2xl font-bold text-content-primary">
+              {t("home.hey", { name: displayName })}
+            </Text>
+          </View>
+          <View className="flex-row items-center gap-2">
+            <Pressable
+              onPress={() => setLanguage(i18n.language === "en" ? "es" : "en")}
+              accessibilityRole="button"
+              accessibilityLabel={t("common.language")}
+              className="w-10 h-10 rounded-full bg-surface items-center justify-center border border-border"
+            >
+              <Text className="text-sm font-semibold text-content-secondary">
+                {i18n.language === "en" ? "ES" : "EN"}
               </Text>
-              <Text className="text-3xl font-black text-white tracking-tighter">
-                {t("home.hey", { name: displayName })}
-              </Text>
-            </View>
-            <View className="flex-row items-center gap-2">
+            </Pressable>
+            <Pressable
+              onPress={signOut}
+              accessibilityRole="button"
+              accessibilityLabel={t("auth.signOut")}
+              className="w-10 h-10 rounded-full bg-surface items-center justify-center border border-border"
+            >
+              <Ionicons name="log-out-outline" size={20} color={colors.contentMuted} />
+            </Pressable>
+          </View>
+        </View>
+        <Text className="text-content-tertiary">{today}</Text>
+      </View>
+
+      {loading && !hasData ? (
+        <LoadingBlock />
+      ) : error && !hasData ? (
+        <ErrorState onRetry={refreshAll} />
+      ) : (
+        <>
+          {/* Stats */}
+          <View className="px-6 flex-row gap-4 mb-8">
+            <StatCard
+              label={t("home.mealsLabel")}
+              value={todaysMeals.length}
+              unit={t("home.mealsUnit")}
+              color={colors.brandPrimary}
+              icon="restaurant-outline"
+            />
+            <StatCard
+              label={t("home.workoutLabel")}
+              value={todaysLogs.length}
+              unit={t("home.workoutUnit")}
+              color={colors.success}
+              icon="barbell-outline"
+            />
+          </View>
+
+          {/* Routines carousel */}
+          <View className="mb-8">
+            <SectionHeader title={t("home.yourRoutines")} className="px-6 mb-2" />
+            <WorkoutCarousel routines={routines} />
+          </View>
+
+          {/* Today's meals */}
+          <View className="px-6 gap-4 mb-8">
+            <SectionHeader
+              title={t("home.todaysNutrition")}
+              actionLabel={t("common.seeAll")}
+              onAction={() => router.push("/(tabs)/meals")}
+            />
+
+            {todaysMeals.length === 0 ? (
               <Pressable
-                onPress={() => setLanguage(i18n.language === "en" ? "es" : "en")}
-                className="w-10 h-10 rounded-full bg-surface items-center justify-center border border-surface-elevated"
+                key="meals-empty"
+                onPress={() => router.push("/(tabs)/meals/create")}
+                className="bg-surface rounded-2xl p-8 items-center border border-dashed border-border-strong"
               >
-                <Text className="text-sm font-bold text-gray-300">
-                  {i18n.language === "en" ? "ES" : "EN"}
-                </Text>
-              </Pressable>
-              <Pressable 
-                onPress={signOut} 
-                className="w-10 h-10 rounded-full bg-surface items-center justify-center border border-surface-elevated"
-              >
-                <Ionicons name="log-out-outline" size={20} color="#64748B" />
-              </Pressable>
-            </View>
-          </View>
-          <Text className="text-gray-400 font-medium">{today}</Text>
-        </View>
-
-        {/* Stats Grid */}
-        <View className="px-6 flex-row gap-4 mb-8">
-          <StatCard
-            label={t("home.mealsLabel")}
-            value={todaysMeals.length}
-            unit={t("home.mealsUnit")}
-            color="#0d7ff2"
-          />
-          <StatCard
-            label={t("home.workoutLabel")}
-            value={todaysLogs.length}
-            unit={t("home.workoutUnit")}
-            color="#22C55E"
-          />
-        </View>
-
-        {/* Workout Carousel Section */}
-        <View className="mb-8">
-          <View className="px-6 flex-row items-center justify-between mb-2">
-            <Text className="text-xl font-black text-white tracking-tight">{t("home.yourRoutines")}</Text>
-            <Pressable 
-              onPress={toggleTheme}
-              className="flex-row items-center gap-1.5 bg-surface px-3 py-1.5 rounded-full"
-            >
-              <Ionicons 
-                name={carouselTheme === "dark" ? "moon" : "sunny"} 
-                size={14} 
-                color={carouselTheme === "dark" ? "#94a3b8" : "#f59e0b"} 
-              />
-              <Text className="text-[10px] font-bold text-gray-400 uppercase">
-                {carouselTheme === "dark" ? t("home.dark") : t("home.light")}
-              </Text>
-            </Pressable>
-          </View>
-          <WorkoutCarousel routines={routines} theme={carouselTheme} />
-        </View>
-
-        {/* Today's Meals Section */}
-        <View className="px-6 gap-4 mb-8">
-          <View className="flex-row items-center justify-between">
-            <Text className="text-xl font-black text-white tracking-tight">{t("home.todaysNutrition")}</Text>
-            <Pressable onPress={() => router.push("/(tabs)/meals")}>
-              <Text className="text-brand-primary font-black text-xs uppercase tracking-wider">{t("common.seeAll")}</Text>
-            </Pressable>
-          </View>
-
-          {todaysMeals.length === 0 ? (
-            <Pressable 
-              key="meals-empty"
-              onPress={() => router.push("/(tabs)/meals/create")}
-              className="bg-surface rounded-[32px] p-8 items-center border border-dashed border-surface-elevated"
-            >
-              <View className="w-12 h-12 bg-brand-dark rounded-2xl items-center justify-center mb-3 shadow-sm">
-                <Ionicons name="restaurant-outline" size={24} color="#0d7ff2" />
-              </View>
-              <Text className="text-gray-400 font-bold mb-1">{t("home.fuelYourBody")}</Text>
-              <Text className="text-brand-primary font-black">{t("home.logMeal")}</Text>
-            </Pressable>
-          ) : (
-            <View key="meals-list" className="gap-3">
-              {todaysMeals.slice(0, 3).map((meal) => (
-                <Pressable
-                  key={meal.id}
-                  onPress={() => router.push(`/(tabs)/meals/${meal.id}`)}
-                  className="bg-surface rounded-3xl px-5 py-4 flex-row items-center justify-between border border-surface-elevated"
-                >
-                  <View className="flex-row items-center gap-4">
-                    <View className="w-10 h-10 bg-brand-primary/10 rounded-xl items-center justify-center">
-                      <Text className="text-lg">🍱</Text>
-                    </View>
-                    <View>
-                      <Text className="font-black text-white tracking-tight">{meal.name}</Text>
-                      <Text className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{meal.meal_type}</Text>
-                    </View>
-                  </View>
-                  <Ionicons name="chevron-forward" size={18} color="#475569" />
-                </Pressable>
-              ))}
-            </View>
-          )}
-        </View>
-
-        {/* Recent Workouts Section */}
-        <View className="px-6 gap-4">
-          <View className="flex-row items-center justify-between">
-            <Text className="text-xl font-black text-white tracking-tight">{t("home.recentActivity")}</Text>
-            <Pressable onPress={() => router.push("/(tabs)/progress")}>
-              <Text className="text-brand-primary font-black text-xs uppercase tracking-wider">{t("common.seeAll")}</Text>
-            </Pressable>
-          </View>
-
-          {todaysLogs.length === 0 ? (
-            <Pressable 
-              key="logs-empty"
-              onPress={() => router.push("/(tabs)/routines")}
-              className="bg-surface rounded-[32px] p-8 items-center border border-dashed border-surface-elevated"
-            >
-              <View className="w-12 h-12 bg-brand-dark rounded-2xl items-center justify-center mb-3 shadow-sm">
-                <Ionicons name="fitness-outline" size={24} color="#22C55E" />
-              </View>
-              <Text className="text-gray-400 font-bold mb-1">{t("home.noActivityToday")}</Text>
-              <Text className="text-brand-secondary font-black">{t("home.startRoutine")}</Text>
-            </Pressable>
-          ) : (
-            <View key="logs-list" className="gap-3">
-              {todaysLogs.slice(0, 3).map((log) => (
-                <View
-                  key={log.id}
-                  className="bg-surface rounded-3xl px-5 py-4 flex-row items-center justify-between border border-surface-elevated"
-                >
-                  <View className="flex-row items-center gap-4">
-                    <View className="w-10 h-10 bg-brand-secondary/10 rounded-xl items-center justify-center">
-                      <Ionicons name="checkmark-circle" size={24} color="#22C55E" />
-                    </View>
-                    <View>
-                      <Text className="font-black text-white tracking-tight">{log.routine_name}</Text>
-                      {log.duration_minutes != null && (
-                        <Text className="text-gray-500 font-bold text-[10px] uppercase tracking-widest">{log.duration_minutes} {t("home.minutes")}</Text>
-                      )}
-                    </View>
-                  </View>
+                <View className="w-12 h-12 bg-info-soft rounded-2xl items-center justify-center mb-3">
+                  <Ionicons name="restaurant-outline" size={24} color={colors.brandPrimary} />
                 </View>
-              ))}
-            </View>
-          )}
-        </View>
-      </ScrollView>
-    </View>
+                <Text className="text-content-tertiary font-medium mb-1">
+                  {t("home.fuelYourBody")}
+                </Text>
+                <Text className="text-brand-primary font-semibold">{t("home.logMeal")}</Text>
+              </Pressable>
+            ) : (
+              <View key="meals-list" className="gap-3">
+                {todaysMeals.slice(0, 3).map((meal) => (
+                  <Pressable
+                    key={meal.id}
+                    onPress={() => router.push(`/(tabs)/meals/${meal.id}`)}
+                    className="bg-surface rounded-2xl px-5 py-4 flex-row items-center justify-between border border-border"
+                  >
+                    <View className="flex-row items-center gap-4">
+                      <View className="w-10 h-10 bg-info-soft rounded-xl items-center justify-center">
+                        <Ionicons name="restaurant-outline" size={18} color={colors.brandPrimary} />
+                      </View>
+                      <View>
+                        <Text className="font-semibold text-content-primary">{meal.name}</Text>
+                        <Text className="text-content-muted text-xs capitalize">
+                          {t(`meals.${meal.meal_type}`, { defaultValue: meal.meal_type })}
+                        </Text>
+                      </View>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={colors.contentMuted} />
+                  </Pressable>
+                ))}
+              </View>
+            )}
+          </View>
+
+          {/* Recent activity */}
+          <View className="px-6 gap-4">
+            <SectionHeader
+              title={t("home.recentActivity")}
+              actionLabel={t("common.seeAll")}
+              onAction={() => router.push("/(tabs)/progress")}
+            />
+
+            {todaysLogs.length === 0 ? (
+              <Pressable
+                key="logs-empty"
+                onPress={() => router.push("/(tabs)/routines")}
+                className="bg-surface rounded-2xl p-8 items-center border border-dashed border-border-strong"
+              >
+                <View className="w-12 h-12 bg-success-soft rounded-2xl items-center justify-center mb-3">
+                  <Ionicons name="fitness-outline" size={24} color={colors.success} />
+                </View>
+                <Text className="text-content-tertiary font-medium mb-1">
+                  {t("home.noActivityToday")}
+                </Text>
+                <Text className="text-brand-secondary font-semibold">{t("home.startRoutine")}</Text>
+              </Pressable>
+            ) : (
+              <View key="logs-list" className="gap-3">
+                {todaysLogs.slice(0, 3).map((log) => (
+                  <View
+                    key={log.id}
+                    className="bg-surface rounded-2xl px-5 py-4 flex-row items-center justify-between border border-border"
+                  >
+                    <View className="flex-row items-center gap-4">
+                      <View className="w-10 h-10 bg-success-soft rounded-xl items-center justify-center">
+                        <Ionicons name="checkmark-circle" size={22} color={colors.success} />
+                      </View>
+                      <View>
+                        <Text className="font-semibold text-content-primary">
+                          {log.routine_name}
+                        </Text>
+                        {log.duration_minutes != null && (
+                          <Text className="text-content-muted text-xs">
+                            {log.duration_minutes} {t("home.minutes")}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        </>
+      )}
+    </Screen>
   );
 }

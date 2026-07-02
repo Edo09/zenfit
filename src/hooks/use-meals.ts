@@ -21,6 +21,8 @@ export function useMeals() {
   const {
     data: meals = [],
     isPending: loading,
+    isError: error,
+    isRefetching: refreshing,
     refetch,
   } = useQuery({
     queryKey: ["meals", user?.id],
@@ -99,6 +101,8 @@ export function useMeals() {
   return {
     meals,
     loading,
+    error,
+    refreshing,
     todaysMeals,
     createMeal: createMealMutation.mutateAsync,
     deleteMeal: deleteMealMutation.mutateAsync,

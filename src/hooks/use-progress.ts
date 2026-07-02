@@ -15,6 +15,8 @@ export function useProgress() {
   const {
     data: logs = [],
     isPending: loading,
+    isError: error,
+    isRefetching: refreshing,
     refetch,
   } = useQuery({
     queryKey: ["progress", user?.id],
@@ -66,6 +68,8 @@ export function useProgress() {
   return {
     logs,
     loading,
+    error,
+    refreshing,
     todaysLogs,
     createLog: createLogMutation.mutateAsync,
     deleteLog: deleteLogMutation.mutateAsync,

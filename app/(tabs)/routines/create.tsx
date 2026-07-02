@@ -1,23 +1,28 @@
-import { useRoutines } from "@/src/hooks/use-routines";
-import { Pressable, ScrollView, Text, TextInput, View } from "@/src/tw";
+import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Alert } from "react-native";
+
+import { Button, Chip, Input, Screen, useToast } from "@/src/components/ui";
+import { useRoutines } from "@/src/hooks/use-routines";
+import { Text, View } from "@/src/tw";
 
 const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 
 export default function CreateRoutineScreen() {
   const { t } = useTranslation();
+  const toast = useToast();
   const { createRoutine } = useRoutines();
   const [name, setName] = useState("");
+  const [nameError, setNameError] = useState<string | undefined>();
   const [description, setDescription] = useState("");
   const [dayOfWeek, setDayOfWeek] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleCreate = async () => {
     if (!name.trim()) {
-      Alert.alert(t("common.error"), t("routines.routineNameRequired"));
+      setNameError(t("routines.routineNameRequired"));
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
       return;
     }
     try {
@@ -27,78 +32,59 @@ export default function CreateRoutineScreen() {
         description: description.trim() || undefined,
         day_of_week: dayOfWeek ?? undefined,
       });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       router.back();
-    } catch (e: any) {
-      Alert.alert(t("common.error"), e.message ?? t("routines.couldNotCreate"));
+    } catch {
+      toast.show({ type: "error", message: t("routines.couldNotCreate") });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <ScrollView
-      contentInsetAdjustmentBehavior="automatic"
-      className="flex-1 bg-brand-dark"
-      contentContainerClassName="px-4 py-6 gap-5"
-    >
+    <Screen keyboard>
       <View className="gap-4">
-        <View className="gap-1">
-          <Text className="text-sm font-medium text-gray-300">{t("routines.routineName")}</Text>
-          <TextInput
-            className="bg-surface border border-surface-elevated rounded-xl px-4 py-3 text-white"
-            placeholder={t("routines.routineNamePlaceholder")}
-            placeholderTextColor="#64748B"
-            value={name}
-            onChangeText={setName}
-          />
-        </View>
+        <Input
+          label={t("routines.routineName")}
+          placeholder={t("routines.routineNamePlaceholder")}
+          value={name}
+          onChangeText={(text) => {
+            setName(text);
+            if (nameError != null) setNameError(undefined);
+          }}
+          error={nameError}
+        />
 
-        <View className="gap-1">
-          <Text className="text-sm font-medium text-gray-300">{t("routines.description")}</Text>
-          <TextInput
-            className="bg-surface border border-surface-elevated rounded-xl px-4 py-3 text-white"
-            placeholder={t("routines.descriptionPlaceholder")}
-            placeholderTextColor="#64748B"
-            multiline
-            numberOfLines={3}
-            textAlignVertical="top"
-            value={description}
-            onChangeText={setDescription}
-          />
-        </View>
+        <Input
+          label={t("routines.description")}
+          placeholder={t("routines.descriptionPlaceholder")}
+          multiline
+          numberOfLines={3}
+          textAlignVertical="top"
+          value={description}
+          onChangeText={setDescription}
+        />
 
         <View className="gap-2">
-          <Text className="text-sm font-medium text-gray-300">{t("routines.scheduledDay")}</Text>
+          <Text className="text-sm font-medium text-content-secondary">
+            {t("routines.scheduledDay")}
+          </Text>
           <View className="flex-row flex-wrap gap-2">
             {DAYS.map((day) => (
-              <Pressable
+              <Chip
                 key={day}
+                label={t(`days.${day.slice(0, 3)}`, { defaultValue: day.slice(0, 3) })}
+                selected={dayOfWeek === day}
                 onPress={() => setDayOfWeek(dayOfWeek === day ? null : day)}
-                className={`rounded-full px-4 py-2 ${dayOfWeek === day ? "bg-brand-primary" : "bg-surface border border-surface-elevated"}`}
-              >
-                <Text
-                  className={`text-sm font-medium capitalize ${dayOfWeek === day ? "text-white" : "text-gray-400"}`}
-                >
-                  {day.slice(0, 3)}
-                </Text>
-              </Pressable>
+              />
             ))}
           </View>
         </View>
       </View>
 
-      <Pressable
-        onPress={handleCreate}
-        disabled={loading}
-        className="bg-brand-primary rounded-2xl py-4 items-center mt-2"
-        style={{ boxShadow: "0 4px 12px rgba(13, 127, 242, 0.35)" }}
-      >
-        {loading ? (
-          <ActivityIndicator color="white" />
-        ) : (
-          <Text className="text-white font-semibold text-base">{t("routines.createRoutine")}</Text>
-        )}
-      </Pressable>
-    </ScrollView>
+      <Button size="lg" onPress={handleCreate} loading={loading} className="mt-2">
+        {t("routines.createRoutine")}
+      </Button>
+    </Screen>
   );
 }
