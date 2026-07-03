@@ -90,9 +90,9 @@ export default {
     physicalJob: "Trabajo físico",
     trainingPlan: "Plan de entrenamiento",
     trainingSubtitle: "¿Cuánto tiempo puedes dedicar al gym?",
-    daysPerWeek: "Días de entrenamiento por semana",
+    daysPerWeek: "Días por semana",
     daysPlaceholder: "Ej: 4",
-    sessionDuration: "Duración del entreno (minutos)",
+    sessionDuration: "Duración (min)",
     durationPlaceholder: "Ej: 60",
     availableDays: "Días disponibles",
     // Validation
