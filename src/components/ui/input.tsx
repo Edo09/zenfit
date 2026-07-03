@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 
+import { Input as GSInput, InputField } from "@/components/ui/input";
 import { colors } from "@/src/theme/colors";
 import { Text, TextInput, View } from "@/src/tw";
 import { cn } from "@/src/utils/cn";
@@ -17,35 +18,30 @@ export function Input({
   helper,
   containerClassName,
   className,
-  onFocus,
-  onBlur,
   ...rest
 }: InputProps) {
-  const [focused, setFocused] = useState(false);
-
   return (
     <View className={cn("gap-1.5", containerClassName)}>
       {label != null && (
         <Text className="text-sm font-medium text-content-secondary">{label}</Text>
       )}
-      <TextInput
-        placeholderTextColor={colors.contentMuted}
+      <GSInput
+        isInvalid={error != null}
         className={cn(
-          "bg-surface border border-border rounded-xl px-6 py-3 text-base text-content-primary",
-          focused && "border-border-strong",
-          error != null && "border-error",
-          className
+          "bg-surface border-border rounded-xl px-0 min-h-0 shadow-none",
+          error != null && "border-error data-[focus=true]:border-error"
         )}
-        onFocus={(e) => {
-          setFocused(true);
-          onFocus?.(e);
-        }}
-        onBlur={(e) => {
-          setFocused(false);
-          onBlur?.(e);
-        }}
-        {...rest}
-      />
+        // gluestack's tva doesn't reliably let className overrides beat its
+        // base px-3, so horizontal padding is pinned with inline style
+        style={{ paddingHorizontal: 0 }}
+      >
+        <InputField
+          placeholderTextColor={colors.contentMuted}
+          className={cn("py-3 text-base text-content-primary h-auto", className)}
+          style={{ paddingHorizontal: 24 }}
+          {...(rest as React.ComponentProps<typeof InputField>)}
+        />
+      </GSInput>
       {error != null ? (
         <Text className="text-xs text-error">{error}</Text>
       ) : helper != null ? (

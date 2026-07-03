@@ -1,0 +1,33 @@
+// Maps a routine name to a representative category image.
+// Keyword matching covers English and Spanish routine names.
+
+export const ROUTINE_IMAGES = {
+  strength: require("@/assets/images/strength_card.png"),
+  cardio: require("@/assets/images/cardio_card.png"),
+} as const;
+
+const STRENGTH_KEYWORDS = [
+  "strength",
+  "power",
+  "lift",
+  "fuerza",
+  "pesas",
+  "musculacion",
+  "musculación",
+  "hipertrofia",
+  "torso",
+  "pierna",
+  "empuje",
+  "jalón",
+  "jalon",
+  "upper",
+  "lower",
+  "push",
+  "pull",
+];
+
+export function getRoutineImage(routineName: string) {
+  const name = routineName.toLowerCase();
+  if (STRENGTH_KEYWORDS.some((k) => name.includes(k))) return ROUTINE_IMAGES.strength;
+  return ROUTINE_IMAGES.cardio;
+}

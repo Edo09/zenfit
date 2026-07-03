@@ -19,6 +19,7 @@ import {
   useToast,
 } from "@/src/components/ui";
 import { useProgress } from "@/src/hooks/use-progress";
+import { useRefreshOnFocus } from "@/src/hooks/use-refresh-on-focus";
 import { useRoutines } from "@/src/hooks/use-routines";
 import { colors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
@@ -30,6 +31,7 @@ export default function ProgressScreen() {
   const headerHeight = useHeaderHeight();
   const { logs, loading, error, refreshing, refresh, createLog, deleteLog } = useProgress();
   const { routines } = useRoutines();
+  useRefreshOnFocus(refresh);
   const [showLogForm, setShowLogForm] = useState(false);
   const [selectedRoutineId, setSelectedRoutineId] = useState<string | null>(null);
   const [routineError, setRoutineError] = useState<string | undefined>();
@@ -230,6 +232,16 @@ export default function ProgressScreen() {
                   <Text className="text-content-tertiary text-sm mt-1" selectable>
                     {item.notes}
                   </Text>
+                )}
+                {item.completed_exercises && item.completed_exercises.length > 0 && (
+                  <View className="mt-2 gap-1 border-t border-border/50 pt-2">
+                    {item.completed_exercises.map((exName, idx) => (
+                      <View key={idx} className="flex-row items-center gap-1.5">
+                        <Ionicons name="checkmark" size={14} color={colors.brandSecondary} />
+                        <Text className="text-content-secondary text-sm">{exName}</Text>
+                      </View>
+                    ))}
+                  </View>
                 )}
               </View>
               <Pressable

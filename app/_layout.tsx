@@ -1,4 +1,5 @@
 import "@/src/global.css";
+import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { ToastProvider } from "@/src/components/ui";
 import { useAuth } from "@/src/hooks/use-auth";
 import i18n from "@/src/i18n";
@@ -11,7 +12,8 @@ import {
   Inter_800ExtraBold,
   Inter_900Black,
 } from "@expo-google-fonts/inter";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { focusManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AppState } from "react-native";
 import { useFonts } from "expo-font";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -20,7 +22,20 @@ import { I18nextProvider } from "react-i18next";
 
 SplashScreen.preventAutoHideAsync();
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      retry: 1,
+    },
+  },
+});
+
+// react-query has no "window focus" in RN — drive it from AppState so
+// returning to the app refetches stale queries.
+AppState.addEventListener("change", (status) => {
+  focusManager.setFocused(status === "active");
+});
 
 function AuthGate() {
   const { session, loading, onboardingCompleted } = useAuth();
@@ -75,7 +90,8 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <I18nextProvider i18n={i18n}>
-        <AuthProvider>
+        <GluestackUIProvider mode="dark">
+          <AuthProvider>
           <ToastProvider>
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="index" />
@@ -84,8 +100,9 @@ export default function RootLayout() {
               <Stack.Screen name="(tabs)" />
             </Stack>
             <AuthGate />
-          </ToastProvider>
-        </AuthProvider>
+            </ToastProvider>
+          </AuthProvider>
+        </GluestackUIProvider>
       </I18nextProvider>
     </QueryClientProvider>
   );

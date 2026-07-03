@@ -21,6 +21,12 @@
       "sourceType": "github",
       "computedHash": "16c53e80cacd65369acfd8a4f5cf06a60083cc6d980127b4b2e384b81ce0e547"
     },
+    "gluestack-ui-v5": {
+      "source": "gluestack/agent-skills",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/gluestack-ui-v5/SKILL.md",
+      "computedHash": "b19717e992153a421da7423f0609a39c4864f947c7f50fca67cf5e5b7d4878e4"
+    },
     "supabase": {
       "source": "supabase/agent-skills",
       "sourceType": "github",

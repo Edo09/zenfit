@@ -83,6 +83,9 @@ export function useRoutines() {
       if (error) throw error;
       return exercise as RoutineExercise;
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["routines"] });
+    },
   });
 
   const removeExerciseMutation = useMutation({
@@ -92,6 +95,9 @@ export function useRoutines() {
         .delete()
         .eq("id", id);
       if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["routines"] });
     },
   });
 

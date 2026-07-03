@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, RefreshControl } from "react-native";
 
+import { AIPlanCard } from "@/src/components/ai-plan-card";
 import { EmptyState } from "@/src/components/empty-state";
 import { RoutineCard } from "@/src/components/routine-card";
 import {
@@ -12,6 +13,7 @@ import {
   LoadingBlock,
   useToast,
 } from "@/src/components/ui";
+import { useRefreshOnFocus } from "@/src/hooks/use-refresh-on-focus";
 import { useRoutines } from "@/src/hooks/use-routines";
 import { colors } from "@/src/theme/colors";
 import { View } from "@/src/tw";
@@ -22,6 +24,7 @@ export default function RoutinesScreen() {
   const toast = useToast();
   const { routines, loading, error, refreshing, refresh, deleteRoutine } = useRoutines();
   const [pendingDelete, setPendingDelete] = useState<Routine | null>(null);
+  useRefreshOnFocus(refresh);
 
   const handleConfirmDelete = async () => {
     const target = pendingDelete;
@@ -67,6 +70,7 @@ export default function RoutinesScreen() {
             progressBackgroundColor={colors.surface}
           />
         }
+        ListHeaderComponent={<AIPlanCard className="mb-1" />}
         renderItem={({ item }) => (
           <RoutineCard
             routine={item}

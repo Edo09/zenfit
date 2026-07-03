@@ -31,6 +31,7 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: t("tabs.home"),
+          headerShown: false,
           tabBarIcon: ({ color }) => <TabIcon name="home" color={color} />,
         }}
       />
@@ -56,6 +57,13 @@ export default function TabsLayout() {
           title: t("tabs.progress"),
           headerShown: false,
           tabBarIcon: ({ color }) => <TabIcon name="bar-chart" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: t("tabs.profile"),
+          tabBarIcon: ({ color }) => <TabIcon name="person" color={color} />,
         }}
       />
     </Tabs>

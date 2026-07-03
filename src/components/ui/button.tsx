@@ -1,17 +1,29 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import React, { useState } from "react";
+import React from "react";
 
+import {
+  Button as GSButton,
+  ButtonText,
+} from "@/components/ui/button";
+import { Spinner } from "@/src/components/ui/spinner";
 import { colors } from "@/src/theme/colors";
-import { Pressable, Text, View } from "@/src/tw";
+import { View } from "@/src/tw";
 import { cn } from "@/src/utils/cn";
-
-import { Spinner } from "./spinner";
 
 type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
 
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "destructive";
 export type ButtonSize = "sm" | "md" | "lg";
+
+// gluestack variant that most closely matches, then className restores
+// the exact Habbito look on top of it.
+const VARIANT_GS: Record<ButtonVariant, "default" | "secondary" | "ghost"> = {
+  primary: "default",
+  secondary: "secondary",
+  ghost: "ghost",
+  destructive: "default",
+};
 
 const VARIANT_CONTAINER: Record<ButtonVariant, string> = {
   primary: "bg-brand-primary",
@@ -71,7 +83,6 @@ export function Button({
   className,
   haptic = true,
 }: ButtonProps) {
-  const [pressed, setPressed] = useState(false);
   const inactive = disabled || loading;
 
   const handlePress = () => {
@@ -82,18 +93,15 @@ export function Button({
   };
 
   return (
-    <Pressable
+    <GSButton
+      variant={VARIANT_GS[variant]}
       onPress={handlePress}
-      onPressIn={() => setPressed(true)}
-      onPressOut={() => setPressed(false)}
-      disabled={inactive}
-      accessibilityRole="button"
+      isDisabled={inactive}
       accessibilityState={{ disabled: inactive, busy: loading }}
       className={cn(
-        "flex-row items-center justify-center gap-2",
+        "gap-2 h-auto",
         VARIANT_CONTAINER[variant],
         SIZE_CONTAINER[size],
-        pressed && "opacity-80",
         disabled && "opacity-50",
         loading && "opacity-70",
         className
@@ -108,9 +116,11 @@ export function Button({
           {icon != null && (
             <Ionicons name={icon} size={SIZE_ICON[size]} color={VARIANT_SPINNER[variant]} />
           )}
-          <Text className={cn(VARIANT_LABEL[variant], SIZE_LABEL[size])}>{children}</Text>
+          <ButtonText className={cn(VARIANT_LABEL[variant], SIZE_LABEL[size])}>
+            {children}
+          </ButtonText>
         </>
       )}
-    </Pressable>
+    </GSButton>
   );
 }

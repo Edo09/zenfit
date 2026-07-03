@@ -14,6 +14,7 @@ import {
   useToast,
 } from "@/src/components/ui";
 import { useMeals } from "@/src/hooks/use-meals";
+import { useRefreshOnFocus } from "@/src/hooks/use-refresh-on-focus";
 import { colors } from "@/src/theme/colors";
 import { View } from "@/src/tw";
 import type { Meal, MealType } from "@/src/types/database";
@@ -26,6 +27,7 @@ export default function MealsScreen() {
   const { meals, loading, error, refreshing, refresh, deleteMeal } = useMeals();
   const [activeFilter, setActiveFilter] = useState<MealType | "all">("all");
   const [pendingDelete, setPendingDelete] = useState<Meal | null>(null);
+  useRefreshOnFocus(refresh);
 
   const filtered =
     activeFilter === "all" ? meals : meals.filter((m) => m.meal_type === activeFilter);

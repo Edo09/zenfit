@@ -50,6 +50,50 @@
   --color-badge-snack-soft: rgba(248, 113, 113, 0.15);
 }
 
+/* gluestack-ui v5 semantic tokens — Habbito dark palette defaults.
+   GluestackUIProvider overrides these at runtime via nativewind vars();
+   values here are the CSS fallbacks. Keep in sync with
+   components/ui/gluestack-ui-provider/config.ts */
+@layer theme {
+  :root {
+    --primary: 13 127 242;
+    --primary-foreground: 255 255 255;
+    --card: 30 41 59;
+    --secondary: 51 65 85;
+    --secondary-foreground: 248 250 252;
+    --background: 15 23 42;
+    --popover: 30 41 59;
+    --popover-foreground: 248 250 252;
+    --muted: 51 65 85;
+    --muted-foreground: 148 163 184;
+    --destructive: 239 68 68;
+    --foreground: 248 250 252;
+    --input: 51 65 85;
+    --ring: 71 85 105;
+    --accent: 51 65 85;
+    --accent-foreground: 248 250 252;
+  }
+}
+
+@theme inline {
+  --color-primary: rgb(var(--primary));
+  --color-primary-foreground: rgb(var(--primary-foreground));
+  --color-card: rgb(var(--card));
+  --color-secondary: rgb(var(--secondary));
+  --color-secondary-foreground: rgb(var(--secondary-foreground));
+  --color-background: rgb(var(--background));
+  --color-popover: rgb(var(--popover));
+  --color-popover-foreground: rgb(var(--popover-foreground));
+  --color-muted: rgb(var(--muted));
+  --color-muted-foreground: rgb(var(--muted-foreground));
+  --color-destructive: rgb(var(--destructive));
+  --color-foreground: rgb(var(--foreground));
+  --color-input: rgb(var(--input));
+  --color-ring: rgb(var(--ring));
+  --color-accent: rgb(var(--accent));
+  --color-accent-foreground: rgb(var(--accent-foreground));
+}
+
 /* Platform-specific font families - Inter */
 @media android {
   :root {

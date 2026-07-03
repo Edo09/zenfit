@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import React from "react";
 import { useTranslation } from "react-i18next";
 
@@ -6,6 +7,7 @@ import { Card } from "@/src/components/ui";
 import { colors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 import type { Routine } from "@/src/types/database";
+import { getRoutineImage } from "@/src/utils/routine-image";
 
 type Props = {
   routine: Routine;
@@ -17,9 +19,15 @@ export function RoutineCard({ routine, onPress, onDelete }: Props) {
   const { t } = useTranslation();
 
   return (
-    <Card onPress={onPress}>
-      <View className="flex-row items-start justify-between">
-        <View className="flex-1 gap-1">
+    <Card onPress={onPress} className="p-3">
+      <View className="flex-row items-start justify-between gap-3">
+        <Image
+          source={getRoutineImage(routine.name)}
+          style={{ width: 72, height: 72, borderRadius: 12 }}
+          contentFit="cover"
+          transition={200}
+        />
+        <View className="flex-1 gap-1 py-0.5">
           <Text className="text-base font-semibold text-content-primary">{routine.name}</Text>
           {routine.description != null && routine.description.length > 0 && (
             <Text className="text-sm text-content-tertiary" numberOfLines={2}>
@@ -36,7 +44,7 @@ export function RoutineCard({ routine, onPress, onDelete }: Props) {
         </View>
         <Pressable
           onPress={onDelete}
-          className="p-2 ml-2"
+          className="p-2"
           hitSlop={8}
           accessibilityRole="button"
           accessibilityLabel={t("routines.deleteRoutine")}

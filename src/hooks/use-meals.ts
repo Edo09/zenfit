@@ -89,12 +89,18 @@ export function useMeals() {
       if (error) throw error;
       return item as MealItem;
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["meals"] });
+    },
   });
 
   const removeMealItemMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("meal_items").delete().eq("id", id);
       if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["meals"] });
     },
   });
 

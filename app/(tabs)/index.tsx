@@ -4,6 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { useTranslation } from "react-i18next";
 
+import { AIPlanCard } from "@/src/components/ai-plan-card";
 import { StatCard } from "@/src/components/stat-card";
 import {
   ErrorState,
@@ -15,13 +16,16 @@ import { WorkoutCarousel } from "@/src/components/workout-carousel";
 import { useAuth } from "@/src/hooks/use-auth";
 import { useMeals } from "@/src/hooks/use-meals";
 import { useProgress } from "@/src/hooks/use-progress";
+import { useRefreshOnFocus } from "@/src/hooks/use-refresh-on-focus";
 import { useRoutines } from "@/src/hooks/use-routines";
 import { setLanguage } from "@/src/i18n";
 import { colors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   const { t, i18n } = useTranslation();
+  const insets = useSafeAreaInsets();
   const { user, signOut } = useAuth();
   const meals = useMeals();
   const progress = useProgress();
@@ -36,11 +40,20 @@ export default function HomeScreen() {
   const refreshing = meals.refreshing || progress.refreshing || routinesData.refreshing;
   const hasData = meals.meals.length > 0 || progress.logs.length > 0 || routines.length > 0;
 
-  const refreshAll = () => {
-    meals.refresh();
-    progress.refresh();
-    routinesData.refresh();
-  };
+  const mealsRefresh = meals.refresh;
+  const progressRefresh = progress.refresh;
+  const routinesRefresh = routinesData.refresh;
+
+  const refreshAll = React.useCallback(() => {
+    mealsRefresh();
+    progressRefresh();
+    routinesRefresh();
+  }, [mealsRefresh, progressRefresh, routinesRefresh]);
+
+  // Tab switches don't trigger react-query refetches in RN — refetch
+  // whenever the dashboard regains focus so it reflects changes made
+  // on other tabs.
+  useRefreshOnFocus(refreshAll);
 
   const displayName =
     (user?.user_metadata?.display_name as string | undefined) ??
@@ -62,16 +75,20 @@ export default function HomeScreen() {
       <StatusBar style="light" />
 
       {/* Header */}
-      <View className="px-6 pt-6 pb-6">
+      <View className="px-6 pb-6" style={{ paddingTop: insets.top + 16 }}>
         <View className="flex-row items-center justify-between mb-2">
-          <View>
+          <Pressable
+            onPress={() => router.push("/(tabs)/profile")}
+            accessibilityRole="button"
+            accessibilityLabel={t("tabs.profile")}
+          >
             <Text className="text-brand-primary text-xs font-semibold uppercase tracking-wider mb-1">
               {t("home.welcomeBack")}
             </Text>
             <Text className="text-2xl font-bold text-content-primary">
               {t("home.hey", { name: displayName })}
             </Text>
-          </View>
+          </Pressable>
           <View className="flex-row items-center gap-2">
             <Pressable
               onPress={() => setLanguage(i18n.language === "en" ? "es" : "en")}
@@ -118,6 +135,11 @@ export default function HomeScreen() {
               color={colors.success}
               icon="barbell-outline"
             />
+          </View>
+
+          {/* AI training plan */}
+          <View className="px-6 mb-8">
+            <AIPlanCard />
           </View>
 
           {/* Routines carousel */}

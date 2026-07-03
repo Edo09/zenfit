@@ -191,6 +191,7 @@ create table public.workout_logs (
   date date not null default current_date,
   duration_minutes integer,
   notes text,
+  completed_exercises text[],
   created_at timestamptz default now() not null
 );
 

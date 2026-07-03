@@ -1,6 +1,6 @@
 import React from "react";
-import { ActivityIndicator } from "react-native";
 
+import { Spinner as GSSpinner } from "@/components/ui/spinner";
 import { colors } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
 import { cn } from "@/src/utils/cn";
@@ -11,7 +11,7 @@ type SpinnerProps = {
 };
 
 export function Spinner({ size = "small", color = colors.brandPrimary }: SpinnerProps) {
-  return <ActivityIndicator size={size} color={color} />;
+  return <GSSpinner size={size} color={color} />;
 }
 
 type LoadingBlockProps = {

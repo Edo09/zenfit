@@ -75,6 +75,7 @@ export type WorkoutLog = {
   date: string;
   duration_minutes: number | null;
   notes: string | null;
+  completed_exercises: string[] | null;
   created_at: string;
 };
 
@@ -112,5 +113,5 @@ export type MealItemInsert = Pick<MealItem, "meal_id" | "name"> &
 
 export type WorkoutLogInsert = Pick<WorkoutLog, "routine_name"> &
   Partial<
-    Pick<WorkoutLog, "routine_id" | "date" | "duration_minutes" | "notes">
+    Pick<WorkoutLog, "routine_id" | "date" | "duration_minutes" | "notes" | "completed_exercises">
   >;

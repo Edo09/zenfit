@@ -1,11 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import React, { useState } from "react";
+import React from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { Fab as GSFab } from "@/components/ui/fab";
 import { colors } from "@/src/theme/colors";
-import { Pressable } from "@/src/tw";
-import { cn } from "@/src/utils/cn";
 
 type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
 
@@ -17,7 +16,6 @@ type FABProps = {
 
 export function FAB({ icon = "add", onPress, accessibilityLabel }: FABProps) {
   const insets = useSafeAreaInsets();
-  const [pressed, setPressed] = useState(false);
 
   const handlePress = () => {
     Haptics.selectionAsync().catch(() => {});
@@ -25,19 +23,14 @@ export function FAB({ icon = "add", onPress, accessibilityLabel }: FABProps) {
   };
 
   return (
-    <Pressable
+    <GSFab
+      placement="bottom right"
       onPress={handlePress}
-      onPressIn={() => setPressed(true)}
-      onPressOut={() => setPressed(false)}
-      accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
-      className={cn(
-        "absolute right-5 h-14 w-14 items-center justify-center rounded-full bg-brand-primary",
-        pressed && "opacity-80"
-      )}
-      style={{ bottom: 24 + insets.bottom }}
+      className="h-14 w-14 rounded-full bg-brand-primary p-0 items-center justify-center"
+      style={{ bottom: 24 + insets.bottom, right: 20 }}
     >
       <Ionicons name={icon} size={28} color={colors.white} />
-    </Pressable>
+    </GSFab>
   );
 }

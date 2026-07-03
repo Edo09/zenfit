@@ -14,6 +14,7 @@ import Animated, {
 
 import { Pressable, Text, View } from "@/src/tw";
 import { Routine } from "@/src/types/database";
+import { getRoutineImage } from "@/src/utils/routine-image";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const ITEM_WIDTH = SCREEN_WIDTH * 0.75;
@@ -22,20 +23,6 @@ const ITEM_SPACING = (SCREEN_WIDTH - ITEM_WIDTH) / 2;
 type Props = {
   routines: Routine[];
 };
-
-const CATEGORY_IMAGES: Record<string, any> = {
-  yoga: require("@/assets/images/yoga_card.png"),
-  strength: require("@/assets/images/strength_card.png"),
-  cardio: require("@/assets/images/cardio_card.png"),
-};
-
-function getRoutineImage(routineName: string) {
-  const name = routineName.toLowerCase();
-  if (name.includes("yoga") || name.includes("stretch")) return CATEGORY_IMAGES.yoga;
-  if (name.includes("strength") || name.includes("power") || name.includes("lift"))
-    return CATEGORY_IMAGES.strength;
-  return CATEGORY_IMAGES.cardio;
-}
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 

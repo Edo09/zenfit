@@ -1,6 +1,7 @@
 import React from "react";
 
-import { Pressable, View } from "@/src/tw";
+import { Card as GSCard } from "@/components/ui/card";
+import { Pressable } from "@/src/tw";
 import { cn } from "@/src/utils/cn";
 
 type CardProps = {
@@ -19,5 +20,5 @@ export function Card({ className, onPress, children }: CardProps) {
       </Pressable>
     );
   }
-  return <View className={classes}>{children}</View>;
+  return <GSCard className={classes}>{children}</GSCard>;
 }

@@ -12,12 +12,22 @@ import {
   Screen,
   useToast,
 } from "@/src/components/ui";
+import { useAuth } from "@/src/hooks/use-auth";
+import { useProfile } from "@/src/hooks/use-profile";
 import { useProgress } from "@/src/hooks/use-progress";
 import { useRoutines } from "@/src/hooks/use-routines";
 import { colors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 import type { RoutineExercise, RoutineWithExercises } from "@/src/types/database";
 import { Ionicons } from "@expo/vector-icons";
+import {
+  AlertDialog,
+  AlertDialogBackdrop,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+} from "@/components/ui/alert-dialog";
 
 export default function RoutineDetailScreen() {
   const { t } = useTranslation();
@@ -25,12 +35,18 @@ export default function RoutineDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { getRoutineWithExercises, addExercise, removeExercise } = useRoutines();
   const { createLog } = useProgress();
+  const { user } = useAuth();
+  const { profile } = useProfile(user?.id);
 
   const [routine, setRoutine] = useState<RoutineWithExercises | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAddExercise, setShowAddExercise] = useState(false);
   const [loggingWorkout, setLoggingWorkout] = useState(false);
   const [pendingRemove, setPendingRemove] = useState<RoutineExercise | null>(null);
+  const [showLogDialog, setShowLogDialog] = useState(false);
+  const [workoutDuration, setWorkoutDuration] = useState("");
+  const [workoutNotes, setWorkoutNotes] = useState("");
+  const [completedExercises, setCompletedExercises] = useState<Record<string, boolean>>({});
 
   // New exercise form state
   const [exName, setExName] = useState("");
@@ -96,12 +112,41 @@ export default function RoutineDetailScreen() {
     }
   };
 
-  const handleLogWorkout = async () => {
+  const toggleExercise = (exId: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    setCompletedExercises((prev) => ({
+      ...prev,
+      [exId]: !prev[exId],
+    }));
+  };
+
+  const openLogDialog = () => {
+    setWorkoutDuration(profile?.session_duration ? String(profile.session_duration) : "");
+    setWorkoutNotes("");
+    setShowLogDialog(true);
+  };
+
+  const handleLogWorkout = async (durationVal: string, notesVal: string) => {
     if (!routine) return;
     setLoggingWorkout(true);
+
+    const completedNames = routine.routine_exercises
+      .filter((ex) => completedExercises[ex.id])
+      .map((ex) => ex.name);
+
     try {
-      await createLog({ routine_id: routine.id, routine_name: routine.name });
+      await createLog({
+        routine_id: routine.id,
+        routine_name: routine.name,
+        duration_minutes: durationVal ? parseInt(durationVal, 10) : undefined,
+        notes: notesVal.trim() || undefined,
+        completed_exercises: completedNames.length > 0 ? completedNames : null,
+      });
       toast.show({ type: "success", message: t("routines.workoutLogged") });
+      setShowLogDialog(false);
+      setWorkoutDuration("");
+      setWorkoutNotes("");
+      setCompletedExercises({});
     } catch {
       toast.show({ type: "error", message: t("common.somethingWentWrong") });
     } finally {
@@ -141,28 +186,44 @@ export default function RoutineDetailScreen() {
             {t("routines.exercises", { count: routine.routine_exercises.length })}
           </Text>
 
-          {routine.routine_exercises.map((ex, index) => (
-            <Card key={ex.id} className="px-4 py-3 flex-row items-center justify-between">
-              <View className="flex-1 gap-0.5">
-                <Text className="font-medium text-content-primary">
-                  {index + 1}. {ex.name}
-                </Text>
-                <Text className="text-content-tertiary text-sm">
-                  {ex.sets} × {ex.reps}
-                  {ex.weight_kg != null ? ` · ${ex.weight_kg} kg` : ""}
-                </Text>
-              </View>
-              <Pressable
-                onPress={() => setPendingRemove(ex)}
-                className="p-2 ml-2"
-                hitSlop={8}
-                accessibilityRole="button"
-                accessibilityLabel={t("routines.removeExercise")}
-              >
-                <Ionicons name="trash-outline" size={18} color={colors.error} />
-              </Pressable>
-            </Card>
-          ))}
+          {routine.routine_exercises.map((ex, index) => {
+            const isCompleted = !!completedExercises[ex.id];
+            return (
+              <Card key={ex.id} className={`px-4 py-3 flex-row items-center justify-between ${isCompleted ? "opacity-60" : ""}`}>
+                <Pressable
+                  onPress={() => toggleExercise(ex.id)}
+                  className="p-2 mr-2"
+                  hitSlop={8}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: isCompleted }}
+                >
+                  <Ionicons
+                    name={isCompleted ? "checkmark-circle" : "ellipse-outline"}
+                    size={24}
+                    color={isCompleted ? colors.brandSecondary : colors.contentTertiary}
+                  />
+                </Pressable>
+                <View className="flex-1 gap-0.5">
+                  <Text className={`font-medium ${isCompleted ? "text-content-secondary line-through" : "text-content-primary"}`}>
+                    {index + 1}. {ex.name}
+                  </Text>
+                  <Text className="text-content-tertiary text-sm">
+                    {ex.sets} × {ex.reps}
+                    {ex.weight_kg != null ? ` · ${ex.weight_kg} kg` : ""}
+                  </Text>
+                </View>
+                <Pressable
+                  onPress={() => setPendingRemove(ex)}
+                  className="p-2 ml-2"
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("routines.removeExercise")}
+                >
+                  <Ionicons name="trash-outline" size={18} color={colors.error} />
+                </Pressable>
+              </Card>
+            );
+          })}
 
           {/* Add exercise form */}
           {showAddExercise ? (
@@ -236,7 +297,7 @@ export default function RoutineDetailScreen() {
         {/* Log Workout */}
         <Button
           size="lg"
-          onPress={handleLogWorkout}
+          onPress={openLogDialog}
           loading={loggingWorkout}
           className="bg-brand-secondary mt-2"
         >
@@ -253,6 +314,58 @@ export default function RoutineDetailScreen() {
         onConfirm={handleConfirmRemove}
         onClose={() => setPendingRemove(null)}
       />
+
+      <AlertDialog isOpen={showLogDialog} onClose={() => setShowLogDialog(false)} size="md">
+        <AlertDialogBackdrop />
+        <AlertDialogContent className="bg-surface border-border rounded-3xl gap-4 p-6">
+          <AlertDialogHeader>
+            <Text className="text-lg font-semibold text-content-primary">
+              {t("progress.logAWorkout")}
+            </Text>
+          </AlertDialogHeader>
+          <AlertDialogBody className="gap-4">
+            <Text className="text-sm text-content-secondary mb-1">
+              {t("routines.greatJob")}
+            </Text>
+            <Input
+              label={t("progress.duration")}
+              keyboardType="number-pad"
+              placeholder="45"
+              value={workoutDuration}
+              onChangeText={setWorkoutDuration}
+              className="bg-brand-dark"
+            />
+            <Input
+              label={t("progress.notes")}
+              placeholder={t("progress.notesPlaceholder")}
+              value={workoutNotes}
+              onChangeText={setWorkoutNotes}
+              containerClassName="mt-2"
+              className="bg-brand-dark"
+            />
+          </AlertDialogBody>
+          <AlertDialogFooter className="mt-4 flex-row gap-2">
+            <View className="flex-1">
+              <Button
+                variant="secondary"
+                onPress={() => setShowLogDialog(false)}
+                className="w-full"
+              >
+                {t("common.cancel")}
+              </Button>
+            </View>
+            <View className="flex-1">
+              <Button
+                onPress={() => handleLogWorkout(workoutDuration, workoutNotes)}
+                loading={loggingWorkout}
+                className="w-full bg-brand-secondary"
+              >
+                {t("common.save")}
+              </Button>
+            </View>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
