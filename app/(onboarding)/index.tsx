@@ -20,13 +20,26 @@ type FormData = {
   age: string;
   sex: "male" | "female" | "other" | null;
   height_cm: string;
-  weight_kg: string;
+  height_ft: string;
+  height_in: string;
+  height_unit: "cm" | "ft";
+  weight: string;
+  weight_unit: "kg" | "lbs";
   activity_level: "sedentary" | "active" | "very_active" | null;
   profession_type: "desk" | "physical" | null;
   days_per_week: string;
   session_duration: string;
   available_days: string[];
 };
+
+// Canonical storage is metric; imperial inputs convert on validate/submit.
+const toHeightCm = (form: FormData): number =>
+  form.height_unit === "cm"
+    ? parseFloat(form.height_cm)
+    : (parseFloat(form.height_ft || "0") * 12 + parseFloat(form.height_in || "0")) * 2.54;
+
+const toWeightKg = (form: FormData): number =>
+  form.weight_unit === "kg" ? parseFloat(form.weight) : parseFloat(form.weight) * 0.453592;
 
 function OptionButton({
   label,
@@ -90,7 +103,11 @@ export default function Onboarding() {
     age: "",
     sex: null,
     height_cm: "",
-    weight_kg: "",
+    height_ft: "",
+    height_in: "",
+    height_unit: "cm",
+    weight: "",
+    weight_unit: "kg",
     activity_level: null,
     profession_type: null,
     days_per_week: "4",
@@ -128,10 +145,11 @@ export default function Onboarding() {
         return true;
       }
       case 1: {
-        if (!form.height_cm || !form.weight_kg)
-          return failStep(t("onboarding.fillHeightWeight"));
-        const h = parseFloat(form.height_cm);
-        const w = parseFloat(form.weight_kg);
+        const heightMissing =
+          form.height_unit === "cm" ? !form.height_cm : !form.height_ft;
+        if (heightMissing || !form.weight) return failStep(t("onboarding.fillHeightWeight"));
+        const h = toHeightCm(form);
+        const w = toWeightKg(form);
         if (isNaN(h) || h < 50 || h > 300) return failStep(t("onboarding.heightBetween"));
         if (isNaN(w) || w < 20 || w > 500) return failStep(t("onboarding.weightBetween"));
         return true;
@@ -181,8 +199,8 @@ export default function Onboarding() {
         id: user.id,
         age: parseInt(form.age, 10),
         sex: form.sex,
-        height_cm: parseFloat(form.height_cm),
-        weight_kg: parseFloat(form.weight_kg),
+        height_cm: Math.round(toHeightCm(form) * 10) / 10,
+        weight_kg: Math.round(toWeightKg(form) * 10) / 10,
         activity_level: form.activity_level,
         profession_type: form.profession_type,
         days_per_week: parseInt(form.days_per_week, 10),
@@ -194,6 +212,28 @@ export default function Onboarding() {
       if (error) throw error;
       setOnboardingCompleted(true);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      router.replace("/(tabs)");
+    } catch {
+      toast.show({ type: "error", message: t("onboarding.couldNotSave") });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Skipping marks onboarding as done with an empty profile; AI features stay
+  // locked until the profile is completed from the Profile tab.
+  const handleSkip = async () => {
+    if (!user || saving) return;
+    try {
+      setSaving(true);
+      const { error } = await supabase.from("profiles").upsert({
+        id: user.id,
+        onboarding_completed: true,
+        updated_at: new Date().toISOString(),
+      });
+      if (error) throw error;
+      setOnboardingCompleted(true);
+      toast.show({ type: "info", message: t("onboarding.skipToast") });
       router.replace("/(tabs)");
     } catch {
       toast.show({ type: "error", message: t("onboarding.couldNotSave") });
@@ -261,21 +301,84 @@ export default function Onboarding() {
               </Text>
             </View>
 
-            <Input
-              label={t("onboarding.height")}
-              placeholder={t("onboarding.heightPlaceholder")}
-              keyboardType="decimal-pad"
-              value={form.height_cm}
-              onChangeText={(v) => updateForm("height_cm", v)}
-            />
+            <View className="gap-2">
+              <View className="flex-row items-center justify-between">
+                <Text className="text-sm font-medium text-content-secondary">
+                  {t("onboarding.heightLabel")}
+                </Text>
+                <View className="flex-row gap-2">
+                  <Chip
+                    label={t("onboarding.unitCm")}
+                    selected={form.height_unit === "cm"}
+                    onPress={() => updateForm("height_unit", "cm")}
+                  />
+                  <Chip
+                    label={t("onboarding.unitFt")}
+                    selected={form.height_unit === "ft"}
+                    onPress={() => updateForm("height_unit", "ft")}
+                  />
+                </View>
+              </View>
+              {form.height_unit === "cm" ? (
+                <Input
+                  placeholder={t("onboarding.heightPlaceholder")}
+                  keyboardType="decimal-pad"
+                  value={form.height_cm}
+                  onChangeText={(v) => updateForm("height_cm", v)}
+                />
+              ) : (
+                <View className="flex-row gap-3">
+                  <View className="flex-1">
+                    <Input
+                      label={t("onboarding.feet")}
+                      placeholder={t("onboarding.heightFtPlaceholder")}
+                      keyboardType="number-pad"
+                      value={form.height_ft}
+                      onChangeText={(v) => updateForm("height_ft", v)}
+                    />
+                  </View>
+                  <View className="flex-1">
+                    <Input
+                      label={t("onboarding.inches")}
+                      placeholder={t("onboarding.heightInPlaceholder")}
+                      keyboardType="number-pad"
+                      value={form.height_in}
+                      onChangeText={(v) => updateForm("height_in", v)}
+                    />
+                  </View>
+                </View>
+              )}
+            </View>
 
-            <Input
-              label={t("onboarding.currentWeight")}
-              placeholder={t("onboarding.weightPlaceholder")}
-              keyboardType="decimal-pad"
-              value={form.weight_kg}
-              onChangeText={(v) => updateForm("weight_kg", v)}
-            />
+            <View className="gap-2">
+              <View className="flex-row items-center justify-between">
+                <Text className="text-sm font-medium text-content-secondary">
+                  {t("onboarding.weightLabel")}
+                </Text>
+                <View className="flex-row gap-2">
+                  <Chip
+                    label={t("onboarding.unitKg")}
+                    selected={form.weight_unit === "kg"}
+                    onPress={() => updateForm("weight_unit", "kg")}
+                  />
+                  <Chip
+                    label={t("onboarding.unitLbs")}
+                    selected={form.weight_unit === "lbs"}
+                    onPress={() => updateForm("weight_unit", "lbs")}
+                  />
+                </View>
+              </View>
+              <Input
+                placeholder={
+                  form.weight_unit === "kg"
+                    ? t("onboarding.weightPlaceholder")
+                    : t("onboarding.weightLbsPlaceholder")
+                }
+                keyboardType="decimal-pad"
+                value={form.weight}
+                onChangeText={(v) => updateForm("weight", v)}
+              />
+            </View>
           </View>
         );
 
@@ -391,7 +494,17 @@ export default function Onboarding() {
         <View className="w-12 h-12 bg-brand-primary rounded-xl items-center justify-center">
           <Ionicons name="barbell" size={26} color={colors.white} />
         </View>
-        <Text className="text-3xl font-extrabold text-brand-primary">Habbito</Text>
+        <Text className="flex-1 text-3xl font-extrabold text-brand-primary">Habbito</Text>
+        <Pressable
+          accessibilityRole="button"
+          onPress={handleSkip}
+          disabled={saving}
+          hitSlop={8}
+        >
+          <Text className="text-base font-semibold text-content-tertiary">
+            {t("onboarding.skip")}
+          </Text>
+        </Pressable>
       </View>
 
       <ProgressBar step={step} />
