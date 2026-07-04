@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 
 import { Button, Chip, Input, Screen, useToast } from "@/src/components/ui";
 import { useMeals } from "@/src/hooks/use-meals";
+import { useIsOnline } from "@/src/lib/online";
 import {
   estimateMealNutrition,
   estimateMealNutritionFromPhoto,
@@ -32,6 +33,7 @@ const PICKER_OPTIONS: ImagePicker.ImagePickerOptions = {
 export default function CreateMealScreen() {
   const { t, i18n } = useTranslation();
   const toast = useToast();
+  const online = useIsOnline();
   const { createMeal, addMealItem } = useMeals();
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState<string | undefined>();
@@ -88,6 +90,7 @@ export default function CreateMealScreen() {
       if (photo != null) {
         let estimate;
         try {
+          if (!online) throw new Error("offline");
           estimate = await estimateMealNutritionFromPhoto(
             photo,
             i18n.language,
@@ -129,7 +132,7 @@ export default function CreateMealScreen() {
       // Text-only path
       const meal = await createMeal({ name: trimmed, meal_type: mealType });
 
-      if (aiEstimate) {
+      if (aiEstimate && online) {
         try {
           const estimate = await estimateMealNutrition(trimmed, mealType, i18n.language);
           await addMealItem({
@@ -172,7 +175,7 @@ export default function CreateMealScreen() {
                   icon="camera-outline"
                   onPress={pickFromCamera}
                   className="flex-1"
-                  disabled={loading}
+                  disabled={loading || !online}
                 >
                   {t("meals.takePhoto")}
                 </Button>
@@ -181,12 +184,14 @@ export default function CreateMealScreen() {
                   icon="images-outline"
                   onPress={pickFromGallery}
                   className="flex-1"
-                  disabled={loading}
+                  disabled={loading || !online}
                 >
                   {t("meals.fromGallery")}
                 </Button>
               </View>
-              <Text className="text-xs text-content-muted">{t("meals.mealPhotoNote")}</Text>
+              <Text className="text-xs text-content-muted">
+                {online ? t("meals.mealPhotoNote") : t("meals.photoRequiresInternet")}
+              </Text>
             </>
           ) : (
             <View className="rounded-xl overflow-hidden border border-border">
@@ -242,17 +247,18 @@ export default function CreateMealScreen() {
         {photo == null && (
           <Pressable
             onPress={() => {
+              if (!online) return;
               Haptics.selectionAsync().catch(() => {});
               setAiEstimate((v) => !v);
             }}
             accessibilityRole="checkbox"
-            accessibilityState={{ checked: aiEstimate }}
-            className="flex-row items-center gap-3 bg-surface border border-border rounded-xl p-4"
+            accessibilityState={{ checked: aiEstimate && online, disabled: !online }}
+            className={`flex-row items-center gap-3 bg-surface border border-border rounded-xl p-4 ${online ? "" : "opacity-50"}`}
           >
             <Ionicons
-              name={aiEstimate ? "checkbox" : "square-outline"}
+              name={aiEstimate && online ? "checkbox" : "square-outline"}
               size={22}
-              color={aiEstimate ? colors.brandPrimary : colors.contentMuted}
+              color={aiEstimate && online ? colors.brandPrimary : colors.contentMuted}
             />
             <View className="flex-1">
               <View className="flex-row items-center gap-1.5">
@@ -262,7 +268,7 @@ export default function CreateMealScreen() {
                 </Text>
               </View>
               <Text className="text-xs text-content-muted mt-0.5">
-                {t("meals.aiEstimateNote")}
+                {online ? t("meals.aiEstimateNote") : t("common.requiresInternet")}
               </Text>
             </View>
           </Pressable>

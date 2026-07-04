@@ -1,9 +1,14 @@
 import "@/src/global.css";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
+import { OfflineBanner } from "@/src/components/offline-banner";
 import { ToastProvider } from "@/src/components/ui";
 import { useAuth } from "@/src/hooks/use-auth";
 import i18n from "@/src/i18n";
+import { setupOnlineManager } from "@/src/lib/online";
+import { flushOutbox } from "@/src/lib/outbox";
+import { persister, PERSIST_MAX_AGE, queryClient } from "@/src/lib/query-client";
 import { AuthProvider } from "@/src/providers/auth-provider";
+import { supabase } from "@/src/utils/supabase";
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -12,8 +17,10 @@ import {
   Inter_800ExtraBold,
   Inter_900Black,
 } from "@expo-google-fonts/inter";
-import { focusManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AppState } from "react-native";
+import { focusManager } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { AppState, View } from "react-native";
+import Constants from "expo-constants";
 import { useFonts } from "expo-font";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -22,19 +29,18 @@ import { I18nextProvider } from "react-i18next";
 
 SplashScreen.preventAutoHideAsync();
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 30_000,
-      retry: 1,
-    },
-  },
-});
-
 // react-query has no "window focus" in RN — drive it from AppState so
-// returning to the app refetches stale queries.
+// returning to the app refetches stale queries. Foregrounding also restarts
+// the auth token refresh timer and retries any queued offline writes.
+setupOnlineManager();
 AppState.addEventListener("change", (status) => {
   focusManager.setFocused(status === "active");
+  if (status === "active") {
+    supabase.auth.startAutoRefresh();
+    void flushOutbox();
+  } else {
+    supabase.auth.stopAutoRefresh();
+  }
 });
 
 function AuthGate() {
@@ -88,22 +94,42 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{
+        persister,
+        maxAge: PERSIST_MAX_AGE,
+        // Cache-bust when the app version changes
+        buster: Constants.expoConfig?.version ?? "0",
+        dehydrateOptions: {
+          shouldDehydrateQuery: (query) => query.state.status === "success",
+          // Writes are persisted by the outbox, not react-query
+          shouldDehydrateMutation: () => false,
+        },
+      }}
+      onSuccess={() => {
+        // Cache restored — safe to drain writes queued before the restart
+        void flushOutbox();
+      }}
+    >
       <I18nextProvider i18n={i18n}>
         <GluestackUIProvider mode="dark">
           <AuthProvider>
           <ToastProvider>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="index" />
-              <Stack.Screen name="(auth)" />
-              <Stack.Screen name="(onboarding)" />
-              <Stack.Screen name="(tabs)" />
-            </Stack>
+            <View style={{ flex: 1 }}>
+              <OfflineBanner />
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="index" />
+                <Stack.Screen name="(auth)" />
+                <Stack.Screen name="(onboarding)" />
+                <Stack.Screen name="(tabs)" />
+              </Stack>
+            </View>
             <AuthGate />
             </ToastProvider>
           </AuthProvider>
         </GluestackUIProvider>
       </I18nextProvider>
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   );
 }

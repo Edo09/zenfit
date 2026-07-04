@@ -1,4 +1,7 @@
+import { clearOutbox } from "@/src/lib/outbox";
+import { persister, queryClient } from "@/src/lib/query-client";
 import { supabase } from "@/src/utils/supabase";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Session, User } from "@supabase/supabase-js";
 import React, { createContext, useEffect, useState } from "react";
 
@@ -7,7 +10,7 @@ type AuthContextType = {
   user: User | null;
   loading: boolean;
   onboardingCompleted: boolean | null;
-  setOnboardingCompleted: (value: boolean) => void;
+  markOnboarded: () => void;
 };
 
 export const AuthContext = createContext<AuthContextType>({
@@ -15,24 +18,51 @@ export const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   onboardingCompleted: null,
-  setOnboardingCompleted: () => {},
+  markOnboarded: () => {},
 });
+
+const ONBOARDED_KEY = (userId: string) => `habbito-onboarded-${userId}`;
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
 
-  const fetchOnboardingStatus = async (userId: string) => {
+  // Offline-safe: last-known status from AsyncStorage first, then the network
+  // truth. A network failure must never regress an onboarded user to false —
+  // that redirects them into onboarding, where saving also needs the network.
+  const loadOnboardingStatus = async (userId: string) => {
+    let cached: string | null = null;
+    try {
+      cached = await AsyncStorage.getItem(ONBOARDED_KEY(userId));
+    } catch {}
+    if (cached != null) setOnboardingCompleted(cached === "1");
+
     const { data, error } = await supabase
       .from("profiles")
       .select("onboarding_completed")
       .eq("id", userId)
-      .single();
-    if (error) {
-    } else {
+      .maybeSingle();
+    if (!error) {
+      const completed = data?.onboarding_completed ?? false;
+      setOnboardingCompleted(completed);
+      try {
+        await AsyncStorage.setItem(ONBOARDED_KEY(userId), completed ? "1" : "0");
+      } catch {}
+    } else if (cached == null) {
+      // Unknown status and the fetch failed. Defaulting to true is the safe
+      // side: worst case a new user lands in tabs and completes their profile
+      // from the Profile tab, instead of an onboarded user being trapped.
+      setOnboardingCompleted(true);
     }
-    setOnboardingCompleted(data?.onboarding_completed ?? false);
+  };
+
+  const markOnboarded = () => {
+    const userId = session?.user?.id;
+    setOnboardingCompleted(true);
+    if (userId) {
+      AsyncStorage.setItem(ONBOARDED_KEY(userId), "1").catch(() => {});
+    }
   };
 
   useEffect(() => {
@@ -40,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session?.user) {
-        fetchOnboardingStatus(session.user.id);
+        loadOnboardingStatus(session.user.id);
       }
       setLoading(false);
     }).catch((error) => {
@@ -51,12 +81,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       if (session?.user) {
-        fetchOnboardingStatus(session.user.id);
+        loadOnboardingStatus(session.user.id);
       } else {
         setOnboardingCompleted(null);
+      }
+      if (event === "SIGNED_OUT") {
+        // Wipe everything account-scoped so the next sign-in can't see the
+        // previous user's cached data or replay their queued writes.
+        void clearOutbox();
+        queryClient.clear();
+        void persister.removeClient();
       }
       setLoading(false);
     });
@@ -70,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user: session?.user ?? null,
       loading,
       onboardingCompleted,
-      setOnboardingCompleted,
+      markOnboarded,
     }}>
       {children}
     </AuthContext>

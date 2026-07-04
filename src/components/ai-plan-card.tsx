@@ -8,6 +8,7 @@ import { Button, Card, ConfirmDialog, useToast } from "@/src/components/ui";
 import { useAuth } from "@/src/hooks/use-auth";
 import { useProfile } from "@/src/hooks/use-profile";
 import { useRoutines } from "@/src/hooks/use-routines";
+import { useIsOnline } from "@/src/lib/online";
 import { generateRoutines } from "@/src/services/ai-routine";
 import { colors } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
@@ -33,6 +34,7 @@ export function AIPlanCard({ className }: { className?: string }) {
   const { t, i18n } = useTranslation();
   const toast = useToast();
   const pathname = usePathname();
+  const online = useIsOnline();
   const { user } = useAuth();
   const { profile } = useProfile(user?.id);
   const { createRoutine, addExercise } = useRoutines();
@@ -98,10 +100,18 @@ export function AIPlanCard({ className }: { className?: string }) {
             <Text className="text-base font-semibold text-content-primary">
               {t("profile.aiTitle")}
             </Text>
-            <Text className="text-sm text-content-tertiary">{t("profile.aiSubtitle")}</Text>
+            <Text className={online ? "text-sm text-content-tertiary" : "text-sm text-content-muted"}>
+              {online ? t("profile.aiSubtitle") : t("common.requiresInternet")}
+            </Text>
           </View>
         </View>
-        <Button icon="sparkles" onPress={handlePress} loading={generating} className="w-full">
+        <Button
+          icon="sparkles"
+          onPress={handlePress}
+          loading={generating}
+          disabled={!online}
+          className="w-full"
+        >
           {t("profile.aiGenerate")}
         </Button>
       </Card>

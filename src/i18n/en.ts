@@ -21,6 +21,13 @@ export default {
     saved: "Saved",
     deleted: "Deleted",
     fieldRequired: "This field is required",
+    offlineBanner: "You're offline — changes will sync when you're back online",
+    syncing: "Syncing changes…",
+    pendingChanges_one: "{{count}} pending change",
+    pendingChanges_other: "{{count}} pending changes",
+    syncedToast: "Your offline changes were synced",
+    syncFailedToast: "Some changes couldn't be synced",
+    requiresInternet: "Requires an internet connection",
   },
 
   // Auth
@@ -45,6 +52,7 @@ export default {
     fitnessCompanion: "Your fitness companion",
     createAccount: "Create your account",
     invalidCredentials: "Invalid email or password",
+    offlineLogin: "You need an internet connection to sign in",
   },
 
   // Onboarding
@@ -212,6 +220,7 @@ export default {
     aiEstimateFailed: "Meal saved, but nutrition couldn't be estimated",
     mealPhoto: "Meal photo",
     mealPhotoNote: "AI will identify the dish and estimate its nutrition from the photo",
+    photoRequiresInternet: "Photo analysis needs an internet connection",
     takePhoto: "Take photo",
     fromGallery: "Gallery",
     removePhoto: "Remove photo",

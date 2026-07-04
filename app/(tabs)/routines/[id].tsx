@@ -15,10 +15,10 @@ import {
 import { useAuth } from "@/src/hooks/use-auth";
 import { useProfile } from "@/src/hooks/use-profile";
 import { useProgress } from "@/src/hooks/use-progress";
-import { useRoutines } from "@/src/hooks/use-routines";
+import { useRoutineDetail, useRoutines } from "@/src/hooks/use-routines";
 import { colors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
-import type { RoutineExercise, RoutineWithExercises } from "@/src/types/database";
+import type { RoutineExercise } from "@/src/types/database";
 import { Ionicons } from "@expo/vector-icons";
 import {
   AlertDialog,
@@ -33,13 +33,14 @@ export default function RoutineDetailScreen() {
   const { t } = useTranslation();
   const toast = useToast();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { getRoutineWithExercises, addExercise, removeExercise } = useRoutines();
+  const { addExercise, removeExercise } = useRoutines();
   const { createLog } = useProgress();
   const { user } = useAuth();
   const { profile } = useProfile(user?.id);
 
-  const [routine, setRoutine] = useState<RoutineWithExercises | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Derived from the persisted routines cache — renders offline, and
+  // mutations flow back in without manual refreshes.
+  const { data: routine = null, isPending: loading, isError } = useRoutineDetail(id);
   const [showAddExercise, setShowAddExercise] = useState(false);
   const [loggingWorkout, setLoggingWorkout] = useState(false);
   const [pendingRemove, setPendingRemove] = useState<RoutineExercise | null>(null);
@@ -55,23 +56,13 @@ export default function RoutineDetailScreen() {
   const [exReps, setExReps] = useState("10");
   const [exWeight, setExWeight] = useState("");
 
-  const fetchRoutine = async () => {
-    if (!id) return;
-    try {
-      const data = await getRoutineWithExercises(id);
-      setRoutine(data);
-    } catch {
+  useEffect(() => {
+    if (isError) {
       toast.show({ type: "error", message: t("routines.couldNotLoad") });
       router.back();
-    } finally {
-      setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchRoutine();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [isError]);
 
   const handleAddExercise = async () => {
     if (!routine) return;
@@ -93,7 +84,6 @@ export default function RoutineDetailScreen() {
       setExReps("10");
       setExWeight("");
       setShowAddExercise(false);
-      fetchRoutine();
     } catch {
       toast.show({ type: "error", message: t("common.somethingWentWrong") });
     }
@@ -106,7 +96,6 @@ export default function RoutineDetailScreen() {
     try {
       await removeExercise(target.id);
       toast.show({ type: "success", message: t("routines.exerciseRemoved") });
-      fetchRoutine();
     } catch {
       toast.show({ type: "error", message: t("common.somethingWentWrong") });
     }

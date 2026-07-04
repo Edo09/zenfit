@@ -7,11 +7,13 @@ import { useTranslation } from "react-i18next";
 import { Button, Input, Screen } from "@/src/components/ui";
 import { useAuth } from "@/src/hooks/use-auth";
 import { setLanguage } from "@/src/i18n";
+import { useIsOnline } from "@/src/lib/online";
 import { colors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 
 export default function Login() {
   const { t, i18n } = useTranslation();
+  const online = useIsOnline();
   const { signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState<string | undefined>();
@@ -67,6 +69,14 @@ export default function Login() {
       </View>
 
       <View className="gap-4">
+        {!online && (
+          <View className="bg-warning-soft rounded-xl p-3">
+            <Text className="text-warning text-sm text-center">
+              {t("auth.offlineLogin")}
+            </Text>
+          </View>
+        )}
+
         <Input
           label={t("auth.email")}
           placeholder={t("auth.emailPlaceholder")}

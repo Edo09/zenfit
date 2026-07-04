@@ -1,0 +1,142 @@
+import { getPendingOps } from "@/src/lib/outbox";
+import type {
+  Meal,
+  MealItem,
+  MealWithItems,
+  Profile,
+  Routine,
+  RoutineExercise,
+  RoutineWithExercises,
+  WorkoutLog,
+} from "@/src/types/database";
+
+// Re-applies pending outbox ops onto freshly fetched rows. Without this, a
+// refetch that lands while ops are still queued (reconnect triggers refetch
+// and flush concurrently) would make optimistic items vanish until the next
+// flush completes.
+
+export async function overlayMeals(
+  userId: string,
+  rows: MealWithItems[],
+): Promise<MealWithItems[]> {
+  const ops = await getPendingOps(userId);
+  let out = rows.map((r) => ({ ...r, meal_items: [...(r.meal_items ?? [])] }));
+  for (const op of ops) {
+    if (op.table === "meals") {
+      if (op.kind === "delete") {
+        out = out.filter((m) => m.id !== op.payload.id);
+      } else if (!out.some((m) => m.id === op.payload.id)) {
+        out.push({ ...(op.payload as Meal), meal_items: [] });
+      }
+    } else if (op.table === "meal_items") {
+      if (op.kind === "delete") {
+        for (const m of out) {
+          m.meal_items = m.meal_items.filter((i) => i.id !== op.payload.id);
+        }
+      } else {
+        const item = op.payload as MealItem;
+        const parent = out.find((m) => m.id === item.meal_id);
+        if (parent && !parent.meal_items.some((i) => i.id === item.id)) {
+          parent.meal_items.push(item);
+        }
+      }
+    }
+  }
+  return out.sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+
+export async function overlayRoutines(
+  userId: string,
+  rows: RoutineWithExercises[],
+): Promise<RoutineWithExercises[]> {
+  const ops = await getPendingOps(userId);
+  let out = rows.map((r) => ({
+    ...r,
+    routine_exercises: [...(r.routine_exercises ?? [])],
+  }));
+  for (const op of ops) {
+    if (op.table === "routines") {
+      if (op.kind === "delete") {
+        out = out.filter((r) => r.id !== op.payload.id);
+      } else if (!out.some((r) => r.id === op.payload.id)) {
+        out.push({ ...(op.payload as Routine), routine_exercises: [] });
+      }
+    } else if (op.table === "routine_exercises") {
+      if (op.kind === "delete") {
+        for (const r of out) {
+          r.routine_exercises = r.routine_exercises.filter(
+            (ex) => ex.id !== op.payload.id,
+          );
+        }
+      } else {
+        const exercise = op.payload as RoutineExercise;
+        const parent = out.find((r) => r.id === exercise.routine_id);
+        if (
+          parent &&
+          !parent.routine_exercises.some((ex) => ex.id === exercise.id)
+        ) {
+          parent.routine_exercises.push(exercise);
+        }
+      }
+    }
+  }
+  for (const r of out) {
+    r.routine_exercises.sort((a, b) => a.sort_order - b.sort_order);
+  }
+  return out.sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+
+export async function overlayLogs(
+  userId: string,
+  rows: WorkoutLog[],
+): Promise<WorkoutLog[]> {
+  const ops = await getPendingOps(userId);
+  let out = [...rows];
+  for (const op of ops) {
+    if (op.table !== "workout_logs") continue;
+    if (op.kind === "delete") {
+      out = out.filter((l) => l.id !== op.payload.id);
+    } else if (!out.some((l) => l.id === op.payload.id)) {
+      out.push(op.payload as WorkoutLog);
+    }
+  }
+  return out.sort(
+    (a, b) =>
+      b.date.localeCompare(a.date) || b.created_at.localeCompare(a.created_at),
+  );
+}
+
+export async function overlayProfile(
+  userId: string,
+  row: Profile | null,
+): Promise<Profile | null> {
+  const ops = await getPendingOps(userId);
+  let out = row;
+  for (const op of ops) {
+    if (op.table !== "profiles" || op.payload.id !== userId) continue;
+    out = { ...(out ?? emptyProfile(userId)), ...(op.payload as Partial<Profile>) };
+  }
+  return out;
+}
+
+// Base for a profile that only exists as a pending upsert (offline onboarding)
+function emptyProfile(userId: string): Profile {
+  const now = new Date().toISOString();
+  return {
+    id: userId,
+    display_name: null,
+    avatar_url: null,
+    age: null,
+    sex: null,
+    height_cm: null,
+    weight_kg: null,
+    activity_level: null,
+    profession_type: null,
+    days_per_week: null,
+    session_duration: null,
+    available_days: null,
+    onboarding_completed: false,
+    created_at: now,
+    updated_at: now,
+  };
+}

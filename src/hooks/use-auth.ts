@@ -25,7 +25,9 @@ export function useAuth() {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
+    // scope "local" only clears this device's session; cache/outbox cleanup
+    // happens on the SIGNED_OUT event in the auth provider.
+    const { error } = await supabase.auth.signOut({ scope: "local" });
     if (error) throw error;
   };
 

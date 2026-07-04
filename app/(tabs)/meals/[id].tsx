@@ -13,10 +13,10 @@ import {
   Screen,
   useToast,
 } from "@/src/components/ui";
-import { useMeals } from "@/src/hooks/use-meals";
+import { useMealDetail, useMeals } from "@/src/hooks/use-meals";
 import { colors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
-import type { MealItem, MealWithItems } from "@/src/types/database";
+import type { MealItem } from "@/src/types/database";
 
 const MACRO_COLORS: Record<string, string> = {
   protein: colors.macroProtein,
@@ -28,9 +28,10 @@ export default function MealDetailScreen() {
   const { t } = useTranslation();
   const toast = useToast();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { getMealWithItems, addMealItem, removeMealItem } = useMeals();
-  const [meal, setMeal] = useState<MealWithItems | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { addMealItem, removeMealItem } = useMeals();
+  // Derived from the persisted meals cache — renders offline, and mutations
+  // flow back in without manual refreshes.
+  const { data: meal = null, isPending: loading, isError } = useMealDetail(id);
   const [showAddItem, setShowAddItem] = useState(false);
   const [pendingRemove, setPendingRemove] = useState<MealItem | null>(null);
 
@@ -43,23 +44,13 @@ export default function MealDetailScreen() {
   const [itemFat, setItemFat] = useState("");
   const [itemPortion, setItemPortion] = useState("");
 
-  const fetchMeal = async () => {
-    if (!id) return;
-    try {
-      const data = await getMealWithItems(id);
-      setMeal(data);
-    } catch {
+  useEffect(() => {
+    if (isError) {
       toast.show({ type: "error", message: t("meals.couldNotLoad") });
       router.back();
-    } finally {
-      setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchMeal();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [isError]);
 
   const handleAddItem = async () => {
     if (!meal) return;
@@ -85,7 +76,6 @@ export default function MealDetailScreen() {
       setItemFat("");
       setItemPortion("");
       setShowAddItem(false);
-      fetchMeal();
     } catch {
       toast.show({ type: "error", message: t("common.somethingWentWrong") });
     }
@@ -98,7 +88,6 @@ export default function MealDetailScreen() {
     try {
       await removeMealItem(target.id);
       toast.show({ type: "success", message: t("meals.itemRemoved") });
-      fetchMeal();
     } catch {
       toast.show({ type: "error", message: t("common.somethingWentWrong") });
     }

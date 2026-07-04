@@ -6,10 +6,10 @@ import { useTranslation } from "react-i18next";
 
 import { Button, Chip, Input, Screen, useToast } from "@/src/components/ui";
 import { useAuth } from "@/src/hooks/use-auth";
+import { useProfile } from "@/src/hooks/use-profile";
 import { colors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 import { cn } from "@/src/utils/cn";
-import { supabase } from "@/src/utils/supabase";
 
 const TOTAL_STEPS = 4;
 
@@ -95,7 +95,8 @@ function ProgressBar({ step }: { step: number }) {
 export default function Onboarding() {
   const { t } = useTranslation();
   const toast = useToast();
-  const { user, setOnboardingCompleted } = useAuth();
+  const { user, markOnboarded } = useAuth();
+  const { updateProfile } = useProfile(user?.id);
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [stepError, setStepError] = useState<string | null>(null);
@@ -195,8 +196,9 @@ export default function Onboarding() {
     if (!user) return;
     try {
       setSaving(true);
-      const { error } = await supabase.from("profiles").upsert({
-        id: user.id,
+      // Local-first: applies to the cache and queues the write, so
+      // onboarding completes even offline.
+      await updateProfile({
         age: parseInt(form.age, 10),
         sex: form.sex,
         height_cm: Math.round(toHeightCm(form) * 10) / 10,
@@ -207,10 +209,8 @@ export default function Onboarding() {
         session_duration: parseInt(form.session_duration, 10),
         available_days: form.available_days,
         onboarding_completed: true,
-        updated_at: new Date().toISOString(),
       });
-      if (error) throw error;
-      setOnboardingCompleted(true);
+      markOnboarded();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       router.replace("/(tabs)");
     } catch {
@@ -226,13 +226,8 @@ export default function Onboarding() {
     if (!user || saving) return;
     try {
       setSaving(true);
-      const { error } = await supabase.from("profiles").upsert({
-        id: user.id,
-        onboarding_completed: true,
-        updated_at: new Date().toISOString(),
-      });
-      if (error) throw error;
-      setOnboardingCompleted(true);
+      await updateProfile({ onboarding_completed: true });
+      markOnboarded();
       toast.show({ type: "info", message: t("onboarding.skipToast") });
       router.replace("/(tabs)");
     } catch {

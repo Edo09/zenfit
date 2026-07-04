@@ -7,7 +7,7 @@ const supabaseKey = process.env.EXPO_PUBLIC_SUPABASE_KEY!;
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     storage: AsyncStorage,
-    autoRefreshToken: false,
+    autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
   },

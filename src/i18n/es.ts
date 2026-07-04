@@ -21,6 +21,13 @@ export default {
     saved: "Guardado",
     deleted: "Eliminado",
     fieldRequired: "Este campo es requerido",
+    offlineBanner: "Sin conexión — los cambios se sincronizarán al reconectarte",
+    syncing: "Sincronizando cambios…",
+    pendingChanges_one: "{{count}} cambio pendiente",
+    pendingChanges_other: "{{count}} cambios pendientes",
+    syncedToast: "Tus cambios sin conexión se sincronizaron",
+    syncFailedToast: "Algunos cambios no se pudieron sincronizar",
+    requiresInternet: "Requiere conexión a internet",
   },
 
   // Auth
@@ -45,6 +52,7 @@ export default {
     fitnessCompanion: "Tu compañero fitness",
     createAccount: "Crea tu cuenta",
     invalidCredentials: "Correo o contraseña inválidos",
+    offlineLogin: "Necesitas conexión a internet para iniciar sesión",
   },
 
   // Onboarding
@@ -212,6 +220,7 @@ export default {
     aiEstimateFailed: "Comida guardada, pero no se pudo estimar la nutrición",
     mealPhoto: "Foto de la comida",
     mealPhotoNote: "La IA identificará el plato y estimará su nutrición desde la foto",
+    photoRequiresInternet: "El análisis de fotos necesita conexión a internet",
     takePhoto: "Tomar foto",
     fromGallery: "Galería",
     removePhoto: "Quitar foto",
