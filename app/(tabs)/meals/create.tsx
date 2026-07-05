@@ -2,23 +2,27 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Button, Chip, Input, Screen, useToast } from "@/src/components/ui";
+import { useAuth } from "@/src/hooks/use-auth";
 import { useMeals } from "@/src/hooks/use-meals";
+import { enter } from "@/src/lib/motion";
 import { useIsOnline } from "@/src/lib/online";
 import {
   estimateMealNutrition,
   estimateMealNutritionFromPhoto,
 } from "@/src/services/ai-nutrition";
+import { uploadMealPhoto } from "@/src/services/meal-photos";
 import type { ImageInput } from "@/src/services/llm";
 import { colors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
+import { AnimatedView } from "@/src/tw/animated";
 import type { MealType } from "@/src/types/database";
-
-const MEAL_TYPES: MealType[] = ["breakfast", "lunch", "dinner", "snack"];
+import { formatDayLabel, isDateKey, toDateKey } from "@/src/utils/dates";
+import { MEAL_SLOTS, suggestedSlot } from "@/src/utils/meal-slots";
 
 type PickedPhoto = ImageInput & { uri: string };
 
@@ -30,17 +34,46 @@ const PICKER_OPTIONS: ImagePicker.ImagePickerOptions = {
   exif: false,
 };
 
-export default function CreateMealScreen() {
+type Estimate = {
+  name: string;
+  calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  portion: string;
+};
+
+export default function AddFoodScreen() {
   const { t, i18n } = useTranslation();
   const toast = useToast();
   const online = useIsOnline();
-  const { createMeal, addMealItem } = useMeals();
+  const { user } = useAuth();
+  const { getOrCreateSlotMeal, addMealItem } = useMeals();
+  const params = useLocalSearchParams<{ mealType?: string; date?: string }>();
+
+  const todayKey = toDateKey();
+  // Bad/missing slot → time-of-day suggestion; bad/future date → today
+  const [mealType, setMealType] = useState<MealType>(() =>
+    MEAL_SLOTS.includes(params.mealType as MealType)
+      ? (params.mealType as MealType)
+      : suggestedSlot(),
+  );
+  const date =
+    isDateKey(params.date) && params.date <= todayKey ? params.date : todayKey;
+
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState<string | undefined>();
-  const [mealType, setMealType] = useState<MealType>("breakfast");
   const [photo, setPhoto] = useState<PickedPhoto | null>(null);
   const [aiEstimate, setAiEstimate] = useState(true);
   const [loading, setLoading] = useState(false);
+
+  // Manual nutrition (shown when the AI path is unavailable or disabled)
+  const [manualCalories, setManualCalories] = useState("");
+  const [manualProtein, setManualProtein] = useState("");
+  const [manualCarbs, setManualCarbs] = useState("");
+  const [manualFat, setManualFat] = useState("");
+  const [manualPortion, setManualPortion] = useState("");
+  const manualVisible = photo == null && (!aiEstimate || !online);
 
   const toPicked = (asset: ImagePicker.ImagePickerAsset): PickedPhoto | null => {
     if (!asset.base64) return null;
@@ -74,7 +107,7 @@ export default function CreateMealScreen() {
     }
   };
 
-  const handleCreate = async () => {
+  const handleAdd = async () => {
     const trimmed = name.trim();
     if (!trimmed && photo == null) {
       setNameError(t("meals.nameOrPhotoRequired"));
@@ -85,75 +118,79 @@ export default function CreateMealScreen() {
     try {
       setLoading(true);
 
-      // Photo path: identify + estimate BEFORE creating so the meal can
-      // take the AI-detected dish name when the user left the name empty.
+      // Resolve nutrition BEFORE touching data, so a failed photo analysis
+      // never creates an orphan slot container.
+      let estimate: Estimate | null = null;
+      let aiFailed = false;
+
       if (photo != null) {
-        let estimate;
         try {
           if (!online) throw new Error("offline");
           estimate = await estimateMealNutritionFromPhoto(
             photo,
             i18n.language,
-            trimmed || undefined
+            trimmed || undefined,
           );
         } catch {
           if (!trimmed) {
-            // Nothing to name the meal with — surface and stop.
+            // Nothing to name the food with — surface and stop.
             setNameError(t("meals.noFoodDetected"));
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
             return;
           }
-          estimate = null;
+          // Photo analysis failed but the user named the food — estimate
+          // from the name instead of dropping the AI estimate entirely.
+          try {
+            estimate = online
+              ? await estimateMealNutrition(trimmed, mealType, i18n.language)
+              : null;
+          } catch {
+            estimate = null;
+          }
+          aiFailed = estimate == null;
         }
-
-        const mealName = trimmed || estimate?.name || "";
-        const meal = await createMeal({ name: mealName, meal_type: mealType });
-
-        if (estimate != null) {
-          await addMealItem({
-            meal_id: meal.id,
-            name: estimate.name,
-            calories: estimate.calories,
-            protein_g: estimate.protein_g,
-            carbs_g: estimate.carbs_g,
-            fat_g: estimate.fat_g,
-            portion: estimate.portion,
-          });
-          toast.show({ type: "success", message: t("meals.aiEstimated") });
-        } else {
-          toast.show({ type: "info", message: t("meals.aiEstimateFailed") });
-        }
-
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-        router.replace(`/(tabs)/meals/${meal.id}`);
-        return;
-      }
-
-      // Text-only path
-      const meal = await createMeal({ name: trimmed, meal_type: mealType });
-
-      if (aiEstimate && online) {
+      } else if (aiEstimate && online) {
         try {
-          const estimate = await estimateMealNutrition(trimmed, mealType, i18n.language);
-          await addMealItem({
-            meal_id: meal.id,
-            name: trimmed,
-            calories: estimate.calories,
-            protein_g: estimate.protein_g,
-            carbs_g: estimate.carbs_g,
-            fat_g: estimate.fat_g,
-            portion: estimate.portion,
-          });
-          toast.show({ type: "success", message: t("meals.aiEstimated") });
+          estimate = await estimateMealNutrition(trimmed, mealType, i18n.language);
         } catch {
-          toast.show({ type: "info", message: t("meals.aiEstimateFailed") });
+          aiFailed = true;
         }
       }
+
+      // Persist the photo (best-effort) so it can thumbnail in the diary
+      let photoPath: string | undefined;
+      if (photo != null && online) {
+        photoPath = (await uploadMealPhoto(user!.id, photo)) ?? undefined;
+      }
+
+      // The AI's refined name wins over the raw typed one (it keeps the
+      // user's intent — fixes typos/casing); typed name is the fallback.
+      const itemName = estimate?.name || trimmed;
+      const meal = await getOrCreateSlotMeal(date, mealType);
+      await addMealItem({
+        meal_id: meal.id,
+        name: itemName,
+        calories: estimate?.calories ?? (parseInt(manualCalories, 10) || 0),
+        protein_g: estimate?.protein_g ?? (parseFloat(manualProtein) || 0),
+        carbs_g: estimate?.carbs_g ?? (parseFloat(manualCarbs) || 0),
+        fat_g: estimate?.fat_g ?? (parseFloat(manualFat) || 0),
+        portion: estimate?.portion ?? (manualPortion.trim() || undefined),
+        photo_path: photoPath,
+      });
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-      router.replace(`/(tabs)/meals/${meal.id}`);
+      if (aiFailed) {
+        // Item landed, but with zero macros — tell the user why
+        toast.show({ type: "info", message: t("meals.aiEstimateFailed") });
+      } else {
+        toast.show({
+          type: "success",
+          message: t("meals.foodAdded", { slot: t(`meals.${mealType}`) }),
+        });
+      }
+      router.back(); // diary already shows the item optimistically
     } catch {
-      toast.show({ type: "error", message: t("meals.couldNotCreate") });
+      toast.show({ type: "error", message: t("meals.couldNotAdd") });
     } finally {
       setLoading(false);
     }
@@ -162,6 +199,12 @@ export default function CreateMealScreen() {
   return (
     <Screen keyboard>
       <View className="gap-4">
+        {/* Where this food is going */}
+        <Text className="text-sm text-content-tertiary">
+          {t("meals.addToSlot", { slot: t(`meals.${mealType}`) })} ·{" "}
+          {formatDayLabel(date, i18n.language, t)}
+        </Text>
+
         {/* Meal photo */}
         <View className="gap-2">
           <Text className="text-sm font-medium text-content-secondary">
@@ -219,8 +262,8 @@ export default function CreateMealScreen() {
         </View>
 
         <Input
-          label={t("meals.mealName")}
-          placeholder={t("meals.mealNamePlaceholder")}
+          label={t("meals.foodName")}
+          placeholder={t("meals.foodNamePlaceholder")}
           value={name}
           onChangeText={(text) => {
             setName(text);
@@ -229,12 +272,10 @@ export default function CreateMealScreen() {
           error={nameError}
         />
 
+        {/* Slot selector (pre-selected from the diary, still changeable) */}
         <View className="gap-2">
-          <Text className="text-sm font-medium text-content-secondary">
-            {t("meals.mealType")}
-          </Text>
           <View className="flex-row gap-2 flex-wrap">
-            {MEAL_TYPES.map((type) => (
+            {MEAL_SLOTS.map((type) => (
               <Chip
                 key={type}
                 label={t(`meals.${type}`, { defaultValue: type })}
@@ -275,12 +316,68 @@ export default function CreateMealScreen() {
             </View>
           </Pressable>
         )}
+
+        {/* Manual nutrition when the AI path is off or unavailable */}
+        {manualVisible && (
+          <AnimatedView entering={enter()} className="gap-3">
+            <Text className="text-sm font-medium text-content-secondary">
+              {t("meals.manualNutrition")}
+            </Text>
+            <View className="flex-row gap-2">
+              <Input
+                label={t("meals.calories")}
+                keyboardType="number-pad"
+                value={manualCalories}
+                onChangeText={setManualCalories}
+                containerClassName="flex-1"
+                textAlign="center"
+                className="bg-brand-dark"
+              />
+              <Input
+                label={t("meals.protein")}
+                keyboardType="decimal-pad"
+                value={manualProtein}
+                onChangeText={setManualProtein}
+                containerClassName="flex-1"
+                textAlign="center"
+                className="bg-brand-dark"
+              />
+            </View>
+            <View className="flex-row gap-2">
+              <Input
+                label={t("meals.carbs")}
+                keyboardType="decimal-pad"
+                value={manualCarbs}
+                onChangeText={setManualCarbs}
+                containerClassName="flex-1"
+                textAlign="center"
+                className="bg-brand-dark"
+              />
+              <Input
+                label={t("meals.fat")}
+                keyboardType="decimal-pad"
+                value={manualFat}
+                onChangeText={setManualFat}
+                containerClassName="flex-1"
+                textAlign="center"
+                className="bg-brand-dark"
+              />
+              <Input
+                label={t("meals.portion")}
+                placeholder={t("meals.portionPlaceholder")}
+                value={manualPortion}
+                onChangeText={setManualPortion}
+                containerClassName="flex-1"
+                textAlign="center"
+                className="bg-brand-dark"
+              />
+            </View>
+          </AnimatedView>
+        )}
       </View>
 
-      <Text className="text-content-muted text-sm text-center">{t("meals.addItemsNote")}</Text>
-
-      <Button size="lg" onPress={handleCreate} loading={loading} className="mt-2">
-        {t("meals.logMeal")}
+      <Button size="lg" onPress={handleAdd} loading={loading} className="mt-2">
+        {t("meals.addFood")}
       </Button>
     </Screen>
   );

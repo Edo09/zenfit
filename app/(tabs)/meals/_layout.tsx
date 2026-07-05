@@ -17,12 +17,19 @@ export default function MealsLayout() {
         ...(Platform.OS === "android" && { animation: "slide_from_right" as const }),
       }}
     >
-      <Stack.Screen name="index" options={{ title: t("meals.myMeals") }} />
-      <Stack.Screen name="[id]" options={{ title: t("meals.mealDetail") }} />
+      <Stack.Screen name="index" options={{ title: t("meals.diary") }} />
       <Stack.Screen
         name="create"
         options={{
-          title: t("meals.logMeal"),
+          title: t("meals.addFood"),
+          presentation: "modal",
+          ...(Platform.OS === "android" && { animation: "slide_from_bottom" as const }),
+        }}
+      />
+      <Stack.Screen
+        name="edit"
+        options={{
+          title: t("meals.editFood"),
           presentation: "modal",
           ...(Platform.OS === "android" && { animation: "slide_from_bottom" as const }),
         }}

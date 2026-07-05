@@ -2,6 +2,7 @@ import { useHeaderHeight } from "@react-navigation/elements";
 import React from "react";
 import {
   KeyboardAvoidingView,
+  Platform,
   RefreshControl,
   ScrollView as RNScrollView,
 } from "react-native";
@@ -68,7 +69,10 @@ export function Screen({
           // "padding" on Android too: with edge-to-edge enabled (SDK 54 default),
           // adjustResize no longer resizes the window, so KAV must do the work.
           behavior="padding"
-          keyboardVerticalOffset={headerHeight}
+          // Header offset is an iOS concept (translucent headers overlap
+          // content); on Android it just over-pads, leaving a blank strip
+          // above the keyboard.
+          keyboardVerticalOffset={Platform.OS === "ios" ? headerHeight : 0}
         >
           {content}
         </KeyboardAvoidingView>

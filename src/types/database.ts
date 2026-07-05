@@ -65,6 +65,7 @@ export type MealItem = {
   carbs_g: number;
   fat_g: number;
   portion: string | null;
+  photo_path: string | null;
   created_at: string;
 };
 
@@ -109,7 +110,10 @@ export type MealInsert = Pick<Meal, "name" | "meal_type"> &
 
 export type MealItemInsert = Pick<MealItem, "meal_id" | "name"> &
   Partial<
-    Pick<MealItem, "calories" | "protein_g" | "carbs_g" | "fat_g" | "portion">
+    Pick<
+      MealItem,
+      "calories" | "protein_g" | "carbs_g" | "fat_g" | "portion" | "photo_path"
+    >
   >;
 
 export type WorkoutLogInsert = Pick<WorkoutLog, "routine_name"> &

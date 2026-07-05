@@ -33,12 +33,12 @@ export function OfflineBanner() {
   const [contentHeight, setContentHeight] = useState(0);
   const progress = useSharedValue(0);
 
+  // Successful syncs are silent — the banner disappearing is signal enough.
+  // Only surface drops, where queued changes were lost.
   useEffect(
     () =>
       subscribeFlushResult((result) => {
-        if (result === "synced") {
-          toast.show({ type: "success", message: t("common.syncedToast") });
-        } else if (result === "dropped") {
+        if (result === "dropped") {
           toast.show({ type: "error", message: t("common.syncFailedToast") });
         }
       }),

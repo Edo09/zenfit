@@ -4,13 +4,10 @@ import { overlayLogs } from "@/src/lib/outbox-overlay";
 import { newId } from "@/src/lib/ids";
 import { qk } from "@/src/lib/query-keys";
 import type { WorkoutLog, WorkoutLogInsert } from "@/src/types/database";
+import { toDateKey } from "@/src/utils/dates";
 import { supabase } from "@/src/utils/supabase";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-
-function todayDateString() {
-  return new Date().toISOString().split("T")[0];
-}
 
 async function fetchLogs(userId: string): Promise<WorkoutLog[]> {
   const { data, error } = await supabase
@@ -40,7 +37,7 @@ export function useProgress() {
   });
 
   const todaysLogs = useMemo(
-    () => logs.filter((l) => l.date === todayDateString()),
+    () => logs.filter((l) => l.date === toDateKey()),
     [logs],
   );
 
@@ -51,7 +48,7 @@ export function useProgress() {
         user_id: user!.id,
         routine_id: data.routine_id ?? null,
         routine_name: data.routine_name,
-        date: data.date ?? todayDateString(),
+        date: data.date ?? toDateKey(),
         duration_minutes: data.duration_minutes ?? null,
         notes: data.notes ?? null,
         completed_exercises: data.completed_exercises ?? null,

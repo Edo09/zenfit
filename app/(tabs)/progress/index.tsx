@@ -115,7 +115,8 @@ export default function ProgressScreen() {
         style={{ flex: 1 }}
         // "padding" on Android too — edge-to-edge disables adjustResize (see Screen)
         behavior="padding"
-        keyboardVerticalOffset={headerHeight}
+        // iOS-only offset: on Android it over-pads (blank strip above keyboard)
+        keyboardVerticalOffset={Platform.OS === "ios" ? headerHeight : 0}
       >
         {/* Log workout inline form */}
         {showLogForm && (

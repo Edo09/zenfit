@@ -24,14 +24,17 @@ export async function estimateMealNutrition(
   mealName: string,
   mealType: MealType,
   language: string
-): Promise<NutritionEstimate> {
+): Promise<NutritionEstimate & { name: string }> {
   const languageName = language === "es" ? "Spanish" : "English";
 
   const system = [
     "You are a nutritionist. Estimate the nutrition facts for one typical serving of the given meal.",
     "Respond ONLY with strict JSON matching this schema:",
-    '{"calories":number,"protein_g":number,"carbs_g":number,"fat_g":number,"portion":string}',
+    '{"name":string,"calories":number,"protein_g":number,"carbs_g":number,"fat_g":number,"portion":string}',
     "Rules:",
+    `- name: the user's meal name, cleaned up in ${languageName}: fix typos and`,
+    "  capitalization, expand lazy shorthand into a clear dish name — but keep",
+    "  the user's intent; never invent a different dish.",
     "- Values are for ONE typical serving of the dish as commonly prepared.",
     "- calories in kcal; protein_g/carbs_g/fat_g in grams.",
     `- portion is a short human description of the serving (e.g. "1 bowl (400g)") in ${languageName}.`,
@@ -47,7 +50,13 @@ export async function estimateMealNutrition(
   const fat = clampNum(raw?.fat_g, 0, 500);
   if (calories == null) throw new Error("AI returned no calories");
 
+  const name =
+    typeof raw?.name === "string" && raw.name.trim().length > 0
+      ? raw.name.trim().slice(0, 80)
+      : mealName;
+
   return {
+    name,
     calories: Math.round(calories),
     protein_g: protein ?? 0,
     carbs_g: carbs ?? 0,
@@ -75,12 +84,19 @@ export async function estimateMealNutritionFromPhoto(
     "- Estimate for the portion VISIBLE in the photo.",
     "- calories in kcal; protein_g/carbs_g/fat_g in grams.",
     `- portion: short description of the visible serving (e.g. "1 plate (~350g)") in ${languageName}.`,
+    "- If the user provides a name for the meal, treat it as a strong hint:",
+    "  use it to disambiguate visually similar dishes and to account for",
+    "  ingredients it implies that are not visible (fillings, sauces, cooking",
+    "  oil, preparation style). The photo still decides the portion size.",
+    "- If the photo and the user's name clearly conflict, trust the photo for",
+    "  what is visible but keep the user's naming intent.",
     "- If the image is not food, return {\"name\":\"\"} only.",
   ].join("\n");
 
+  const trimmedName = userMealName?.trim();
   const user =
-    userMealName != null && userMealName.trim().length > 0
-      ? `The user calls this meal: "${userMealName.trim()}"`
+    trimmedName != null && trimmedName.length > 0
+      ? `The user says this meal is: "${trimmedName}". Identify it in the photo using that as a strong hint and estimate its nutrition.`
       : "Identify this meal.";
 
   const raw = (await completeJSONWithImage(system, user, image)) as Record<string, unknown>;

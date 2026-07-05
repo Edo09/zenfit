@@ -1,25 +1,25 @@
 import { useAuth } from "@/src/hooks/use-auth";
+import i18n from "@/src/i18n";
 import { enqueue } from "@/src/lib/outbox";
 import { overlayMeals } from "@/src/lib/outbox-overlay";
 import { newId } from "@/src/lib/ids";
 import { qk } from "@/src/lib/query-keys";
+import { removeMealPhoto } from "@/src/services/meal-photos";
 import type {
     Meal,
     MealInsert,
     MealItem,
     MealItemInsert,
+    MealType,
     MealWithItems,
 } from "@/src/types/database";
+import { toDateKey } from "@/src/utils/dates";
 import { supabase } from "@/src/utils/supabase";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-function todayDateString() {
-  return new Date().toISOString().split("T")[0];
-}
-
-// Items ride along with the list so the whole meals tab (list + detail) is a
-// single persisted query that works offline.
+// Items ride along with the list so the whole meals tab (diary) is a single
+// persisted query that works offline.
 async function fetchMeals(userId: string): Promise<MealWithItems[]> {
   const { data, error } = await supabase
     .from("meals")
@@ -28,6 +28,9 @@ async function fetchMeals(userId: string): Promise<MealWithItems[]> {
   if (error) throw error;
   return overlayMeals(userId, data as MealWithItems[]);
 }
+
+// Dedupes concurrent slot-container creation (e.g. rapid double-tap on add)
+const inflightSlotCreates = new Map<string, Promise<Meal>>();
 
 export function useMeals() {
   const { user } = useAuth();
@@ -47,7 +50,7 @@ export function useMeals() {
   });
 
   const todaysMeals = useMemo(
-    () => meals.filter((m) => m.date === todayDateString()),
+    () => meals.filter((m) => m.date === toDateKey()),
     [meals],
   );
 
@@ -61,7 +64,7 @@ export function useMeals() {
         user_id: user!.id,
         name: data.name,
         meal_type: data.meal_type,
-        date: data.date ?? todayDateString(),
+        date: data.date ?? toDateKey(),
         created_at: now,
         updated_at: now,
       };
@@ -105,6 +108,7 @@ export function useMeals() {
         carbs_g: data.carbs_g ?? 0,
         fat_g: data.fat_g ?? 0,
         portion: data.portion ?? null,
+        photo_path: data.photo_path ?? null,
         created_at: new Date().toISOString(),
       };
       queryClient.setQueryData<MealWithItems[]>(listKey, (old = []) =>
@@ -141,6 +145,93 @@ export function useMeals() {
     },
   });
 
+  // Slot containers are invisible plumbing: the diary is (date, meal_type) →
+  // items. Reuse the oldest existing container (legacy data may have several
+  // per slot); create one lazily otherwise. The cache lookup is synchronous
+  // over optimistic state, so this works offline.
+  const getOrCreateSlotMeal = async (
+    date: string,
+    mealType: MealType,
+  ): Promise<Meal> => {
+    const cached = queryClient.getQueryData<MealWithItems[]>(listKey) ?? [];
+    const existing = cached
+      .filter((m) => m.date === date && m.meal_type === mealType)
+      .sort((a, b) => a.created_at.localeCompare(b.created_at))[0];
+    if (existing != null) return existing;
+
+    const key = `${user!.id}:${date}:${mealType}`;
+    const pending = inflightSlotCreates.get(key);
+    if (pending != null) return pending;
+    // Container name is cosmetic only (never rendered by the diary)
+    const create = createMealMutation
+      .mutateAsync({ name: i18n.t(`meals.${mealType}`), meal_type: mealType, date })
+      .finally(() => inflightSlotCreates.delete(key));
+    inflightSlotCreates.set(key, create);
+    return create;
+  };
+
+  // Diary edit: update an item's properties in place, optionally moving it
+  // to another slot (re-parents it into that slot's container). Syncs as an
+  // upsert of the full row — works whether or not the original insert has
+  // reached the server yet.
+  const updateDiaryItem = async (
+    itemId: string,
+    updates: Partial<
+      Pick<MealItem, "name" | "calories" | "protein_g" | "carbs_g" | "fat_g" | "portion">
+    >,
+    newMealType?: MealType,
+  ) => {
+    const cached = queryClient.getQueryData<MealWithItems[]>(listKey) ?? [];
+    const parent = cached.find((m) =>
+      m.meal_items.some((i) => i.id === itemId),
+    );
+    const item = parent?.meal_items.find((i) => i.id === itemId);
+    if (parent == null || item == null) throw new Error("Item not found");
+
+    let targetMealId = parent.id;
+    if (newMealType != null && newMealType !== parent.meal_type) {
+      targetMealId = (await getOrCreateSlotMeal(parent.date, newMealType)).id;
+    }
+    const updated: MealItem = { ...item, ...updates, meal_id: targetMealId };
+
+    queryClient.setQueryData<MealWithItems[]>(listKey, (old = []) =>
+      old.map((m) => {
+        const without = m.meal_items.filter((i) => i.id !== itemId);
+        if (m.id === targetMealId) return { ...m, meal_items: [...without, updated] };
+        if (without.length !== m.meal_items.length) return { ...m, meal_items: without };
+        return m;
+      }),
+    );
+
+    await enqueue({
+      userId: user!.id,
+      table: "meal_items",
+      kind: "upsert",
+      payload: updated,
+    });
+
+    // Moving the only item out of a container leaves it empty — clean it up
+    if (targetMealId !== parent.id && parent.meal_items.length <= 1) {
+      await deleteMealMutation.mutateAsync(parent.id);
+    }
+  };
+
+  // Diary removal: dropping the last item also deletes the (invisible)
+  // container so the DB stays tidy. Parent must be read BEFORE the item
+  // mutation rewrites the cache.
+  const removeDiaryItem = async (itemId: string) => {
+    const cached = queryClient.getQueryData<MealWithItems[]>(listKey) ?? [];
+    const parent = cached.find((m) =>
+      m.meal_items.some((i) => i.id === itemId),
+    );
+    const photoPath = parent?.meal_items.find((i) => i.id === itemId)?.photo_path;
+    await removeMealItemMutation.mutateAsync(itemId);
+    if (parent != null && parent.meal_items.length <= 1) {
+      await deleteMealMutation.mutateAsync(parent.id);
+    }
+    if (photoPath != null) removeMealPhoto(photoPath);
+  };
+
   return {
     meals,
     loading,
@@ -151,18 +242,9 @@ export function useMeals() {
     deleteMeal: deleteMealMutation.mutateAsync,
     addMealItem: addMealItemMutation.mutateAsync,
     removeMealItem: removeMealItemMutation.mutateAsync,
+    getOrCreateSlotMeal,
+    updateDiaryItem,
+    removeDiaryItem,
     refresh: refetch,
   };
-}
-
-// Detail view derived from the (persisted) list cache — no separate fetch, so
-// it renders offline.
-export function useMealDetail(id: string | undefined) {
-  const { user } = useAuth();
-  return useQuery({
-    queryKey: qk.meals(user?.id),
-    queryFn: () => fetchMeals(user!.id),
-    enabled: !!user && !!id,
-    select: (all: MealWithItems[]) => all.find((m) => m.id === id) ?? null,
-  });
 }

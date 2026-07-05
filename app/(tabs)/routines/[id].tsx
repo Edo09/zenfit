@@ -248,7 +248,8 @@ export default function RoutineDetailScreen() {
                   value={exSets}
                   onChangeText={setExSets}
                   containerClassName="flex-1"
-                  className="bg-brand-dark text-center"
+                  textAlign="center"
+                  className="bg-brand-dark"
                 />
                 <Input
                   label={t("routines.reps")}
@@ -256,7 +257,8 @@ export default function RoutineDetailScreen() {
                   value={exReps}
                   onChangeText={setExReps}
                   containerClassName="flex-1"
-                  className="bg-brand-dark text-center"
+                  textAlign="center"
+                  className="bg-brand-dark"
                 />
                 <Input
                   label={t("routines.weightOpt")}
@@ -265,7 +267,8 @@ export default function RoutineDetailScreen() {
                   value={exWeight}
                   onChangeText={setExWeight}
                   containerClassName="flex-1"
-                  className="bg-brand-dark text-center"
+                  textAlign="center"
+                  className="bg-brand-dark"
                 />
               </View>
               <View className="flex-row gap-2">

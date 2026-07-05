@@ -28,6 +28,8 @@ import {
   estimateCaloriesBurned,
   recommendedCalorieGoal,
 } from "@/src/utils/calories";
+import { toDateKey } from "@/src/utils/dates";
+import { MEAL_SLOTS, suggestedSlot } from "@/src/utils/meal-slots";
 import { Pressable, Text, View } from "@/src/tw";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -57,6 +59,18 @@ export default function HomeScreen() {
   const numberLocale = i18n.language === "es" ? "es-ES" : "en-US";
   const kcal = (value: number | null) =>
     value != null ? Math.round(value).toLocaleString(numberLocale) : "—";
+
+  // Per-slot summary for the nutrition section (only slots with items)
+  const slotSummaries = MEAL_SLOTS.map((slot) => {
+    const items = todaysMeals
+      .filter((m) => m.meal_type === slot)
+      .flatMap((m) => m.meal_items);
+    return {
+      slot,
+      count: items.length,
+      kcal: items.reduce((sum, i) => sum + i.calories, 0),
+    };
+  }).filter((s) => s.count > 0);
 
   const loading = meals.loading || progress.loading || routinesData.loading;
   const error = meals.error || progress.error || routinesData.error;
@@ -219,10 +233,15 @@ export default function HomeScreen() {
               onAction={() => router.push("/(tabs)/meals")}
             />
 
-            {todaysMeals.length === 0 ? (
+            {slotSummaries.length === 0 ? (
               <Pressable
                 key="meals-empty"
-                onPress={() => router.push("/(tabs)/meals/create")}
+                onPress={() =>
+                  router.push({
+                    pathname: "/(tabs)/meals/create",
+                    params: { mealType: suggestedSlot(), date: toDateKey() },
+                  })
+                }
                 className="bg-surface rounded-2xl p-8 items-center border border-dashed border-border-strong"
               >
                 <View className="w-12 h-12 bg-info-soft rounded-2xl items-center justify-center mb-3">
@@ -235,10 +254,10 @@ export default function HomeScreen() {
               </Pressable>
             ) : (
               <View key="meals-list" className="gap-3">
-                {todaysMeals.slice(0, 3).map((meal, index) => (
-                  <AnimatedView key={meal.id} entering={staggered(index)} exiting={exit()}>
+                {slotSummaries.map((summary, index) => (
+                  <AnimatedView key={summary.slot} entering={staggered(index)} exiting={exit()}>
                   <Pressable
-                    onPress={() => router.push(`/(tabs)/meals/${meal.id}`)}
+                    onPress={() => router.push("/(tabs)/meals")}
                     className="bg-surface rounded-2xl px-5 py-4 flex-row items-center justify-between border border-border"
                   >
                     <View className="flex-row items-center gap-4">
@@ -246,9 +265,12 @@ export default function HomeScreen() {
                         <Ionicons name="restaurant-outline" size={18} color={colors.brandPrimary} />
                       </View>
                       <View>
-                        <Text className="font-semibold text-content-primary">{meal.name}</Text>
-                        <Text className="text-content-muted text-xs capitalize">
-                          {t(`meals.${meal.meal_type}`, { defaultValue: meal.meal_type })}
+                        <Text className="font-semibold text-content-primary capitalize">
+                          {t(`meals.${summary.slot}`, { defaultValue: summary.slot })}
+                        </Text>
+                        <Text className="text-content-muted text-xs">
+                          {t("meals.itemCount", { count: summary.count })}
+                          {` · ${kcal(summary.kcal)} ${t("home.kcal")}`}
                         </Text>
                       </View>
                     </View>
