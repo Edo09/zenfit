@@ -113,12 +113,19 @@ export default function RootLayout() {
       }}
     >
       <I18nextProvider i18n={i18n}>
-        <GluestackUIProvider mode="dark">
+        <GluestackUIProvider mode="light">
           <AuthProvider>
           <ToastProvider>
             <View style={{ flex: 1 }}>
               <OfflineBanner />
-              <Stack screenOptions={{ headerShown: false }}>
+              {/* Group switches are router.replace calls — fade reads right */}
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  animation: "fade",
+                  animationDuration: 250,
+                }}
+              >
                 <Stack.Screen name="index" />
                 <Stack.Screen name="(auth)" />
                 <Stack.Screen name="(onboarding)" />

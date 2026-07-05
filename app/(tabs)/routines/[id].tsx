@@ -16,8 +16,10 @@ import { useAuth } from "@/src/hooks/use-auth";
 import { useProfile } from "@/src/hooks/use-profile";
 import { useProgress } from "@/src/hooks/use-progress";
 import { useRoutineDetail, useRoutines } from "@/src/hooks/use-routines";
+import { enter, exit, pop, staggered } from "@/src/lib/motion";
 import { colors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
+import { AnimatedView } from "@/src/tw/animated";
 import type { RoutineExercise } from "@/src/types/database";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -102,7 +104,10 @@ export default function RoutineDetailScreen() {
   };
 
   const toggleExercise = (exId: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    // Haptic on completion only — un-checking shouldn't celebrate
+    if (!completedExercises[exId]) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    }
     setCompletedExercises((prev) => ({
       ...prev,
       [exId]: !prev[exId],
@@ -178,7 +183,8 @@ export default function RoutineDetailScreen() {
           {routine.routine_exercises.map((ex, index) => {
             const isCompleted = !!completedExercises[ex.id];
             return (
-              <Card key={ex.id} className={`px-4 py-3 flex-row items-center justify-between ${isCompleted ? "opacity-60" : ""}`}>
+              <AnimatedView key={ex.id} entering={staggered(index)} exiting={exit()}>
+              <Card className={`px-4 py-3 flex-row items-center justify-between ${isCompleted ? "opacity-60" : ""}`}>
                 <Pressable
                   onPress={() => toggleExercise(ex.id)}
                   className="p-2 mr-2"
@@ -186,11 +192,14 @@ export default function RoutineDetailScreen() {
                   accessibilityRole="checkbox"
                   accessibilityState={{ checked: isCompleted }}
                 >
-                  <Ionicons
-                    name={isCompleted ? "checkmark-circle" : "ellipse-outline"}
-                    size={24}
-                    color={isCompleted ? colors.brandSecondary : colors.contentTertiary}
-                  />
+                  {/* Keyed by state so the icon pops on every toggle */}
+                  <AnimatedView key={isCompleted ? "done" : "todo"} entering={pop()}>
+                    <Ionicons
+                      name={isCompleted ? "checkmark-circle" : "ellipse-outline"}
+                      size={24}
+                      color={isCompleted ? colors.brandSecondary : colors.contentTertiary}
+                    />
+                  </AnimatedView>
                 </Pressable>
                 <View className="flex-1 gap-0.5">
                   <Text className={`font-medium ${isCompleted ? "text-content-secondary line-through" : "text-content-primary"}`}>
@@ -211,11 +220,13 @@ export default function RoutineDetailScreen() {
                   <Ionicons name="trash-outline" size={18} color={colors.error} />
                 </Pressable>
               </Card>
+              </AnimatedView>
             );
           })}
 
           {/* Add exercise form */}
           {showAddExercise ? (
+            <AnimatedView entering={enter()} exiting={exit()}>
             <Card className="gap-3">
               <Text className="font-semibold text-content-primary">
                 {t("routines.addExercise")}
@@ -270,6 +281,7 @@ export default function RoutineDetailScreen() {
                 </View>
               </View>
             </Card>
+            </AnimatedView>
           ) : (
             <Pressable
               onPress={() => setShowAddExercise(true)}

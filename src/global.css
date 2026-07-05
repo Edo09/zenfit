@@ -3,75 +3,77 @@
 @import "tailwindcss/utilities.css";
 
 @theme {
-  /* Brand Colors — matched to Stitch design */
-  --color-brand-primary: #0d7ff2;
-  --color-brand-secondary: #22c55e;
-  --color-brand-dark: #0f172a;
-  --color-brand-light: #f8fafc;
+  /* Brand Colors — white / red / blue rebrand (light theme).
+     Token names kept from the dark era so screens didn't need touching:
+     brand-dark is now the LIGHT canvas color, brand-light the dark ink. */
+  --color-brand-primary: #2563eb;
+  --color-brand-secondary: #dc2626;
+  --color-brand-dark: #f8fafc;
+  --color-brand-light: #0f172a;
 
   /* Extended brand palette */
-  --color-brand-primary-light: #3b9ff5;
-  --color-brand-primary-dark: #0a66c2;
-  --color-brand-secondary-light: #4ade80;
-  --color-brand-secondary-dark: #16a34a;
+  --color-brand-primary-light: #3b82f6;
+  --color-brand-primary-dark: #1d4ed8;
+  --color-brand-secondary-light: #ef4444;
+  --color-brand-secondary-dark: #b91c1c;
 
-  /* Surface colors for dark mode */
-  --color-surface: #1e293b;
-  --color-surface-elevated: #334155;
+  /* Surface colors (light mode: white cards on off-white canvas) */
+  --color-surface: #ffffff;
+  --color-surface-elevated: #f1f5f9;
 
-  /* Text hierarchy (dark theme) */
-  --color-content-primary: #f8fafc;
-  --color-content-secondary: #cbd5e1;
-  --color-content-tertiary: #94a3b8;
-  --color-content-muted: #64748b;
+  /* Text hierarchy (light theme) */
+  --color-content-primary: #0f172a;
+  --color-content-secondary: #334155;
+  --color-content-tertiary: #64748b;
+  --color-content-muted: #94a3b8;
 
   /* Borders */
-  --color-border: #334155;
-  --color-border-strong: #475569;
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
 
   /* Feedback — explicit -soft rgba tokens (opacity modifiers unverified in react-native-css) */
-  --color-success: #22c55e;
-  --color-success-soft: rgba(34, 197, 94, 0.15);
-  --color-error: #ef4444;
-  --color-error-soft: rgba(239, 68, 68, 0.15);
-  --color-warning: #f59e0b;
-  --color-warning-soft: rgba(245, 158, 11, 0.15);
-  --color-info: #3b9ff5;
-  --color-info-soft: rgba(13, 127, 242, 0.15);
+  --color-success: #16a34a;
+  --color-success-soft: rgba(22, 163, 74, 0.12);
+  --color-error: #dc2626;
+  --color-error-soft: rgba(220, 38, 38, 0.1);
+  --color-warning: #d97706;
+  --color-warning-soft: rgba(217, 119, 6, 0.12);
+  --color-info: #2563eb;
+  --color-info-soft: rgba(37, 99, 235, 0.1);
 
-  /* Meal-type badges (dark-theme readable) */
-  --color-badge-breakfast: #f59e0b;
-  --color-badge-breakfast-soft: rgba(245, 158, 11, 0.15);
-  --color-badge-lunch: #22c55e;
-  --color-badge-lunch-soft: rgba(34, 197, 94, 0.15);
-  --color-badge-dinner: #a78bfa;
-  --color-badge-dinner-soft: rgba(167, 139, 250, 0.15);
-  --color-badge-snack: #f87171;
-  --color-badge-snack-soft: rgba(248, 113, 113, 0.15);
+  /* Meal-type badges (light-theme readable) */
+  --color-badge-breakfast: #d97706;
+  --color-badge-breakfast-soft: rgba(217, 119, 6, 0.12);
+  --color-badge-lunch: #16a34a;
+  --color-badge-lunch-soft: rgba(22, 163, 74, 0.12);
+  --color-badge-dinner: #7c3aed;
+  --color-badge-dinner-soft: rgba(124, 58, 237, 0.1);
+  --color-badge-snack: #dc2626;
+  --color-badge-snack-soft: rgba(220, 38, 38, 0.1);
 }
 
-/* gluestack-ui v5 semantic tokens — Habbito dark palette defaults.
+/* gluestack-ui v5 semantic tokens — Habbito light palette defaults.
    GluestackUIProvider overrides these at runtime via nativewind vars();
    values here are the CSS fallbacks. Keep in sync with
    components/ui/gluestack-ui-provider/config.ts */
 @layer theme {
   :root {
-    --primary: 13 127 242;
+    --primary: 37 99 235;
     --primary-foreground: 255 255 255;
-    --card: 30 41 59;
-    --secondary: 51 65 85;
-    --secondary-foreground: 248 250 252;
-    --background: 15 23 42;
-    --popover: 30 41 59;
-    --popover-foreground: 248 250 252;
-    --muted: 51 65 85;
-    --muted-foreground: 148 163 184;
-    --destructive: 239 68 68;
-    --foreground: 248 250 252;
-    --input: 51 65 85;
-    --ring: 71 85 105;
-    --accent: 51 65 85;
-    --accent-foreground: 248 250 252;
+    --card: 255 255 255;
+    --secondary: 241 245 249;
+    --secondary-foreground: 15 23 42;
+    --background: 248 250 252;
+    --popover: 255 255 255;
+    --popover-foreground: 15 23 42;
+    --muted: 241 245 249;
+    --muted-foreground: 100 116 139;
+    --destructive: 220 38 38;
+    --foreground: 15 23 42;
+    --input: 241 245 249;
+    --ring: 203 213 225;
+    --accent: 241 245 249;
+    --accent-foreground: 15 23 42;
   }
 }
 

@@ -1,32 +1,32 @@
 import { vars } from 'nativewind';
 
 // Habbito palette bridged to gluestack semantic tokens (RGB triplets).
-// App is dark-only: "light" mirrors the dark palette so no mode ever
-// renders the stock white theme. Keep in sync with src/global.css
-// and src/theme/colors.ts.
-const habbitoDark = {
-  '--primary': '13 127 242', // brand-primary #0d7ff2
+// White/red/blue rebrand — app is light-only: "dark" mirrors the light
+// palette so no mode ever renders the stock dark theme. Keep in sync with
+// src/global.css and src/theme/colors.ts.
+const habbitoLight = {
+  '--primary': '37 99 235', // brand-primary #2563eb
   '--primary-foreground': '255 255 255',
-  '--card': '30 41 59', // surface #1e293b
-  '--secondary': '51 65 85', // surface-elevated #334155
-  '--secondary-foreground': '248 250 252', // content-primary #f8fafc
-  '--background': '15 23 42', // brand-dark #0f172a
-  '--popover': '30 41 59',
-  '--popover-foreground': '248 250 252',
-  '--muted': '51 65 85',
-  '--muted-foreground': '148 163 184', // content-tertiary #94a3b8
-  '--destructive': '239 68 68', // error #ef4444
-  '--foreground': '248 250 252',
-  '--border': '51 65 85', // border #334155
-  '--input': '51 65 85',
-  '--ring': '71 85 105', // border-strong #475569
-  '--accent': '51 65 85',
-  '--accent-foreground': '248 250 252',
+  '--card': '255 255 255', // surface #ffffff
+  '--secondary': '241 245 249', // surface-elevated #f1f5f9
+  '--secondary-foreground': '15 23 42', // content-primary #0f172a
+  '--background': '248 250 252', // canvas #f8fafc
+  '--popover': '255 255 255',
+  '--popover-foreground': '15 23 42',
+  '--muted': '241 245 249',
+  '--muted-foreground': '100 116 139', // content-tertiary #64748b
+  '--destructive': '220 38 38', // error #dc2626
+  '--foreground': '15 23 42',
+  '--border': '226 232 240', // border #e2e8f0
+  '--input': '241 245 249',
+  '--ring': '203 213 225', // border-strong #cbd5e1
+  '--accent': '241 245 249',
+  '--accent-foreground': '15 23 42',
 };
 
 export const colors = {
-  light: habbitoDark,
-  dark: habbitoDark,
+  light: habbitoLight,
+  dark: habbitoLight,
 };
 
 // Config for nativewind vars() - used by provider

@@ -28,6 +28,7 @@ export default {
     syncedToast: "Tus cambios sin conexión se sincronizaron",
     syncFailedToast: "Algunos cambios no se pudieron sincronizar",
     requiresInternet: "Requiere conexión a internet",
+    or: "ó",
   },
 
   // Auth
@@ -53,6 +54,9 @@ export default {
     createAccount: "Crea tu cuenta",
     invalidCredentials: "Correo o contraseña inválidos",
     offlineLogin: "Necesitas conexión a internet para iniciar sesión",
+    showPassword: "Mostrar contraseña",
+    hidePassword: "Ocultar contraseña",
+    enterPassword: "Introduce tu contraseña",
   },
 
   // Onboarding
@@ -159,16 +163,25 @@ export default {
     aiConfirmTitle: "¿Generar rutinas con IA?",
     aiConfirmMessage:
       "Se crearán nuevas rutinas según tu perfil. Las rutinas existentes se conservan.",
+    nutritionGoal: "Meta Nutricional",
+    nutritionGoalSubtitle: "Tu objetivo diario de calorías, usado por el panel",
+    calorieGoal: "Meta diaria de calorías (kcal)",
+    calorieGoalPlaceholder: "Ej: 2200",
+    calorieGoalBetween: "La meta de calorías debe estar entre 800 y 10000",
+    recommendedGoal: "Recomendado para ti: {{kcal}} kcal",
+    useRecommended: "Usar",
   },
 
   // Home
   home: {
     welcomeBack: "Bienvenido",
     hey: "Hola, {{name}}! 👋",
-    mealsLabel: "Comidas",
-    mealsUnit: "registradas",
-    workoutLabel: "Entreno",
-    workoutUnit: "hoy",
+    calorieGoal: "Meta de calorías",
+    caloriesConsumed: "Consumidas",
+    caloriesBurned: "Quemadas",
+    caloriesRemaining: "Restantes",
+    kcal: "kcal",
+    setCalorieGoalHint: "Configura tu meta diaria de calorías en tu perfil →",
     yourRoutines: "Tus Rutinas",
     dark: "Oscuro",
     light: "Claro",

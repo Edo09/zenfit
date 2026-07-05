@@ -1,14 +1,21 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import React from "react";
+import {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 
 import {
   Button as GSButton,
   ButtonText,
 } from "@/components/ui/button";
 import { Spinner } from "@/src/components/ui/spinner";
+import { DUR, EASE_OUT } from "@/src/lib/motion";
 import { colors } from "@/src/theme/colors";
 import { View } from "@/src/tw";
+import { AnimatedView } from "@/src/tw/animated";
 import { cn } from "@/src/utils/cn";
 
 type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
@@ -69,6 +76,8 @@ type ButtonProps = {
   onPress: () => void;
   children: React.ReactNode;
   className?: string;
+  /** Layout classes for the press-scale wrapper (e.g. "flex-1" in rows). */
+  containerClassName?: string;
   haptic?: boolean;
 };
 
@@ -81,9 +90,14 @@ export function Button({
   onPress,
   children,
   className,
+  containerClassName,
   haptic = true,
 }: ButtonProps) {
   const inactive = disabled || loading;
+  const scale = useSharedValue(1);
+  const pressStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 
   const handlePress = () => {
     if (haptic) {
@@ -93,9 +107,17 @@ export function Button({
   };
 
   return (
+    <AnimatedView className={containerClassName} style={pressStyle}>
     <GSButton
       variant={VARIANT_GS[variant]}
       onPress={handlePress}
+      onPressIn={() => {
+        // Large surfaces need less travel than the standard 0.97
+        scale.value = withTiming(0.98, { duration: 100, easing: EASE_OUT });
+      }}
+      onPressOut={() => {
+        scale.value = withTiming(1, { duration: DUR.fast, easing: EASE_OUT });
+      }}
       isDisabled={inactive}
       accessibilityState={{ disabled: inactive, busy: loading }}
       className={cn(
@@ -122,5 +144,6 @@ export function Button({
         </>
       )}
     </GSButton>
+    </AnimatedView>
   );
 }

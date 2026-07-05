@@ -174,7 +174,8 @@ export default function CreateMealScreen() {
                   variant="secondary"
                   icon="camera-outline"
                   onPress={pickFromCamera}
-                  className="flex-1"
+                  containerClassName="flex-1"
+                  className="w-full"
                   disabled={loading || !online}
                 >
                   {t("meals.takePhoto")}
@@ -183,7 +184,8 @@ export default function CreateMealScreen() {
                   variant="secondary"
                   icon="images-outline"
                   onPress={pickFromGallery}
-                  className="flex-1"
+                  containerClassName="flex-1"
+                  className="w-full"
                   disabled={loading || !online}
                 >
                   {t("meals.fromGallery")}

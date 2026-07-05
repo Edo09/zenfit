@@ -28,6 +28,7 @@ export default {
     syncedToast: "Your offline changes were synced",
     syncFailedToast: "Some changes couldn't be synced",
     requiresInternet: "Requires an internet connection",
+    or: "or",
   },
 
   // Auth
@@ -53,6 +54,9 @@ export default {
     createAccount: "Create your account",
     invalidCredentials: "Invalid email or password",
     offlineLogin: "You need an internet connection to sign in",
+    showPassword: "Show password",
+    hidePassword: "Hide password",
+    enterPassword: "Enter your password",
   },
 
   // Onboarding
@@ -159,16 +163,25 @@ export default {
     aiConfirmTitle: "Generate AI routines?",
     aiConfirmMessage:
       "New routines will be created based on your profile. Existing routines are kept.",
+    nutritionGoal: "Nutrition Goal",
+    nutritionGoalSubtitle: "Your daily calorie target, used by the dashboard",
+    calorieGoal: "Daily calorie goal (kcal)",
+    calorieGoalPlaceholder: "e.g. 2200",
+    calorieGoalBetween: "Calorie goal must be between 800 and 10000",
+    recommendedGoal: "Recommended for you: {{kcal}} kcal",
+    useRecommended: "Use it",
   },
 
   // Home
   home: {
     welcomeBack: "Welcome back",
     hey: "Hey, {{name}}! 👋",
-    mealsLabel: "Meals",
-    mealsUnit: "logged",
-    workoutLabel: "Workout",
-    workoutUnit: "today",
+    calorieGoal: "Calorie goal",
+    caloriesConsumed: "Consumed",
+    caloriesBurned: "Burned",
+    caloriesRemaining: "Remaining",
+    kcal: "kcal",
+    setCalorieGoalHint: "Set your daily calorie goal in your profile →",
     yourRoutines: "Your Routines",
     dark: "Dark",
     light: "Light",

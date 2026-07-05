@@ -1,6 +1,10 @@
 import { useHeaderHeight } from "@react-navigation/elements";
 import React from "react";
-import { KeyboardAvoidingView, RefreshControl } from "react-native";
+import {
+  KeyboardAvoidingView,
+  RefreshControl,
+  ScrollView as RNScrollView,
+} from "react-native";
 
 import { colors } from "@/src/theme/colors";
 import { ScrollView, View } from "@/src/tw";
@@ -16,6 +20,8 @@ type ScreenProps = {
   onRefresh?: () => void;
   className?: string;
   contentContainerClassName?: string;
+  /** Access the underlying ScrollView (e.g. to scrollTo a section). */
+  scrollRef?: React.Ref<RNScrollView>;
 };
 
 export function Screen({
@@ -26,11 +32,13 @@ export function Screen({
   onRefresh,
   className,
   contentContainerClassName,
+  scrollRef,
 }: ScreenProps) {
   const headerHeight = useHeaderHeight();
 
   const content = scroll ? (
     <ScrollView
+      ref={scrollRef}
       className="flex-1"
       contentContainerClassName={cn("px-4 py-6 gap-5", contentContainerClassName)}
       keyboardShouldPersistTaps="handled"

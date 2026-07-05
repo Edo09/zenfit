@@ -1,6 +1,5 @@
-import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { Link, router } from "expo-router";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -8,7 +7,6 @@ import { Button, Input, Screen } from "@/src/components/ui";
 import { useAuth } from "@/src/hooks/use-auth";
 import { setLanguage } from "@/src/i18n";
 import { useIsOnline } from "@/src/lib/online";
-import { colors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 
 export default function Login() {
@@ -58,12 +56,13 @@ export default function Login() {
         </Text>
       </Pressable>
 
+      {/* Two-tone wordmark, sized to dominate the screen */}
       <View className="items-center mb-12">
-        <View className="w-20 h-20 bg-brand-primary rounded-2xl items-center justify-center mb-4">
-          <Ionicons name="barbell" size={40} color={colors.white} />
-        </View>
-        <Text className="text-3xl font-extrabold text-brand-primary">Habbito</Text>
-        <Text className="text-content-tertiary mt-2 text-base">
+        <Text className="text-5xl font-extrabold">
+          <Text className="text-5xl font-extrabold text-content-primary">Hab</Text>
+          <Text className="text-5xl font-extrabold text-brand-secondary">bito</Text>
+        </Text>
+        <Text className="text-content-tertiary mt-3 text-base">
           {t("auth.fitnessCompanion")}
         </Text>
       </View>
@@ -78,8 +77,8 @@ export default function Login() {
         )}
 
         <Input
-          label={t("auth.email")}
           placeholder={t("auth.emailPlaceholder")}
+          leftIcon="mail-outline"
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
@@ -90,11 +89,12 @@ export default function Login() {
             if (formError != null) setFormError(null);
           }}
           error={emailError}
+          size="lg"
         />
 
         <Input
-          label={t("auth.password")}
-          placeholder={t("auth.passwordPlaceholder")}
+          placeholder={t("auth.enterPassword")}
+          leftIcon="key-outline"
           secureTextEntry
           value={password}
           onChangeText={(text) => {
@@ -103,6 +103,7 @@ export default function Login() {
             if (formError != null) setFormError(null);
           }}
           error={passwordError}
+          size="lg"
         />
 
         {formError != null && (
@@ -111,16 +112,26 @@ export default function Login() {
           </View>
         )}
 
-        <Button size="lg" onPress={handleLogin} loading={loading} className="mt-2">
+        <Button size="lg" onPress={handleLogin} loading={loading} className="mt-2 rounded-2xl">
           {t("auth.signIn")}
         </Button>
-      </View>
 
-      <View className="flex-row justify-center mt-8">
-        <Text className="text-content-tertiary">{t("auth.noAccount")}</Text>
-        <Link href="/(auth)/register">
-          <Text className="text-brand-primary font-semibold">{t("auth.signUp")}</Text>
-        </Link>
+        {/* ── or ── */}
+        <View className="flex-row items-center gap-3 my-3">
+          <View className="flex-1 h-px bg-border-strong" />
+          <Text className="text-content-muted">{t("common.or")}</Text>
+          <View className="flex-1 h-px bg-border-strong" />
+        </View>
+
+        <Pressable
+          onPress={() => router.push("/(auth)/register")}
+          accessibilityRole="button"
+          className="border-2 border-brand-primary rounded-2xl py-4 items-center active:opacity-70"
+        >
+          <Text className="text-brand-primary font-bold text-base">
+            {t("auth.signUp")}
+          </Text>
+        </Pressable>
       </View>
     </Screen>
   );

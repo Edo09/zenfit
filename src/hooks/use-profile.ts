@@ -46,6 +46,7 @@ export function useProfile(userId: string | undefined) {
           days_per_week: null,
           session_duration: null,
           available_days: null,
+          calorie_goal: null,
           onboarding_completed: false,
           created_at: now,
         }),

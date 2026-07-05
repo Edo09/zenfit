@@ -57,6 +57,8 @@ export const ScrollView = (
   props: React.ComponentProps<typeof RNScrollView> & {
     className?: string;
     contentContainerClassName?: string;
+    // React 19 ref-as-prop; forwarded through useCssElement to RNScrollView
+    ref?: React.Ref<RNScrollView>;
   }
 ) => {
   return useCssElement(RNScrollView, props, {

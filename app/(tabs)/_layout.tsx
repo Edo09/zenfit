@@ -16,11 +16,12 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
+        animation: "shift",
         tabBarActiveTintColor: colors.brandPrimary,
         tabBarInactiveTintColor: colors.contentMuted,
         tabBarStyle: {
-          backgroundColor: colors.brandDark,
-          borderTopColor: colors.surface,
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
         },
         headerStyle: { backgroundColor: colors.brandDark },
         headerTintColor: colors.contentPrimary,

@@ -1,7 +1,8 @@
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, RefreshControl } from "react-native";
+import { Platform, RefreshControl } from "react-native";
+import RAnimated from "react-native-reanimated";
 
 import { EmptyState } from "@/src/components/empty-state";
 import { MealCard } from "@/src/components/meal-card";
@@ -15,8 +16,10 @@ import {
 } from "@/src/components/ui";
 import { useMeals } from "@/src/hooks/use-meals";
 import { useRefreshOnFocus } from "@/src/hooks/use-refresh-on-focus";
+import { exit, layout, staggered } from "@/src/lib/motion";
 import { colors } from "@/src/theme/colors";
 import { View } from "@/src/tw";
+import { AnimatedView } from "@/src/tw/animated";
 import type { Meal, MealType } from "@/src/types/database";
 
 const MEAL_TYPES: MealType[] = ["breakfast", "lunch", "dinner", "snack"];
@@ -79,11 +82,13 @@ export default function MealsScreen() {
         ))}
       </View>
 
-      <FlatList
+      <RAnimated.FlatList
         data={filtered}
         contentInsetAdjustmentBehavior="automatic"
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 100 }}
+        // Siblings slide up to close the gap on delete (unreliable on web)
+        itemLayoutAnimation={Platform.OS !== "web" ? layout() : undefined}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -93,12 +98,14 @@ export default function MealsScreen() {
             progressBackgroundColor={colors.surface}
           />
         }
-        renderItem={({ item }) => (
-          <MealCard
-            meal={item}
-            onPress={() => router.push(`/(tabs)/meals/${item.id}`)}
-            onDelete={() => setPendingDelete(item)}
-          />
+        renderItem={({ item, index }) => (
+          <AnimatedView entering={staggered(index)} exiting={exit()}>
+            <MealCard
+              meal={item}
+              onPress={() => router.push(`/(tabs)/meals/${item.id}`)}
+              onDelete={() => setPendingDelete(item)}
+            />
+          </AnimatedView>
         )}
         ListEmptyComponent={
           <EmptyState

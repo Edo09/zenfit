@@ -15,11 +15,19 @@ import {
 import { WorkoutCarousel } from "@/src/components/workout-carousel";
 import { useAuth } from "@/src/hooks/use-auth";
 import { useMeals } from "@/src/hooks/use-meals";
+import { useProfile } from "@/src/hooks/use-profile";
 import { useProgress } from "@/src/hooks/use-progress";
 import { useRefreshOnFocus } from "@/src/hooks/use-refresh-on-focus";
 import { useRoutines } from "@/src/hooks/use-routines";
 import { setLanguage } from "@/src/i18n";
+import { enterFade, exit, staggered } from "@/src/lib/motion";
 import { colors } from "@/src/theme/colors";
+import { AnimatedView } from "@/src/tw/animated";
+import {
+  caloriesConsumed,
+  estimateCaloriesBurned,
+  recommendedCalorieGoal,
+} from "@/src/utils/calories";
 import { Pressable, Text, View } from "@/src/tw";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -30,10 +38,25 @@ export default function HomeScreen() {
   const meals = useMeals();
   const progress = useProgress();
   const routinesData = useRoutines();
+  const { profile } = useProfile(user?.id);
 
   const { todaysMeals } = meals;
   const { todaysLogs } = progress;
   const { routines } = routinesData;
+
+  // Daily calorie KPIs — recompute whenever today's meals/logs change, so
+  // logging a meal or workout updates the dashboard immediately.
+  const calorieGoal = profile?.calorie_goal ?? recommendedCalorieGoal(profile);
+  const consumed = caloriesConsumed(todaysMeals);
+  const burned = todaysLogs.reduce(
+    (sum, log) => sum + estimateCaloriesBurned(log, profile),
+    0,
+  );
+  const remaining = calorieGoal != null ? calorieGoal - consumed + burned : null;
+
+  const numberLocale = i18n.language === "es" ? "es-ES" : "en-US";
+  const kcal = (value: number | null) =>
+    value != null ? Math.round(value).toLocaleString(numberLocale) : "—";
 
   const loading = meals.loading || progress.loading || routinesData.loading;
   const error = meals.error || progress.error || routinesData.error;
@@ -72,7 +95,7 @@ export default function HomeScreen() {
       onRefresh={refreshAll}
       contentContainerClassName="px-0 py-0 pb-12 gap-0"
     >
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
 
       {/* Header */}
       <View className="px-6 pb-6" style={{ paddingTop: insets.top + 16 }}>
@@ -118,34 +141,74 @@ export default function HomeScreen() {
       ) : error && !hasData ? (
         <ErrorState onRetry={refreshAll} />
       ) : (
-        <>
-          {/* Stats */}
-          <View className="px-6 flex-row gap-4 mb-8">
-            <StatCard
-              label={t("home.mealsLabel")}
-              value={todaysMeals.length}
-              unit={t("home.mealsUnit")}
-              color={colors.brandPrimary}
-              icon="restaurant-outline"
-            />
-            <StatCard
-              label={t("home.workoutLabel")}
-              value={todaysLogs.length}
-              unit={t("home.workoutUnit")}
-              color={colors.success}
-              icon="barbell-outline"
-            />
+        <AnimatedView entering={enterFade()}>
+          {/* Daily calorie KPIs — health/fitness metrics only */}
+          <View className="px-6 gap-4 mb-8">
+            <View className="flex-row gap-4">
+              <StatCard
+                label={t("home.calorieGoal")}
+                value={kcal(calorieGoal)}
+                unit={t("home.kcal")}
+                color={colors.brandPrimary}
+                icon="flag-outline"
+                onPress={() =>
+                  router.push({
+                    pathname: "/(tabs)/profile",
+                    params: { highlight: "calorie-goal", ts: String(Date.now()) },
+                  })
+                }
+              />
+              <StatCard
+                label={t("home.caloriesConsumed")}
+                value={kcal(consumed)}
+                unit={t("home.kcal")}
+                color={colors.warning}
+                icon="restaurant-outline"
+                onPress={() => router.push("/(tabs)/meals")}
+              />
+            </View>
+            <View className="flex-row gap-4">
+              <StatCard
+                label={t("home.caloriesBurned")}
+                value={kcal(burned)}
+                unit={t("home.kcal")}
+                color={colors.brandSecondary}
+                icon="flame-outline"
+                onPress={() => router.push("/(tabs)/routines")}
+              />
+              <StatCard
+                label={t("home.caloriesRemaining")}
+                value={kcal(remaining)}
+                unit={t("home.kcal")}
+                color={remaining != null && remaining < 0 ? colors.error : colors.success}
+                icon="speedometer-outline"
+              />
+            </View>
+            {calorieGoal == null && (
+              <Pressable
+                onPress={() =>
+                  router.push({
+                    pathname: "/(tabs)/profile",
+                    params: { highlight: "calorie-goal", ts: String(Date.now()) },
+                  })
+                }
+                accessibilityRole="button"
+                className="bg-info-soft rounded-xl px-4 py-3"
+              >
+                <Text className="text-brand-primary text-sm font-medium text-center">
+                  {t("home.setCalorieGoalHint")}
+                </Text>
+              </Pressable>
+            )}
           </View>
 
-          {/* AI training plan */}
-          <View className="px-6 mb-8">
-            <AIPlanCard />
-          </View>
-
-          {/* Routines carousel */}
+          {/* Routines — with the AI plan generator as the section's primary action */}
           <View className="mb-8">
             <SectionHeader title={t("home.yourRoutines")} className="px-6 mb-2" />
             <WorkoutCarousel routines={routines} />
+            <View className="px-6 mt-4">
+              <AIPlanCard />
+            </View>
           </View>
 
           {/* Today's meals */}
@@ -172,9 +235,9 @@ export default function HomeScreen() {
               </Pressable>
             ) : (
               <View key="meals-list" className="gap-3">
-                {todaysMeals.slice(0, 3).map((meal) => (
+                {todaysMeals.slice(0, 3).map((meal, index) => (
+                  <AnimatedView key={meal.id} entering={staggered(index)} exiting={exit()}>
                   <Pressable
-                    key={meal.id}
                     onPress={() => router.push(`/(tabs)/meals/${meal.id}`)}
                     className="bg-surface rounded-2xl px-5 py-4 flex-row items-center justify-between border border-border"
                   >
@@ -191,6 +254,7 @@ export default function HomeScreen() {
                     </View>
                     <Ionicons name="chevron-forward" size={18} color={colors.contentMuted} />
                   </Pressable>
+                  </AnimatedView>
                 ))}
               </View>
             )}
@@ -220,9 +284,11 @@ export default function HomeScreen() {
               </Pressable>
             ) : (
               <View key="logs-list" className="gap-3">
-                {todaysLogs.slice(0, 3).map((log) => (
-                  <View
+                {todaysLogs.slice(0, 3).map((log, index) => (
+                  <AnimatedView
                     key={log.id}
+                    entering={staggered(index)}
+                    exiting={exit()}
                     className="bg-surface rounded-2xl px-5 py-4 flex-row items-center justify-between border border-border"
                   >
                     <View className="flex-row items-center gap-4">
@@ -240,12 +306,12 @@ export default function HomeScreen() {
                         )}
                       </View>
                     </View>
-                  </View>
+                  </AnimatedView>
                 ))}
               </View>
             )}
           </View>
-        </>
+        </AnimatedView>
       )}
     </Screen>
   );

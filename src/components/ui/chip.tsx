@@ -1,7 +1,7 @@
-import * as Haptics from "expo-haptics";
 import React from "react";
 
-import { Pressable, Text } from "@/src/tw";
+import { PressableScale } from "@/src/lib/motion";
+import { Text } from "@/src/tw";
 import { cn } from "@/src/utils/cn";
 
 type ChipProps = {
@@ -12,15 +12,11 @@ type ChipProps = {
 };
 
 export function Chip({ label, selected = false, onPress, className }: ChipProps) {
-  const handlePress = () => {
-    if (onPress == null) return;
-    Haptics.selectionAsync().catch(() => {});
-    onPress();
-  };
-
   return (
-    <Pressable
-      onPress={onPress != null ? handlePress : undefined}
+    <PressableScale
+      onPress={onPress}
+      disabled={onPress == null}
+      haptic
       accessibilityRole="button"
       accessibilityState={{ selected }}
       className={cn(
@@ -37,6 +33,6 @@ export function Chip({ label, selected = false, onPress, className }: ChipProps)
       >
         {label}
       </Text>
-    </Pressable>
+    </PressableScale>
   );
 }

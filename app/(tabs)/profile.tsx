@@ -1,6 +1,8 @@
 import * as Haptics from "expo-haptics";
-import React, { useEffect, useState } from "react";
+import { useLocalSearchParams } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { ScrollView as RNScrollView } from "react-native";
 
 import {
   Button,
@@ -15,6 +17,7 @@ import { useAuth } from "@/src/hooks/use-auth";
 import { useProfile } from "@/src/hooks/use-profile";
 import { Pressable, Text, View } from "@/src/tw";
 import type { Profile } from "@/src/types/database";
+import { recommendedCalorieGoal } from "@/src/utils/calories";
 import { cn } from "@/src/utils/cn";
 
 const DAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
@@ -72,6 +75,12 @@ export default function ProfileScreen() {
   const toast = useToast();
   const { user } = useAuth();
   const { profile, loading, updateProfile } = useProfile(user?.id);
+  // Deep-link from the dashboard's goal KPI: scroll to and flash the
+  // calorie-goal field. `ts` changes per tap so repeat taps re-trigger.
+  const { highlight, ts } = useLocalSearchParams<{ highlight?: string; ts?: string }>();
+  const scrollRef = useRef<RNScrollView>(null);
+  const nutritionY = useRef(0);
+  const [highlightGoal, setHighlightGoal] = useState(false);
 
   const [age, setAge] = useState("");
   const [sex, setSex] = useState<Profile["sex"]>(null);
@@ -82,6 +91,7 @@ export default function ProfileScreen() {
   const [daysPerWeek, setDaysPerWeek] = useState("");
   const [sessionDuration, setSessionDuration] = useState("");
   const [availableDays, setAvailableDays] = useState<string[]>([]);
+  const [calorieGoal, setCalorieGoal] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -98,7 +108,35 @@ export default function ProfileScreen() {
       profile.session_duration != null ? String(profile.session_duration) : ""
     );
     setAvailableDays(profile.available_days ?? []);
+    setCalorieGoal(profile.calorie_goal != null ? String(profile.calorie_goal) : "");
   }, [profile]);
+
+  useEffect(() => {
+    if (highlight !== "calorie-goal" || loading) return;
+    setHighlightGoal(true);
+    // Small delay so the section's onLayout has reported its position
+    const scrollTimer = setTimeout(() => {
+      scrollRef.current?.scrollTo({
+        y: Math.max(0, nutritionY.current - 12),
+        animated: true,
+      });
+    }, 300);
+    const clearTimer = setTimeout(() => setHighlightGoal(false), 2500);
+    return () => {
+      clearTimeout(scrollTimer);
+      clearTimeout(clearTimer);
+    };
+  }, [highlight, ts, loading]);
+
+  // Live recommendation from the form's current values, so it updates as the
+  // user edits age/sex/height/weight/activity before saving.
+  const recommendedGoal = recommendedCalorieGoal({
+    age: parseInt(age, 10) || null,
+    sex,
+    height_cm: parseFloat(heightCm) || null,
+    weight_kg: parseFloat(weightKg) || null,
+    activity_level: activityLevel,
+  });
 
   const clearError = () => {
     if (formError != null) setFormError(null);
@@ -126,6 +164,10 @@ export default function ProfileScreen() {
     const sd = parseInt(sessionDuration, 10);
     if (isNaN(sd) || sd < 15 || sd > 300) return t("onboarding.durationBetween");
     if (availableDays.length === 0) return t("onboarding.selectAtLeastOneDay");
+    if (calorieGoal.trim() !== "") {
+      const cg = parseInt(calorieGoal, 10);
+      if (isNaN(cg) || cg < 800 || cg > 10000) return t("profile.calorieGoalBetween");
+    }
     return null;
   };
 
@@ -148,6 +190,7 @@ export default function ProfileScreen() {
         days_per_week: parseInt(daysPerWeek, 10),
         session_duration: parseInt(sessionDuration, 10),
         available_days: availableDays,
+        calorie_goal: calorieGoal.trim() !== "" ? parseInt(calorieGoal, 10) : null,
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       toast.show({ type: "success", message: t("profile.profileUpdated") });
@@ -167,7 +210,7 @@ export default function ProfileScreen() {
   }
 
   return (
-    <Screen keyboard contentContainerClassName="pb-12">
+    <Screen keyboard scrollRef={scrollRef} contentContainerClassName="pb-12">
       {/* Profile data */}
       <View className="gap-1">
         <Text className="text-lg font-semibold text-content-primary">
@@ -286,6 +329,57 @@ export default function ProfileScreen() {
             }}
           />
         </View>
+      </View>
+
+      {/* Nutrition goal */}
+      <View
+        className="gap-1 mt-2"
+        onLayout={(e) => {
+          nutritionY.current = e.nativeEvent.layout.y;
+        }}
+      >
+        <Text className="text-lg font-semibold text-content-primary">
+          {t("profile.nutritionGoal")}
+        </Text>
+        <Text className="text-sm text-content-tertiary">
+          {t("profile.nutritionGoalSubtitle")}
+        </Text>
+      </View>
+
+      <View
+        className={cn(
+          "gap-2 rounded-2xl border-2 p-2 -mx-2",
+          highlightGoal ? "border-brand-primary bg-info-soft" : "border-transparent"
+        )}
+      >
+        <Input
+          label={t("profile.calorieGoal")}
+          placeholder={t("profile.calorieGoalPlaceholder")}
+          keyboardType="number-pad"
+          value={calorieGoal}
+          onChangeText={(v) => {
+            setCalorieGoal(v);
+            clearError();
+          }}
+        />
+        {recommendedGoal != null && (
+          <Pressable
+            onPress={() => {
+              Haptics.selectionAsync().catch(() => {});
+              setCalorieGoal(String(recommendedGoal));
+              clearError();
+            }}
+            accessibilityRole="button"
+            className="bg-info-soft rounded-xl px-4 py-3 flex-row items-center gap-2"
+          >
+            <Text className="text-brand-primary text-sm font-medium flex-1">
+              {t("profile.recommendedGoal", { kcal: recommendedGoal })}
+            </Text>
+            <Text className="text-brand-primary text-sm font-semibold">
+              {t("profile.useRecommended")}
+            </Text>
+          </Pressable>
+        )}
       </View>
 
       <View className="gap-1 mt-2">

@@ -4,7 +4,8 @@ import { useHeaderHeight } from "@react-navigation/elements";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, KeyboardAvoidingView, RefreshControl } from "react-native";
+import { KeyboardAvoidingView, Platform, RefreshControl } from "react-native";
+import RAnimated from "react-native-reanimated";
 
 import { EmptyState } from "@/src/components/empty-state";
 import {
@@ -21,8 +22,10 @@ import {
 import { useProgress } from "@/src/hooks/use-progress";
 import { useRefreshOnFocus } from "@/src/hooks/use-refresh-on-focus";
 import { useRoutines } from "@/src/hooks/use-routines";
+import { enter, exit, layout, staggered } from "@/src/lib/motion";
 import { colors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
+import { AnimatedView } from "@/src/tw/animated";
 import type { WorkoutLog } from "@/src/types/database";
 
 export default function ProgressScreen() {
@@ -116,6 +119,7 @@ export default function ProgressScreen() {
       >
         {/* Log workout inline form */}
         {showLogForm && (
+          <AnimatedView entering={enter()} exiting={exit()}>
           <Card className="mx-4 mt-4 gap-3">
             <Text className="font-semibold text-content-primary">
               {t("progress.logAWorkout")}
@@ -199,14 +203,17 @@ export default function ProgressScreen() {
               </View>
             </View>
           </Card>
+          </AnimatedView>
         )}
 
-        <FlatList
+        <RAnimated.FlatList
           data={logs}
           contentInsetAdjustmentBehavior="automatic"
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 100 }}
           keyboardShouldPersistTaps="handled"
+          // Siblings slide up to close the gap on delete (unreliable on web)
+          itemLayoutAnimation={Platform.OS !== "web" ? layout() : undefined}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -216,7 +223,8 @@ export default function ProgressScreen() {
               progressBackgroundColor={colors.surface}
             />
           }
-          renderItem={({ item }) => (
+          renderItem={({ item, index }) => (
+            <AnimatedView entering={staggered(index)} exiting={exit()}>
             <Card className="px-4 py-4 flex-row items-start justify-between">
               <View className="flex-1 gap-1">
                 <Text className="font-semibold text-content-primary">{item.routine_name}</Text>
@@ -254,6 +262,7 @@ export default function ProgressScreen() {
                 <Ionicons name="trash-outline" size={18} color={colors.error} />
               </Pressable>
             </Card>
+            </AnimatedView>
           )}
           ListEmptyComponent={
             <EmptyState

@@ -13,6 +13,7 @@ export type Profile = {
   days_per_week: number | null;
   session_duration: number | null;
   available_days: string[] | null;
+  calorie_goal: number | null;
   onboarding_completed: boolean;
   created_at: string;
   updated_at: string;

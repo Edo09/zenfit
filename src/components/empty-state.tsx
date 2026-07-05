@@ -2,8 +2,10 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 
 import { Button } from "@/src/components/ui";
+import { enter } from "@/src/lib/motion";
 import { colors } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
+import { AnimatedView } from "@/src/tw/animated";
 
 type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
 
@@ -23,7 +25,7 @@ export function EmptyState({
   icon = "file-tray-outline",
 }: Props) {
   return (
-    <View className="items-center justify-center py-20 gap-3">
+    <AnimatedView entering={enter()} className="items-center justify-center py-20 gap-3">
       <View className="h-16 w-16 items-center justify-center rounded-full bg-surface border border-border">
         <Ionicons name={icon} size={30} color={colors.contentTertiary} />
       </View>
@@ -36,6 +38,6 @@ export function EmptyState({
           {actionLabel}
         </Button>
       )}
-    </View>
+    </AnimatedView>
   );
 }

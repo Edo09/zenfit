@@ -1,7 +1,8 @@
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, RefreshControl } from "react-native";
+import { Platform, RefreshControl } from "react-native";
+import RAnimated from "react-native-reanimated";
 
 import { AIPlanCard } from "@/src/components/ai-plan-card";
 import { EmptyState } from "@/src/components/empty-state";
@@ -15,8 +16,10 @@ import {
 } from "@/src/components/ui";
 import { useRefreshOnFocus } from "@/src/hooks/use-refresh-on-focus";
 import { useRoutines } from "@/src/hooks/use-routines";
+import { enterFade, exit, layout, staggered } from "@/src/lib/motion";
 import { colors } from "@/src/theme/colors";
 import { View } from "@/src/tw";
+import { AnimatedView } from "@/src/tw/animated";
 import type { Routine } from "@/src/types/database";
 
 export default function RoutinesScreen() {
@@ -56,11 +59,13 @@ export default function RoutinesScreen() {
 
   return (
     <View className="flex-1 bg-brand-dark">
-      <FlatList
+      <RAnimated.FlatList
         data={routines}
         contentInsetAdjustmentBehavior="automatic"
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 100 }}
+        // Siblings slide up to close the gap on delete (unreliable on web)
+        itemLayoutAnimation={Platform.OS !== "web" ? layout() : undefined}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -70,13 +75,19 @@ export default function RoutinesScreen() {
             progressBackgroundColor={colors.surface}
           />
         }
-        ListHeaderComponent={<AIPlanCard className="mb-1" />}
-        renderItem={({ item }) => (
-          <RoutineCard
-            routine={item}
-            onPress={() => router.push(`/(tabs)/routines/${item.id}`)}
-            onDelete={() => setPendingDelete(item)}
-          />
+        ListHeaderComponent={
+          <AnimatedView entering={enterFade()}>
+            <AIPlanCard className="mb-1" />
+          </AnimatedView>
+        }
+        renderItem={({ item, index }) => (
+          <AnimatedView entering={staggered(index)} exiting={exit()}>
+            <RoutineCard
+              routine={item}
+              onPress={() => router.push(`/(tabs)/routines/${item.id}`)}
+              onDelete={() => setPendingDelete(item)}
+            />
+          </AnimatedView>
         )}
         ListEmptyComponent={
           <EmptyState

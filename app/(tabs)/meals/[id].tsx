@@ -14,8 +14,10 @@ import {
   useToast,
 } from "@/src/components/ui";
 import { useMealDetail, useMeals } from "@/src/hooks/use-meals";
+import { enter, exit, staggered } from "@/src/lib/motion";
 import { colors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
+import { AnimatedView } from "@/src/tw/animated";
 import type { MealItem } from "@/src/types/database";
 
 const MACRO_COLORS: Record<string, string> = {
@@ -165,8 +167,9 @@ export default function MealDetailScreen() {
             {t("meals.foodItems", { count: meal.meal_items.length })}
           </Text>
 
-          {meal.meal_items.map((item) => (
-            <Card key={item.id} className="px-4 py-3 flex-row items-center justify-between">
+          {meal.meal_items.map((item, index) => (
+            <AnimatedView key={item.id} entering={staggered(index)} exiting={exit()}>
+            <Card className="px-4 py-3 flex-row items-center justify-between">
               <View className="flex-1 gap-0.5">
                 <Text className="font-medium text-content-primary">{item.name}</Text>
                 <Text className="text-content-tertiary text-sm">
@@ -185,10 +188,12 @@ export default function MealDetailScreen() {
                 <Ionicons name="trash-outline" size={18} color={colors.error} />
               </Pressable>
             </Card>
+            </AnimatedView>
           ))}
 
           {/* Add item form */}
           {showAddItem ? (
+            <AnimatedView entering={enter()} exiting={exit()}>
             <Card className="gap-3">
               <Text className="font-semibold text-content-primary">
                 {t("meals.addFoodItem")}
@@ -260,6 +265,7 @@ export default function MealDetailScreen() {
                 </View>
               </View>
             </Card>
+            </AnimatedView>
           ) : (
             <Pressable
               onPress={() => setShowAddItem(true)}

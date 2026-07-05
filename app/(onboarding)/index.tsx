@@ -3,12 +3,21 @@ import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Keyboard } from "react-native";
+import RAnimated, {
+  interpolateColor,
+  useAnimatedStyle,
+  useDerivedValue,
+  withTiming,
+} from "react-native-reanimated";
 
 import { Button, Chip, Input, Screen, useToast } from "@/src/components/ui";
 import { useAuth } from "@/src/hooks/use-auth";
 import { useProfile } from "@/src/hooks/use-profile";
+import { DUR, EASE_OUT, enter, exit, slideEnter } from "@/src/lib/motion";
 import { colors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
+import { AnimatedView } from "@/src/tw/animated";
 import { cn } from "@/src/utils/cn";
 
 const TOTAL_STEPS = 4;
@@ -76,17 +85,27 @@ function OptionButton({
   );
 }
 
+function ProgressSegment({ active }: { active: boolean }) {
+  const progress = useDerivedValue(() =>
+    withTiming(active ? 1 : 0, { duration: DUR.base, easing: EASE_OUT }),
+  );
+  const fill = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(
+      progress.value,
+      [0, 1],
+      [colors.surfaceElevated, colors.brandPrimary],
+    ),
+  }));
+  return (
+    <RAnimated.View style={[{ flex: 1, height: 4, borderRadius: 999 }, fill]} />
+  );
+}
+
 function ProgressBar({ step }: { step: number }) {
   return (
     <View className="flex-row gap-2 px-6 mt-4">
       {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
-        <View
-          key={i}
-          className={cn(
-            "flex-1 h-1 rounded-full",
-            i <= step ? "bg-brand-primary" : "bg-surface-elevated"
-          )}
-        />
+        <ProgressSegment key={i} active={i <= step} />
       ))}
     </View>
   );
@@ -98,6 +117,8 @@ export default function Onboarding() {
   const { user, markOnboarded } = useAuth();
   const { updateProfile } = useProfile(user?.id);
   const [step, setStep] = useState(0);
+  // Slide direction for the step transition; set in the same batch as setStep
+  const [direction, setDirection] = useState<1 | -1>(1);
   const [saving, setSaving] = useState(false);
   const [stepError, setStepError] = useState<string | null>(null);
   const [form, setForm] = useState<FormData>({
@@ -178,7 +199,11 @@ export default function Onboarding() {
   const handleNext = () => {
     if (!validateStep()) return;
     if (step < TOTAL_STEPS - 1) {
+      // Dismiss before the swap so the exiting snapshot isn't taken
+      // mid-keyboard-resize
+      Keyboard.dismiss();
       setStepError(null);
+      setDirection(1);
       setStep(step + 1);
     } else {
       handleSubmit();
@@ -187,7 +212,9 @@ export default function Onboarding() {
 
   const handleBack = () => {
     if (step > 0) {
+      Keyboard.dismiss();
       setStepError(null);
+      setDirection(-1);
       setStep(step - 1);
     }
   };
@@ -505,11 +532,20 @@ export default function Onboarding() {
       <ProgressBar step={step} />
 
       <View className="flex-1 px-6 pt-8 pb-6">
-        {renderStep()}
+        {/* Keyed by step: new step slides in from the travel direction while
+            the old one fades out (exits are direction-agnostic on purpose —
+            a direction-aware exiting prop would be captured stale) */}
+        <AnimatedView key={step} entering={slideEnter(direction)} exiting={exit()}>
+          {renderStep()}
+        </AnimatedView>
         {stepError != null && (
-          <View className="bg-error-soft rounded-xl p-3 mt-6">
+          <AnimatedView
+            entering={enter()}
+            exiting={exit()}
+            className="bg-error-soft rounded-xl p-3 mt-6"
+          >
             <Text className="text-error text-sm">{stepError}</Text>
-          </View>
+          </AnimatedView>
         )}
       </View>
 
