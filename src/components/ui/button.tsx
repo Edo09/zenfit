@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/button";
 import { Spinner } from "@/src/components/ui/spinner";
 import { DUR, EASE_OUT } from "@/src/lib/motion";
-import { colors } from "@/src/theme/colors";
+import { useColors, type PaletteColor } from "@/src/theme/colors";
 import { View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
 import { cn } from "@/src/utils/cn";
@@ -46,11 +46,11 @@ const VARIANT_LABEL: Record<ButtonVariant, string> = {
   destructive: "text-error",
 };
 
-const VARIANT_SPINNER: Record<ButtonVariant, string> = {
-  primary: colors.white,
-  secondary: colors.contentPrimary,
-  ghost: colors.brandPrimary,
-  destructive: colors.error,
+const VARIANT_SPINNER: Record<ButtonVariant, PaletteColor> = {
+  primary: "white",
+  secondary: "contentPrimary",
+  ghost: "brandPrimary",
+  destructive: "error",
 };
 
 const SIZE_CONTAINER: Record<ButtonSize, string> = {
@@ -94,6 +94,8 @@ export function Button({
   haptic = true,
 }: ButtonProps) {
   const inactive = disabled || loading;
+  const colors = useColors();
+  const accentColor = colors[VARIANT_SPINNER[variant]];
   const scale = useSharedValue(1);
   const pressStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -131,12 +133,12 @@ export function Button({
     >
       {loading ? (
         <View className="py-0.5">
-          <Spinner color={VARIANT_SPINNER[variant]} />
+          <Spinner color={accentColor} />
         </View>
       ) : (
         <>
           {icon != null && (
-            <Ionicons name={icon} size={SIZE_ICON[size]} color={VARIANT_SPINNER[variant]} />
+            <Ionicons name={icon} size={SIZE_ICON[size]} color={accentColor} />
           )}
           <ButtonText className={cn(VARIANT_LABEL[variant], SIZE_LABEL[size])}>
             {children}

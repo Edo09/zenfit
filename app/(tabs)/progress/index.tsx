@@ -23,12 +23,13 @@ import { useProgress } from "@/src/hooks/use-progress";
 import { useRefreshOnFocus } from "@/src/hooks/use-refresh-on-focus";
 import { useRoutines } from "@/src/hooks/use-routines";
 import { enter, exit, layout, staggered } from "@/src/lib/motion";
-import { colors } from "@/src/theme/colors";
+import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
 import type { WorkoutLog } from "@/src/types/database";
 
 export default function ProgressScreen() {
+  const colors = useColors();
   const { t, i18n } = useTranslation();
   const toast = useToast();
   const headerHeight = useHeaderHeight();

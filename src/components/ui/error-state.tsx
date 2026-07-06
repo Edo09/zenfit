@@ -3,7 +3,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 
 import { enter } from "@/src/lib/motion";
-import { colors } from "@/src/theme/colors";
+import { useColors } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
 
@@ -15,6 +15,7 @@ type ErrorStateProps = {
 };
 
 export function ErrorState({ message, onRetry }: ErrorStateProps) {
+  const colors = useColors();
   const { t } = useTranslation();
   return (
     <AnimatedView entering={enter()} className="items-center justify-center gap-3 py-20">

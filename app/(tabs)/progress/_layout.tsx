@@ -2,9 +2,10 @@ import { Stack } from "expo-router";
 import { Platform } from "react-native";
 import { useTranslation } from "react-i18next";
 
-import { colors } from "@/src/theme/colors";
+import { useColors } from "@/src/theme/colors";
 
 export default function ProgressLayout() {
+  const colors = useColors();
   const { t } = useTranslation();
   return (
     <Stack

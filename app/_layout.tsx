@@ -8,6 +8,11 @@ import { setupOnlineManager } from "@/src/lib/online";
 import { flushOutbox } from "@/src/lib/outbox";
 import { persister, PERSIST_MAX_AGE, queryClient } from "@/src/lib/query-client";
 import { AuthProvider } from "@/src/providers/auth-provider";
+import {
+  applyThemeMode,
+  getStoredThemeMode,
+  type ThemeMode,
+} from "@/src/theme/theme-mode";
 import { supabase } from "@/src/utils/supabase";
 import {
   Inter_400Regular,
@@ -24,7 +29,8 @@ import Constants from "expo-constants";
 import { useFonts } from "expo-font";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useCallback, useEffect } from "react";
+import { StatusBar } from "expo-status-bar";
+import { useCallback, useEffect, useState } from "react";
 import { I18nextProvider } from "react-i18next";
 
 SplashScreen.preventAutoHideAsync();
@@ -81,17 +87,29 @@ export default function RootLayout() {
     Inter_900Black,
   });
 
+  // Restore the saved theme before first paint (joins the splash gate with
+  // font loading) so a dark-mode user never sees a light flash on cold start.
+  const [themeMode, setThemeModeState] = useState<ThemeMode | null>(null);
+  useEffect(() => {
+    getStoredThemeMode().then((mode) => {
+      applyThemeMode(mode);
+      setThemeModeState(mode);
+    });
+  }, []);
+
+  const ready = fontsLoaded && themeMode !== null;
+
   const onLayoutRootView = useCallback(async () => {
-    if (fontsLoaded) {
+    if (ready) {
       await SplashScreen.hideAsync();
     }
-  }, [fontsLoaded]);
+  }, [ready]);
 
   useEffect(() => {
     onLayoutRootView();
   }, [onLayoutRootView]);
 
-  if (!fontsLoaded) return null;
+  if (!ready) return null;
 
   return (
     <PersistQueryClientProvider
@@ -113,9 +131,11 @@ export default function RootLayout() {
       }}
     >
       <I18nextProvider i18n={i18n}>
-        <GluestackUIProvider mode="light">
+        <GluestackUIProvider mode={themeMode}>
           <AuthProvider>
           <ToastProvider>
+            {/* "auto" tracks the active scheme: light icons on dark, dark on light */}
+            <StatusBar style="auto" />
             <View style={{ flex: 1 }}>
               <OfflineBanner />
               {/* Group switches are router.replace calls — fade reads right */}

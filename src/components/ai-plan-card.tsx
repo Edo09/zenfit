@@ -10,7 +10,7 @@ import { useProfile } from "@/src/hooks/use-profile";
 import { useRoutines } from "@/src/hooks/use-routines";
 import { useIsOnline } from "@/src/lib/online";
 import { generateRoutines } from "@/src/services/ai-routine";
-import { colors } from "@/src/theme/colors";
+import { useColors } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
 import type { Profile } from "@/src/types/database";
 import { cn } from "@/src/utils/cn";
@@ -31,6 +31,7 @@ function isProfileComplete(profile: Profile | null): profile is Profile {
 }
 
 export function AIPlanCard({ className }: { className?: string }) {
+  const colors = useColors();
   const { t, i18n } = useTranslation();
   const toast = useToast();
   const pathname = usePathname();

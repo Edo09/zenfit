@@ -3,7 +3,7 @@ import React from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { exit, pop, PressableScale } from "@/src/lib/motion";
-import { colors } from "@/src/theme/colors";
+import { useColors } from "@/src/theme/colors";
 
 type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
 
@@ -14,6 +14,7 @@ type FABProps = {
 };
 
 export function FAB({ icon = "add", onPress, accessibilityLabel }: FABProps) {
+  const colors = useColors();
   const insets = useSafeAreaInsets();
 
   return (

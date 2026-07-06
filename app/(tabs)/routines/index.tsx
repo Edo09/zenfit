@@ -17,12 +17,13 @@ import {
 import { useRefreshOnFocus } from "@/src/hooks/use-refresh-on-focus";
 import { useRoutines } from "@/src/hooks/use-routines";
 import { enterFade, exit, layout, staggered } from "@/src/lib/motion";
-import { colors } from "@/src/theme/colors";
+import { useColors } from "@/src/theme/colors";
 import { View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
 import type { Routine } from "@/src/types/database";
 
 export default function RoutinesScreen() {
+  const colors = useColors();
   const { t } = useTranslation();
   const toast = useToast();
   const { routines, loading, error, refreshing, refresh, deleteRoutine } = useRoutines();

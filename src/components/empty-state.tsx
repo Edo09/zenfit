@@ -3,7 +3,7 @@ import React from "react";
 
 import { Button } from "@/src/components/ui";
 import { enter } from "@/src/lib/motion";
-import { colors } from "@/src/theme/colors";
+import { useColors } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
 
@@ -24,6 +24,7 @@ export function EmptyState({
   onAction,
   icon = "file-tray-outline",
 }: Props) {
+  const colors = useColors();
   return (
     <AnimatedView entering={enter()} className="items-center justify-center py-20 gap-3">
       <View className="h-16 w-16 items-center justify-center rounded-full bg-surface border border-border">

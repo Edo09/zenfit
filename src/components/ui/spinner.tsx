@@ -1,7 +1,7 @@
 import React from "react";
 
 import { Spinner as GSSpinner } from "@/components/ui/spinner";
-import { colors } from "@/src/theme/colors";
+import { useColors } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
 import { cn } from "@/src/utils/cn";
 
@@ -10,8 +10,9 @@ type SpinnerProps = {
   color?: string;
 };
 
-export function Spinner({ size = "small", color = colors.brandPrimary }: SpinnerProps) {
-  return <GSSpinner size={size} color={color} />;
+export function Spinner({ size = "small", color }: SpinnerProps) {
+  const colors = useColors();
+  return <GSSpinner size={size} color={color ?? colors.brandPrimary} />;
 }
 
 type LoadingBlockProps = {

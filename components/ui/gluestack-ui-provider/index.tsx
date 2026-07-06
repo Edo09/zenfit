@@ -17,7 +17,7 @@ export const useCalendarTheme = useCalendarThemeHook;
 export type { GluestackColors } from './useGluestackColors';
 
 export function GluestackUIProvider({
-  mode = 'light',
+  mode = 'system',
   ...props
 }: {
   mode?: ModeType;
@@ -27,15 +27,16 @@ export function GluestackUIProvider({
   const { colorScheme, setColorScheme } = useColorScheme();
 
   useEffect(() => {
-    // nativewind preview.3 types omit "system"; runtime accepts it
-    setColorScheme(mode as Exclude<ModeType, "system">);
+    // nativewind setColorScheme is Appearance.setColorScheme; valid values
+    // are 'light' | 'dark' | null — null means follow the OS ("system").
+    setColorScheme((mode === 'system' ? null : mode) as 'light' | 'dark');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
 
   return (
     <View
       style={[
-        config[colorScheme!],
+        config[colorScheme ?? 'light'],
         { flex: 1, height: '100%', width: '100%' },
         props.style,
       ]}

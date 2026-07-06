@@ -13,6 +13,7 @@ export default {
     loading: "Loading...",
     seeAll: "See all",
     language: "Language",
+    menu: "Menu",
     english: "English",
     spanish: "Spanish",
     retry: "Try again",
@@ -184,7 +185,6 @@ export default {
 
   // Home
   home: {
-    welcomeBack: "Welcome back",
     hey: "Hey, {{name}}! 👋",
     calorieGoal: "Calorie goal",
     caloriesConsumed: "Consumed",

@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Input as GSInput, InputField } from "@/components/ui/input";
-import { colors } from "@/src/theme/colors";
+import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, TextInput, View } from "@/src/tw";
 import { cn } from "@/src/utils/cn";
 
@@ -29,6 +29,7 @@ export function Input({
   size = "md",
   ...rest
 }: InputProps) {
+  const colors = useColors();
   const { t } = useTranslation();
   // Password fields get an eye toggle to reveal what was typed
   const [revealed, setRevealed] = useState(false);

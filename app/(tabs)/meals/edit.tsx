@@ -7,12 +7,13 @@ import { useTranslation } from "react-i18next";
 import { Button, Card, Chip, Input, Screen, useToast } from "@/src/components/ui";
 import { useMeals } from "@/src/hooks/use-meals";
 import { mealPhotoUrl } from "@/src/services/meal-photos";
-import { colors } from "@/src/theme/colors";
+import { useColors } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
 import type { MealType } from "@/src/types/database";
 import { MEAL_SLOTS } from "@/src/utils/meal-slots";
 
 export default function EditFoodScreen() {
+  const colors = useColors();
   const { t } = useTranslation();
   const toast = useToast();
   const { itemId } = useLocalSearchParams<{ itemId?: string }>();

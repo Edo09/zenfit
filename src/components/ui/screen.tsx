@@ -7,7 +7,7 @@ import {
   ScrollView as RNScrollView,
 } from "react-native";
 
-import { colors } from "@/src/theme/colors";
+import { useColors } from "@/src/theme/colors";
 import { ScrollView, View } from "@/src/tw";
 import { cn } from "@/src/utils/cn";
 
@@ -38,6 +38,7 @@ export function Screen({
   scrollRef,
   footer,
 }: ScreenProps) {
+  const colors = useColors();
   const headerHeight = useHeaderHeight();
 
   const content = scroll ? (

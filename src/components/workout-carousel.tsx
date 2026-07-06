@@ -103,7 +103,14 @@ function CarouselItem({
   return (
     <Animated.View style={[{ width: ITEM_WIDTH }, animatedStyle]}>
       <Pressable
-        onPress={() => router.push(`/(tabs)/routines/${item.id}`)}
+        onPress={() => {
+          // Seed the Routines tab's own stack with its index first, then
+          // push the detail screen on the next tick — pushing both in the
+          // same tick gets coalesced into a single history entry (no parent
+          // screen, no back button); yielding first makes them two.
+          router.push("/(tabs)/routines");
+          setTimeout(() => router.push(`/(tabs)/routines/${item.id}`), 0);
+        }}
         className="mx-2 rounded-2xl overflow-hidden bg-surface"
         style={{ height: 200 }}
       >

@@ -3,7 +3,7 @@ import React from "react";
 
 import { Card } from "@/src/components/ui";
 import { PressableScale } from "@/src/lib/motion";
-import { colors } from "@/src/theme/colors";
+import { useColors } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
 
 type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
@@ -22,17 +22,19 @@ export function StatCard({
   label,
   value,
   unit,
-  color = colors.brandPrimary,
+  color,
   icon,
   onPress,
 }: Props) {
+  const colors = useColors();
+  const iconColor = color ?? colors.brandPrimary;
   const card = (
     <Card className="flex-1 gap-2">
       <View className="flex-row items-center justify-between">
         <Text className="text-sm text-content-tertiary">{label}</Text>
         {icon != null && (
           <View className="h-8 w-8 items-center justify-center rounded-full bg-info-soft">
-            <Ionicons name={icon} size={16} color={color} />
+            <Ionicons name={icon} size={16} color={iconColor} />
           </View>
         )}
       </View>

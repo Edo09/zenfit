@@ -15,7 +15,7 @@ import { Button, Chip, Input, Screen, useToast } from "@/src/components/ui";
 import { useAuth } from "@/src/hooks/use-auth";
 import { useProfile } from "@/src/hooks/use-profile";
 import { DUR, EASE_OUT, enter, exit, slideEnter } from "@/src/lib/motion";
-import { colors } from "@/src/theme/colors";
+import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
 import { cn } from "@/src/utils/cn";
@@ -86,6 +86,7 @@ function OptionButton({
 }
 
 function ProgressSegment({ active }: { active: boolean }) {
+  const colors = useColors();
   const progress = useDerivedValue(() =>
     withTiming(active ? 1 : 0, { duration: DUR.base, easing: EASE_OUT }),
   );
@@ -112,6 +113,7 @@ function ProgressBar({ step }: { step: number }) {
 }
 
 export default function Onboarding() {
+  const colors = useColors();
   const { t } = useTranslation();
   const toast = useToast();
   const { user, markOnboarded } = useAuth();

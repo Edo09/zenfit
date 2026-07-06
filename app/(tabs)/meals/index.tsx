@@ -19,7 +19,7 @@ import { useMeals } from "@/src/hooks/use-meals";
 import { useProfile } from "@/src/hooks/use-profile";
 import { useRefreshOnFocus } from "@/src/hooks/use-refresh-on-focus";
 import { PressableScale, slideEnter, staggered } from "@/src/lib/motion";
-import { colors } from "@/src/theme/colors";
+import { useColors } from "@/src/theme/colors";
 import { Pressable, ScrollView, Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
 import type { MealItem, MealType } from "@/src/types/database";
@@ -31,6 +31,7 @@ import { addDays, formatDayLabel, toDateKey } from "@/src/utils/dates";
 import { MEAL_SLOTS, suggestedSlot } from "@/src/utils/meal-slots";
 
 export default function DiaryScreen() {
+  const colors = useColors();
   const { t, i18n } = useTranslation();
   const toast = useToast();
   const { user } = useAuth();

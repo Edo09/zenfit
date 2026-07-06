@@ -12,7 +12,7 @@ import { useToast } from "@/src/components/ui";
 import { DUR, EASE_IN, EASE_OUT } from "@/src/lib/motion";
 import { useIsOnline } from "@/src/lib/online";
 import { subscribeFlushResult, usePendingCount } from "@/src/lib/outbox";
-import { colors } from "@/src/theme/colors";
+import { useColors } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
 
@@ -23,6 +23,7 @@ import { AnimatedView } from "@/src/tw/animated";
 // Always mounted: the strip animates its real (measured) height so the
 // content below reflows smoothly instead of jumping.
 export function OfflineBanner() {
+  const colors = useColors();
   const { t } = useTranslation();
   const online = useIsOnline();
   const pending = usePendingCount();

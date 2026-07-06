@@ -12,7 +12,7 @@ import {
   SelectPortal,
   SelectTrigger,
 } from "@/components/ui/select";
-import { colors } from "@/src/theme/colors";
+import { useColors } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
 import { cn } from "@/src/utils/cn";
 
@@ -37,6 +37,7 @@ export function SelectField({
   helper,
   containerClassName,
 }: SelectFieldProps) {
+  const colors = useColors();
   const selected = options.find((o) => o.value === value);
 
   return (

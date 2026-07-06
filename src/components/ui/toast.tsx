@@ -12,7 +12,7 @@ import { Pressable as RNPressable, StyleSheet } from "react-native";
 import Animated, { FadeInUp, FadeOutUp } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { colors } from "@/src/theme/colors";
+import { useColors, type PaletteColor } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
 
 const TOAST_MS = 3000;
@@ -28,10 +28,10 @@ const ICONS: Record<ToastType, React.ComponentProps<typeof Ionicons>["name"]> = 
   info: "information-circle",
 };
 
-const ICON_COLORS: Record<ToastType, string> = {
-  success: colors.success,
-  error: colors.error,
-  info: colors.info,
+const ICON_COLORS: Record<ToastType, PaletteColor> = {
+  success: "success",
+  error: "error",
+  info: "info",
 };
 
 const ACCENT_CLASS: Record<ToastType, string> = {
@@ -52,6 +52,7 @@ export function useToast() {
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const insets = useSafeAreaInsets();
+  const colors = useColors();
   const [toast, setToast] = useState<ToastItem | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const nextId = useRef(0);
@@ -102,7 +103,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                   className={ACCENT_CLASS[toast.type]}
                   style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 4 }}
                 />
-                <Ionicons name={ICONS[toast.type]} size={22} color={ICON_COLORS[toast.type]} />
+                <Ionicons name={ICONS[toast.type]} size={22} color={colors[ICON_COLORS[toast.type]]} />
                 <Text className="flex-1 text-sm font-medium text-content-primary">
                   {toast.message}
                 </Text>

@@ -3,7 +3,7 @@ import { Tabs } from "expo-router";
 import React from "react";
 import { useTranslation } from "react-i18next";
 
-import { colors } from "@/src/theme/colors";
+import { useColors } from "@/src/theme/colors";
 
 type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
 
@@ -12,6 +12,7 @@ function TabIcon({ name, color }: { name: IoniconName; color: string }) {
 }
 
 export default function TabsLayout() {
+  const colors = useColors();
   const { t } = useTranslation();
   return (
     <Tabs

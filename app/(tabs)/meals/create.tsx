@@ -17,7 +17,7 @@ import {
 } from "@/src/services/ai-nutrition";
 import { uploadMealPhoto } from "@/src/services/meal-photos";
 import type { ImageInput } from "@/src/services/llm";
-import { colors } from "@/src/theme/colors";
+import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
 import type { MealType } from "@/src/types/database";
@@ -44,6 +44,7 @@ type Estimate = {
 };
 
 export default function AddFoodScreen() {
+  const colors = useColors();
   const { t, i18n } = useTranslation();
   const toast = useToast();
   const online = useIsOnline();

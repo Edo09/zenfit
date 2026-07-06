@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Card } from "@/src/components/ui";
 import { enter, exit, PressableScale } from "@/src/lib/motion";
 import { mealPhotoUrl } from "@/src/services/meal-photos";
-import { colors } from "@/src/theme/colors";
+import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
 import type { MealItem, MealType } from "@/src/types/database";
@@ -31,6 +31,7 @@ const SLOT_ICON: Record<MealType, React.ComponentProps<typeof Ionicons>["name"]>
 // One fixed diary section: slot header with kcal total + add button, then the
 // slot's food items (flattened across that day's container meals).
 export function DiarySlot({ slot, entries, onAdd, onEdit, onRemove }: Props) {
+  const colors = useColors();
   const { t, i18n } = useTranslation();
   const slotLabel = t(`meals.${slot}`, { defaultValue: slot });
   const kcal = entries.reduce((sum, e) => sum + e.item.calories, 0);

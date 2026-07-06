@@ -1,9 +1,18 @@
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import { router } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import {
+  Actionsheet,
+  ActionsheetBackdrop,
+  ActionsheetContent,
+  ActionsheetDragIndicator,
+  ActionsheetDragIndicatorWrapper,
+  ActionsheetItem,
+  ActionsheetItemText,
+} from "@/components/ui/actionsheet";
 import { AIPlanCard } from "@/src/components/ai-plan-card";
 import { StatCard } from "@/src/components/stat-card";
 import {
@@ -21,7 +30,7 @@ import { useRefreshOnFocus } from "@/src/hooks/use-refresh-on-focus";
 import { useRoutines } from "@/src/hooks/use-routines";
 import { setLanguage } from "@/src/i18n";
 import { enterFade, exit, staggered } from "@/src/lib/motion";
-import { colors } from "@/src/theme/colors";
+import { useColors } from "@/src/theme/colors";
 import { AnimatedView } from "@/src/tw/animated";
 import {
   caloriesConsumed,
@@ -30,10 +39,16 @@ import {
 } from "@/src/utils/calories";
 import { toDateKey } from "@/src/utils/dates";
 import { MEAL_SLOTS, suggestedSlot } from "@/src/utils/meal-slots";
+import { setThemeMode } from "@/src/theme/theme-mode";
 import { Pressable, Text, View } from "@/src/tw";
+import { useColorScheme as useRNColorScheme } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
+  const colors = useColors();
+  const scheme = useRNColorScheme();
+  const isDark = scheme === "dark";
+  const [menuOpen, setMenuOpen] = useState(false);
   const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
   const { user, signOut } = useAuth();
@@ -109,8 +124,6 @@ export default function HomeScreen() {
       onRefresh={refreshAll}
       contentContainerClassName="px-0 py-0 pb-12 gap-0"
     >
-      <StatusBar style="dark" />
-
       {/* Header */}
       <View className="px-6 pb-6" style={{ paddingTop: insets.top + 16 }}>
         <View className="flex-row items-center justify-between mb-2">
@@ -118,37 +131,77 @@ export default function HomeScreen() {
             onPress={() => router.push("/(tabs)/profile")}
             accessibilityRole="button"
             accessibilityLabel={t("tabs.profile")}
+            className="flex-row items-center gap-3 flex-1 mr-2"
           >
-            <Text className="text-brand-primary text-xs font-semibold uppercase tracking-wider mb-1">
-              {t("home.welcomeBack")}
-            </Text>
-            <Text className="text-2xl font-bold text-content-primary">
-              {t("home.hey", { name: displayName })}
-            </Text>
-          </Pressable>
-          <View className="flex-row items-center gap-2">
-            <Pressable
-              onPress={() => setLanguage(i18n.language === "en" ? "es" : "en")}
-              accessibilityRole="button"
-              accessibilityLabel={t("common.language")}
-              className="w-10 h-10 rounded-full bg-surface items-center justify-center border border-border"
-            >
-              <Text className="text-sm font-semibold text-content-secondary">
-                {i18n.language === "en" ? "ES" : "EN"}
+            <Image
+              source={require("@/assets/images/app-icon/icon.png")}
+              style={{ width: 60, height: 60, borderRadius: 14 }}
+              accessibilityIgnoresInvertColors
+            />
+            <View className="flex-1">
+              <Text className="text-brand-primary text-xs font-semibold uppercase tracking-wider mb-1">
+                Hokage Coaching App
               </Text>
-            </Pressable>
-            <Pressable
-              onPress={signOut}
-              accessibilityRole="button"
-              accessibilityLabel={t("auth.signOut")}
-              className="w-10 h-10 rounded-full bg-surface items-center justify-center border border-border"
-            >
-              <Ionicons name="log-out-outline" size={20} color={colors.contentMuted} />
-            </Pressable>
-          </View>
+              <Text className="text-2xl font-bold text-content-primary" numberOfLines={1}>
+                {t("home.hey", { name: displayName })}
+              </Text>
+            </View>
+          </Pressable>
+          <Pressable
+            onPress={() => setMenuOpen(true)}
+            accessibilityRole="button"
+            accessibilityLabel={t("common.menu")}
+            className="w-10 h-10 rounded-full bg-surface items-center justify-center border border-border"
+          >
+            <Ionicons name="ellipsis-vertical" size={18} color={colors.contentSecondary} />
+          </Pressable>
         </View>
         <Text className="text-content-tertiary">{today}</Text>
       </View>
+
+      <Actionsheet isOpen={menuOpen} onClose={() => setMenuOpen(false)}>
+        <ActionsheetBackdrop />
+        <ActionsheetContent>
+          <ActionsheetDragIndicatorWrapper>
+            <ActionsheetDragIndicator />
+          </ActionsheetDragIndicatorWrapper>
+          <ActionsheetItem
+            onPress={() => {
+              setMenuOpen(false);
+              void setThemeMode(isDark ? "light" : "dark");
+            }}
+          >
+            <Ionicons
+              name={isDark ? "sunny-outline" : "moon-outline"}
+              size={20}
+              color={colors.contentSecondary}
+            />
+            <ActionsheetItemText>{t(isDark ? "home.light" : "home.dark")}</ActionsheetItemText>
+          </ActionsheetItem>
+          <ActionsheetItem
+            onPress={() => {
+              setMenuOpen(false);
+              setLanguage(i18n.language === "en" ? "es" : "en");
+            }}
+          >
+            <Ionicons name="language-outline" size={20} color={colors.contentSecondary} />
+            <ActionsheetItemText>
+              {i18n.language === "en" ? t("common.spanish") : t("common.english")}
+            </ActionsheetItemText>
+          </ActionsheetItem>
+          <ActionsheetItem
+            onPress={() => {
+              setMenuOpen(false);
+              signOut();
+            }}
+          >
+            <Ionicons name="log-out-outline" size={20} color={colors.error} />
+            <ActionsheetItemText className="text-error">
+              {t("auth.signOut")}
+            </ActionsheetItemText>
+          </ActionsheetItem>
+        </ActionsheetContent>
+      </Actionsheet>
 
       {loading && !hasData ? (
         <LoadingBlock />
@@ -236,12 +289,21 @@ export default function HomeScreen() {
             {slotSummaries.length === 0 ? (
               <Pressable
                 key="meals-empty"
-                onPress={() =>
-                  router.push({
-                    pathname: "/(tabs)/meals/create",
-                    params: { mealType: suggestedSlot(), date: toDateKey() },
-                  })
-                }
+                onPress={() => {
+                  // Seed the Meals tab's own stack with its index first, then
+                  // push "create" on the next tick — pushing both in the same
+                  // tick gets coalesced into one history entry (no parent
+                  // screen, no back button); yielding first makes them two.
+                  router.push("/(tabs)/meals");
+                  setTimeout(
+                    () =>
+                      router.push({
+                        pathname: "/(tabs)/meals/create",
+                        params: { mealType: suggestedSlot(), date: toDateKey() },
+                      }),
+                    0
+                  );
+                }}
                 className="bg-surface rounded-2xl p-8 items-center border border-dashed border-border-strong"
               >
                 <View className="w-12 h-12 bg-info-soft rounded-2xl items-center justify-center mb-3">
@@ -293,7 +355,21 @@ export default function HomeScreen() {
             {todaysLogs.length === 0 ? (
               <Pressable
                 key="logs-empty"
-                onPress={() => router.push("/(tabs)/routines")}
+                onPress={() => {
+                  // Seed the Routines tab's own stack with its index first,
+                  // then push the target on the next tick — pushing both in
+                  // the same tick gets coalesced into one history entry (no
+                  // parent screen, no back button); yielding first makes
+                  // them two.
+                  router.push("/(tabs)/routines");
+                  setTimeout(() => {
+                    if (routines.length > 0) {
+                      router.push(`/(tabs)/routines/${routines[0].id}`);
+                    } else {
+                      router.push("/(tabs)/routines/create");
+                    }
+                  }, 0);
+                }}
                 className="bg-surface rounded-2xl p-8 items-center border border-dashed border-border-strong"
               >
                 <View className="w-12 h-12 bg-success-soft rounded-2xl items-center justify-center mb-3">

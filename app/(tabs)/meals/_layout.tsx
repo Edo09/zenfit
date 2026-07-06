@@ -2,9 +2,17 @@ import { Stack } from "expo-router";
 import { Platform } from "react-native";
 import { useTranslation } from "react-i18next";
 
-import { colors } from "@/src/theme/colors";
+import { useColors } from "@/src/theme/colors";
+
+// Deep-linking straight to "create"/"edit" (e.g. from the Home tab) otherwise
+// builds this stack with no "index" beneath it — no parent screen means no
+// back button. This forces index to always be inserted first.
+export const unstable_settings = {
+  initialRouteName: "index",
+};
 
 export default function MealsLayout() {
+  const colors = useColors();
   const { t } = useTranslation();
   return (
     <Stack

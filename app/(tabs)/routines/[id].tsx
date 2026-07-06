@@ -17,7 +17,7 @@ import { useProfile } from "@/src/hooks/use-profile";
 import { useProgress } from "@/src/hooks/use-progress";
 import { useRoutineDetail, useRoutines } from "@/src/hooks/use-routines";
 import { enter, exit, pop, staggered } from "@/src/lib/motion";
-import { colors } from "@/src/theme/colors";
+import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
 import type { RoutineExercise } from "@/src/types/database";
@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export default function RoutineDetailScreen() {
+  const colors = useColors();
   const { t } = useTranslation();
   const toast = useToast();
   const { id } = useLocalSearchParams<{ id: string }>();

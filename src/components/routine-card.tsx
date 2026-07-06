@@ -4,7 +4,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 
 import { Card } from "@/src/components/ui";
-import { colors } from "@/src/theme/colors";
+import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 import type { Routine } from "@/src/types/database";
 import { getRoutineImage } from "@/src/utils/routine-image";
@@ -16,6 +16,7 @@ type Props = {
 };
 
 export function RoutineCard({ routine, onPress, onDelete }: Props) {
+  const colors = useColors();
   const { t } = useTranslation();
 
   return (

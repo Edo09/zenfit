@@ -15,7 +15,7 @@ import {
 } from "@/src/components/ui";
 import { useAuth } from "@/src/hooks/use-auth";
 import { useProfile } from "@/src/hooks/use-profile";
-import { colors } from "@/src/theme/colors";
+import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, TextInput, View } from "@/src/tw";
 import type { Profile } from "@/src/types/database";
 import { recommendedCalorieGoal } from "@/src/utils/calories";
@@ -124,6 +124,7 @@ function ProfessionCard({
   selected: boolean;
   onPress: () => void;
 }) {
+  const colors = useColors();
   return (
     <Pressable
       accessibilityRole="button"
@@ -152,6 +153,7 @@ function ProfessionCard({
 }
 
 export default function ProfileScreen() {
+  const colors = useColors();
   const { t } = useTranslation();
   const toast = useToast();
   const { user } = useAuth();
@@ -522,10 +524,10 @@ export default function ProfileScreen() {
             <View className="flex-row items-center gap-3 rounded-2xl bg-info-soft p-3.5">
               <Ionicons name="flash" size={20} color={colors.brandPrimary} />
               <View className="flex-1 gap-0.5">
-                <Text className="text-xs font-semibold text-brand-primary-dark">
+                <Text className="text-xs font-semibold text-brand-primary-dark dark:text-white">
                   {t("profile.recommendedCaption")}
                 </Text>
-                <Text className="text-xl font-extrabold text-brand-primary-dark">
+                <Text className="text-xl font-extrabold text-brand-primary-dark dark:text-white">
                   {t("profile.recommendedValue", { kcal: recommendedGoal })}
                 </Text>
               </View>

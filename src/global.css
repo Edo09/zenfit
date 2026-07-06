@@ -2,62 +2,68 @@
 @import "tailwindcss/preflight.css" layer(base);
 @import "tailwindcss/utilities.css";
 
-@theme {
-  /* Brand Colors — red primary / blue secondary rebrand (light theme).
-     Token names kept from the dark era so screens didn't need touching:
-     brand-dark is now the LIGHT canvas color, brand-light the dark ink. */
-  --color-brand-primary: #dc2626;
-  --color-brand-secondary: #2563eb;
-  --color-brand-dark: #f8fafc;
-  --color-brand-light: #0f172a;
-
-  /* Extended brand palette */
-  --color-brand-primary-light: #ef4444;
-  --color-brand-primary-dark: #b91c1c;
-  --color-brand-secondary-light: #3b82f6;
-  --color-brand-secondary-dark: #1d4ed8;
-
-  /* Surface colors (light mode: white cards on off-white canvas) */
-  --color-surface: #ffffff;
-  --color-surface-elevated: #f1f5f9;
-
-  /* Text hierarchy (light theme) */
-  --color-content-primary: #0f172a;
-  --color-content-secondary: #334155;
-  --color-content-tertiary: #64748b;
-  --color-content-muted: #94a3b8;
-
-  /* Borders */
-  --color-border: #e2e8f0;
-  --color-border-strong: #cbd5e1;
-
-  /* Feedback — explicit -soft rgba tokens (opacity modifiers unverified in react-native-css) */
-  --color-success: #16a34a;
-  --color-success-soft: rgba(22, 163, 74, 0.12);
-  --color-error: #dc2626;
-  --color-error-soft: rgba(220, 38, 38, 0.1);
-  --color-warning: #d97706;
-  --color-warning-soft: rgba(217, 119, 6, 0.12);
-  --color-info: #2563eb;
-  --color-info-soft: rgba(37, 99, 235, 0.1);
-
-  /* Meal-type badges (light-theme readable) */
-  --color-badge-breakfast: #d97706;
-  --color-badge-breakfast-soft: rgba(217, 119, 6, 0.12);
-  --color-badge-lunch: #16a34a;
-  --color-badge-lunch-soft: rgba(22, 163, 74, 0.12);
-  --color-badge-dinner: #7c3aed;
-  --color-badge-dinner-soft: rgba(124, 58, 237, 0.1);
-  --color-badge-snack: #dc2626;
-  --color-badge-snack-soft: rgba(220, 38, 38, 0.1);
-}
-
-/* gluestack-ui v5 semantic tokens — Hokage light palette defaults.
-   GluestackUIProvider overrides these at runtime via nativewind vars();
-   values here are the CSS fallbacks. Keep in sync with
-   components/ui/gluestack-ui-provider/config.ts */
+/* Theme architecture (light/dark):
+   - Raw values live in :root as --hb-* vars (light) with a
+     prefers-color-scheme override block (dark). react-native-css evaluates
+     that media query against RN Appearance, so Appearance.setColorScheme()
+     (or the OS setting) switches every token at runtime.
+   - Utilities are generated via @theme inline var() chains — tokens must
+     NOT be plain @theme literals or the compiler inlines them statically
+     and they stop switching.
+   - -soft tokens stay explicit rgba per scheme (opacity modifiers
+     unverified in react-native-css).
+   Keep values in sync with src/theme/colors.ts (TS mirror) and
+   components/ui/gluestack-ui-provider/config.ts (web palette). */
 @layer theme {
   :root {
+    /* Brand — red primary / blue secondary. Token names kept from the dark
+       era so screens didn't need touching: brand-dark is the CANVAS color,
+       brand-light the INK color, in both schemes. */
+    --hb-brand-primary: #dc2626;
+    --hb-brand-secondary: #2563eb;
+    --hb-brand-dark: #f8fafc;
+    --hb-brand-light: #0f172a;
+    --hb-brand-primary-light: #ef4444;
+    --hb-brand-primary-dark: #b91c1c;
+    --hb-brand-secondary-light: #3b82f6;
+    --hb-brand-secondary-dark: #1d4ed8;
+
+    /* Surfaces (light: white cards on off-white canvas) */
+    --hb-surface: #ffffff;
+    --hb-surface-elevated: #f1f5f9;
+
+    /* Text hierarchy */
+    --hb-content-primary: #0f172a;
+    --hb-content-secondary: #334155;
+    --hb-content-tertiary: #64748b;
+    --hb-content-muted: #94a3b8;
+
+    /* Borders */
+    --hb-border: #e2e8f0;
+    --hb-border-strong: #cbd5e1;
+
+    /* Feedback */
+    --hb-success: #16a34a;
+    --hb-success-soft: rgba(22, 163, 74, 0.12);
+    --hb-error: #dc2626;
+    --hb-error-soft: rgba(220, 38, 38, 0.1);
+    --hb-warning: #d97706;
+    --hb-warning-soft: rgba(217, 119, 6, 0.12);
+    --hb-info: #2563eb;
+    --hb-info-soft: rgba(37, 99, 235, 0.1);
+
+    /* Meal-type badges */
+    --hb-badge-breakfast: #d97706;
+    --hb-badge-breakfast-soft: rgba(217, 119, 6, 0.12);
+    --hb-badge-lunch: #16a34a;
+    --hb-badge-lunch-soft: rgba(22, 163, 74, 0.12);
+    --hb-badge-dinner: #7c3aed;
+    --hb-badge-dinner-soft: rgba(124, 58, 237, 0.1);
+    --hb-badge-snack: #dc2626;
+    --hb-badge-snack-soft: rgba(220, 38, 38, 0.1);
+
+    /* gluestack-ui v5 semantic tokens (RGB triplets).
+       Kept in sync with gluestack-ui-provider/config.ts */
     --primary: 220 38 38;
     --primary-foreground: 255 255 255;
     --card: 255 255 255;
@@ -77,7 +83,102 @@
   }
 }
 
+/* Dark scheme — follows RN Appearance (in-app toggle or OS setting).
+   Neutrals from the original dark-era palette; brand hues brightened one
+   step for contrast on the dark canvas. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --hb-brand-primary: #ef4444;
+    --hb-brand-secondary: #3b82f6;
+    --hb-brand-dark: #0f172a;
+    --hb-brand-light: #f8fafc;
+    --hb-brand-primary-light: #f87171;
+    --hb-brand-primary-dark: #dc2626;
+    --hb-brand-secondary-light: #60a5fa;
+    --hb-brand-secondary-dark: #2563eb;
+
+    --hb-surface: #1e293b;
+    --hb-surface-elevated: #334155;
+
+    --hb-content-primary: #f8fafc;
+    --hb-content-secondary: #cbd5e1;
+    --hb-content-tertiary: #94a3b8;
+    --hb-content-muted: #64748b;
+
+    --hb-border: #334155;
+    --hb-border-strong: #475569;
+
+    --hb-success: #22c55e;
+    --hb-success-soft: rgba(34, 197, 94, 0.15);
+    --hb-error: #ef4444;
+    --hb-error-soft: rgba(239, 68, 68, 0.15);
+    --hb-warning: #f59e0b;
+    --hb-warning-soft: rgba(245, 158, 11, 0.15);
+    --hb-info: #3b82f6;
+    --hb-info-soft: rgba(59, 130, 246, 0.16);
+
+    --hb-badge-breakfast: #f59e0b;
+    --hb-badge-breakfast-soft: rgba(245, 158, 11, 0.15);
+    --hb-badge-lunch: #22c55e;
+    --hb-badge-lunch-soft: rgba(34, 197, 94, 0.15);
+    --hb-badge-dinner: #a78bfa;
+    --hb-badge-dinner-soft: rgba(167, 139, 250, 0.15);
+    --hb-badge-snack: #f87171;
+    --hb-badge-snack-soft: rgba(248, 113, 113, 0.15);
+
+    --primary: 239 68 68;
+    --primary-foreground: 255 255 255;
+    --card: 30 41 59;
+    --secondary: 59 130 246;
+    --secondary-foreground: 248 250 252;
+    --background: 15 23 42;
+    --popover: 30 41 59;
+    --popover-foreground: 248 250 252;
+    --muted: 51 65 85;
+    --muted-foreground: 148 163 184;
+    --destructive: 239 68 68;
+    --foreground: 248 250 252;
+    --input: 51 65 85;
+    --ring: 71 85 105;
+    --accent: 51 65 85;
+    --accent-foreground: 248 250 252;
+  }
+}
+
+/* Utility-facing tokens — var() chains keep them runtime-switchable */
 @theme inline {
+  --color-brand-primary: var(--hb-brand-primary);
+  --color-brand-secondary: var(--hb-brand-secondary);
+  --color-brand-dark: var(--hb-brand-dark);
+  --color-brand-light: var(--hb-brand-light);
+  --color-brand-primary-light: var(--hb-brand-primary-light);
+  --color-brand-primary-dark: var(--hb-brand-primary-dark);
+  --color-brand-secondary-light: var(--hb-brand-secondary-light);
+  --color-brand-secondary-dark: var(--hb-brand-secondary-dark);
+  --color-surface: var(--hb-surface);
+  --color-surface-elevated: var(--hb-surface-elevated);
+  --color-content-primary: var(--hb-content-primary);
+  --color-content-secondary: var(--hb-content-secondary);
+  --color-content-tertiary: var(--hb-content-tertiary);
+  --color-content-muted: var(--hb-content-muted);
+  --color-border: var(--hb-border);
+  --color-border-strong: var(--hb-border-strong);
+  --color-success: var(--hb-success);
+  --color-success-soft: var(--hb-success-soft);
+  --color-error: var(--hb-error);
+  --color-error-soft: var(--hb-error-soft);
+  --color-warning: var(--hb-warning);
+  --color-warning-soft: var(--hb-warning-soft);
+  --color-info: var(--hb-info);
+  --color-info-soft: var(--hb-info-soft);
+  --color-badge-breakfast: var(--hb-badge-breakfast);
+  --color-badge-breakfast-soft: var(--hb-badge-breakfast-soft);
+  --color-badge-lunch: var(--hb-badge-lunch);
+  --color-badge-lunch-soft: var(--hb-badge-lunch-soft);
+  --color-badge-dinner: var(--hb-badge-dinner);
+  --color-badge-dinner-soft: var(--hb-badge-dinner-soft);
+  --color-badge-snack: var(--hb-badge-snack);
+  --color-badge-snack-soft: var(--hb-badge-snack-soft);
   --color-primary: rgb(var(--primary));
   --color-primary-foreground: rgb(var(--primary-foreground));
   --color-card: rgb(var(--card));
