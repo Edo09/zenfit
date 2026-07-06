@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -6,66 +7,146 @@ import type { ScrollView as RNScrollView } from "react-native";
 
 import {
   Button,
+  Card,
   Chip,
-  Input,
   LoadingBlock,
   Screen,
-  SelectField,
   useToast,
 } from "@/src/components/ui";
 import { useAuth } from "@/src/hooks/use-auth";
 import { useProfile } from "@/src/hooks/use-profile";
-import { Pressable, Text, View } from "@/src/tw";
+import { colors } from "@/src/theme/colors";
+import { Pressable, Text, TextInput, View } from "@/src/tw";
 import type { Profile } from "@/src/types/database";
 import { recommendedCalorieGoal } from "@/src/utils/calories";
 import { cn } from "@/src/utils/cn";
 
 const DAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
 const DAY_VALUES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
+const DAYS_PER_WEEK_OPTIONS = [1, 2, 3, 4, 5, 6, 7];
+const DURATION_PRESETS = [30, 45, 60, 90];
 
-function OptionButton({
+type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
+
+function StatTile({
+  label,
+  unit,
+  value,
+  editing,
+  onEdit,
+  onChangeText,
+  onBlur,
+  keyboardType,
+}: {
+  label: string;
+  unit: string;
+  value: string;
+  editing: boolean;
+  onEdit: () => void;
+  onChangeText: (v: string) => void;
+  onBlur: () => void;
+  keyboardType: "number-pad" | "decimal-pad";
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={editing ? undefined : onEdit}
+      className="flex-1 items-center gap-1 rounded-2xl border border-border bg-surface py-3"
+    >
+      <Text className="text-[10.5px] font-bold uppercase tracking-wider text-content-muted">
+        {label}
+      </Text>
+      {editing ? (
+        <TextInput
+          autoFocus
+          value={value}
+          onChangeText={onChangeText}
+          onBlur={onBlur}
+          keyboardType={keyboardType}
+          selectTextOnFocus
+          className="min-w-12 p-0 text-center text-[22px] font-extrabold text-content-primary"
+        />
+      ) : (
+        <Text className="text-[22px] font-extrabold text-content-primary">
+          {value !== "" ? value : "—"}
+        </Text>
+      )}
+      <Text className="text-[11.5px] text-content-muted">{unit}</Text>
+    </Pressable>
+  );
+}
+
+function ActivityOption({
   label,
   description,
   selected,
   onPress,
 }: {
   label: string;
-  description?: string;
+  description: string;
   selected: boolean;
   onPress: () => void;
 }) {
-  const handlePress = () => {
-    Haptics.selectionAsync().catch(() => {});
-    onPress();
-  };
+  return (
+    <Pressable
+      accessibilityRole="radio"
+      accessibilityState={{ selected }}
+      onPress={onPress}
+      className={cn(
+        "flex-row items-start gap-2.5 rounded-xl border p-3",
+        selected ? "border-brand-primary bg-info-soft" : "border-border bg-surface"
+      )}
+    >
+      <View
+        className={cn(
+          "mt-0.5 h-4.5 w-4.5 items-center justify-center rounded-full border-2",
+          selected ? "border-brand-primary" : "border-border-strong"
+        )}
+      >
+        {selected && <View className="h-2 w-2 rounded-full bg-brand-primary" />}
+      </View>
+      <View className="flex-1 gap-0.5">
+        <Text className="text-sm font-semibold text-content-primary">{label}</Text>
+        <Text className="text-xs text-content-muted">{description}</Text>
+      </View>
+    </Pressable>
+  );
+}
+
+function ProfessionCard({
+  label,
+  icon,
+  selected,
+  onPress,
+}: {
+  label: string;
+  icon: IoniconName;
+  selected: boolean;
+  onPress: () => void;
+}) {
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ selected }}
+      onPress={onPress}
       className={cn(
-        "flex-1 py-3 px-3 rounded-xl items-center border",
-        selected ? "bg-brand-primary border-brand-primary" : "bg-surface border-border"
+        "flex-1 flex-row items-center justify-center gap-2 rounded-xl border py-3",
+        selected ? "border-brand-primary bg-info-soft" : "border-border bg-surface"
       )}
-      onPress={handlePress}
     >
+      <Ionicons
+        name={icon}
+        size={18}
+        color={selected ? colors.brandPrimaryDark : colors.contentTertiary}
+      />
       <Text
         className={cn(
-          "font-semibold text-sm",
-          selected ? "text-white" : "text-content-secondary"
+          "text-sm font-semibold",
+          selected ? "text-brand-primary-dark" : "text-content-secondary"
         )}
       >
         {label}
       </Text>
-      {description != null && (
-        <Text
-          className={cn(
-            "text-xs text-center mt-0.5",
-            selected ? "text-white/80" : "text-content-muted"
-          )}
-        >
-          {description}
-        </Text>
-      )}
     </Pressable>
   );
 }
@@ -86,6 +167,9 @@ export default function ProfileScreen() {
   const [sex, setSex] = useState<Profile["sex"]>(null);
   const [heightCm, setHeightCm] = useState("");
   const [weightKg, setWeightKg] = useState("");
+  const [editingStat, setEditingStat] = useState<"age" | "height" | "weight" | null>(
+    null
+  );
   const [activityLevel, setActivityLevel] = useState<Profile["activity_level"]>(null);
   const [professionType, setProfessionType] = useState<Profile["profession_type"]>(null);
   const [daysPerWeek, setDaysPerWeek] = useState("");
@@ -149,6 +233,29 @@ export default function ProfileScreen() {
     );
   };
 
+  const daysPerWeekNum = parseInt(daysPerWeek, 10);
+  const daysCountMismatch =
+    !isNaN(daysPerWeekNum) &&
+    daysPerWeekNum > 0 &&
+    availableDays.length !== daysPerWeekNum;
+  const daysHint = !daysCountMismatch
+    ? null
+    : availableDays.length < daysPerWeekNum
+      ? t("profile.hintNeedMore", {
+          days: daysPerWeekNum,
+          remaining: daysPerWeekNum - availableDays.length,
+        })
+      : t("profile.hintTooMany", {
+          days: daysPerWeekNum,
+          extra: availableDays.length - daysPerWeekNum,
+        });
+
+  const sessionDurationNum = parseInt(sessionDuration, 10);
+  const durationChipValues =
+    isNaN(sessionDurationNum) || DURATION_PRESETS.includes(sessionDurationNum)
+      ? DURATION_PRESETS
+      : [...DURATION_PRESETS, sessionDurationNum].sort((a, b) => a - b);
+
   const validate = (): string | null => {
     const ageN = parseInt(age, 10);
     if (isNaN(ageN) || ageN < 13 || ageN > 120) return t("onboarding.ageBetween");
@@ -210,237 +317,334 @@ export default function ProfileScreen() {
   }
 
   return (
-    <Screen keyboard scrollRef={scrollRef} contentContainerClassName="pb-12">
-      {/* Profile data */}
-      <View className="gap-1">
-        <Text className="text-lg font-semibold text-content-primary">
-          {t("profile.yourData")}
-        </Text>
-        <Text className="text-sm text-content-tertiary">
-          {t("profile.yourDataSubtitle")}
-        </Text>
-      </View>
+    <Screen
+      keyboard
+      scrollRef={scrollRef}
+      contentContainerClassName="px-4 pt-5 pb-4 gap-4"
+      footer={
+        <View className="gap-2 border-t border-border bg-surface px-4 py-3">
+          {formError != null && (
+            <Text className="text-sm text-error">{formError}</Text>
+          )}
+          <Button size="lg" onPress={handleSave} loading={saving}>
+            {t("profile.saveChanges")}
+          </Button>
+        </View>
+      }
+    >
+      <Text className="-mt-1 text-[13px] text-content-tertiary">
+        {t("profile.subtitle")}
+      </Text>
 
-      <View className="flex-row gap-3">
-        <Input
-          label={t("onboarding.age")}
-          placeholder={t("onboarding.agePlaceholder")}
-          keyboardType="number-pad"
-          value={age}
-          onChangeText={(v) => {
-            setAge(v);
-            clearError();
-          }}
-          containerClassName="flex-1"
-        />
-        <View className="flex-[1.6] gap-1.5">
-          <Text className="text-sm font-medium text-content-secondary">
+      {/* Datos personales */}
+      <Card className="gap-3.5">
+        <Text className="text-[15px] font-bold text-content-primary">
+          {t("onboarding.personalData")}
+        </Text>
+
+        <View className="flex-row gap-2.5">
+          <StatTile
+            label={t("onboarding.age")}
+            unit={t("profile.unitYears")}
+            value={age}
+            editing={editingStat === "age"}
+            onEdit={() => {
+              Haptics.selectionAsync().catch(() => {});
+              setEditingStat("age");
+            }}
+            onChangeText={(v) => {
+              setAge(v);
+              clearError();
+            }}
+            onBlur={() => setEditingStat(null)}
+            keyboardType="number-pad"
+          />
+          <StatTile
+            label={t("onboarding.heightLabel")}
+            unit={t("onboarding.unitCm")}
+            value={heightCm}
+            editing={editingStat === "height"}
+            onEdit={() => {
+              Haptics.selectionAsync().catch(() => {});
+              setEditingStat("height");
+            }}
+            onChangeText={(v) => {
+              setHeightCm(v);
+              clearError();
+            }}
+            onBlur={() => setEditingStat(null)}
+            keyboardType="decimal-pad"
+          />
+          <StatTile
+            label={t("profile.statWeight")}
+            unit={t("onboarding.unitKg")}
+            value={weightKg}
+            editing={editingStat === "weight"}
+            onEdit={() => {
+              Haptics.selectionAsync().catch(() => {});
+              setEditingStat("weight");
+            }}
+            onChangeText={(v) => {
+              setWeightKg(v);
+              clearError();
+            }}
+            onBlur={() => setEditingStat(null)}
+            keyboardType="decimal-pad"
+          />
+        </View>
+
+        <View className="gap-1.5">
+          <Text className="text-[12.5px] font-semibold text-content-secondary">
             {t("onboarding.sex")}
           </Text>
-          <View className="flex-row gap-2 flex-1">
-            <OptionButton
-              label={t("onboarding.male")}
-              selected={sex === "male"}
+          <View className="flex-row gap-1 rounded-xl bg-surface-elevated p-1">
+            {(["male", "female"] as const).map((s) => {
+              const selected = sex === s;
+              return (
+                <Pressable
+                  key={s}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  onPress={() => {
+                    Haptics.selectionAsync().catch(() => {});
+                    setSex(s);
+                    clearError();
+                  }}
+                  className={cn(
+                    "flex-1 items-center justify-center rounded-lg py-2.5",
+                    selected ? "bg-brand-primary" : "bg-transparent"
+                  )}
+                >
+                  <Text
+                    className={cn(
+                      "text-sm font-semibold",
+                      selected ? "text-white" : "text-content-secondary"
+                    )}
+                  >
+                    {t(s === "male" ? "onboarding.male" : "onboarding.female")}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+      </Card>
+
+      {/* Actividad diaria */}
+      <Card className="gap-3.5">
+        <Text className="text-[15px] font-bold text-content-primary">
+          {t("profile.activityDailyTitle")}
+        </Text>
+
+        <View className="gap-2">
+          <ActivityOption
+            label={t("onboarding.sedentary")}
+            description={t("profile.sedentaryDesc")}
+            selected={activityLevel === "sedentary"}
+            onPress={() => {
+              Haptics.selectionAsync().catch(() => {});
+              setActivityLevel("sedentary");
+              clearError();
+            }}
+          />
+          <ActivityOption
+            label={t("onboarding.active")}
+            description={t("onboarding.activeDesc")}
+            selected={activityLevel === "active"}
+            onPress={() => {
+              Haptics.selectionAsync().catch(() => {});
+              setActivityLevel("active");
+              clearError();
+            }}
+          />
+          <ActivityOption
+            label={t("onboarding.veryActive")}
+            description={t("profile.veryActiveDesc")}
+            selected={activityLevel === "very_active"}
+            onPress={() => {
+              Haptics.selectionAsync().catch(() => {});
+              setActivityLevel("very_active");
+              clearError();
+            }}
+          />
+        </View>
+
+        <View className="gap-2">
+          <Text className="text-[12.5px] font-semibold text-content-secondary">
+            {t("onboarding.professionType")}
+          </Text>
+          <View className="flex-row gap-2">
+            <ProfessionCard
+              label={t("profile.desk")}
+              icon="desktop-outline"
+              selected={professionType === "desk"}
               onPress={() => {
-                setSex("male");
+                Haptics.selectionAsync().catch(() => {});
+                setProfessionType("desk");
                 clearError();
               }}
             />
-            <OptionButton
-              label={t("onboarding.female")}
-              selected={sex === "female"}
+            <ProfessionCard
+              label={t("profile.physical")}
+              icon="barbell-outline"
+              selected={professionType === "physical"}
               onPress={() => {
-                setSex("female");
+                Haptics.selectionAsync().catch(() => {});
+                setProfessionType("physical");
                 clearError();
               }}
             />
           </View>
         </View>
-      </View>
+      </Card>
 
-      <View className="flex-row gap-3">
-        <Input
-          label={t("onboarding.height")}
-          placeholder={t("onboarding.heightPlaceholder")}
-          keyboardType="decimal-pad"
-          value={heightCm}
-          onChangeText={(v) => {
-            setHeightCm(v);
-            clearError();
-          }}
-          containerClassName="flex-1"
-        />
-        <Input
-          label={t("onboarding.currentWeight")}
-          placeholder={t("onboarding.weightPlaceholder")}
-          keyboardType="decimal-pad"
-          value={weightKg}
-          onChangeText={(v) => {
-            setWeightKg(v);
-            clearError();
-          }}
-          containerClassName="flex-1"
-        />
-      </View>
-
-      <SelectField
-        label={t("onboarding.activityLevel")}
-        placeholder={t("onboarding.activityLevel")}
-        value={activityLevel}
-        options={[
-          { label: t("onboarding.sedentary"), value: "sedentary" },
-          { label: t("onboarding.active"), value: "active" },
-          { label: t("onboarding.veryActive"), value: "very_active" },
-        ]}
-        onChange={(v) => {
-          setActivityLevel(v as Profile["activity_level"]);
-          clearError();
-        }}
-        helper={
-          activityLevel === "sedentary"
-            ? t("onboarding.sedentaryDesc")
-            : activityLevel === "active"
-              ? t("onboarding.activeDesc")
-              : activityLevel === "very_active"
-                ? t("onboarding.veryActiveDesc")
-                : undefined
-        }
-      />
-
-      <View className="gap-2">
-        <Text className="text-sm font-medium text-content-secondary">
-          {t("onboarding.professionType")}
-        </Text>
-        <View className="flex-row gap-2">
-          <OptionButton
-            label={t("onboarding.deskJob")}
-            selected={professionType === "desk"}
-            onPress={() => {
-              setProfessionType("desk");
-              clearError();
-            }}
-          />
-          <OptionButton
-            label={t("onboarding.physicalJob")}
-            selected={professionType === "physical"}
-            onPress={() => {
-              setProfessionType("physical");
-              clearError();
-            }}
-          />
-        </View>
-      </View>
-
-      {/* Nutrition goal */}
+      {/* Meta nutricional */}
       <View
-        className="gap-1 mt-2"
         onLayout={(e) => {
           nutritionY.current = e.nativeEvent.layout.y;
         }}
-      >
-        <Text className="text-lg font-semibold text-content-primary">
-          {t("profile.nutritionGoal")}
-        </Text>
-        <Text className="text-sm text-content-tertiary">
-          {t("profile.nutritionGoalSubtitle")}
-        </Text>
-      </View>
-
-      <View
         className={cn(
-          "gap-2 rounded-2xl border-2 p-2 -mx-2",
-          highlightGoal ? "border-brand-primary bg-info-soft" : "border-transparent"
+          "-m-0.5 rounded-2xl border-2",
+          highlightGoal ? "border-brand-primary" : "border-transparent"
         )}
       >
-        <Input
-          label={t("profile.calorieGoal")}
-          placeholder={t("profile.calorieGoalPlaceholder")}
-          keyboardType="number-pad"
-          value={calorieGoal}
-          onChangeText={(v) => {
-            setCalorieGoal(v);
-            clearError();
-          }}
-        />
-        {recommendedGoal != null && (
-          <Pressable
-            onPress={() => {
-              Haptics.selectionAsync().catch(() => {});
-              setCalorieGoal(String(recommendedGoal));
-              clearError();
-            }}
-            accessibilityRole="button"
-            className="bg-info-soft rounded-xl px-4 py-3 flex-row items-center gap-2"
-          >
-            <Text className="text-brand-primary text-sm font-medium flex-1">
-              {t("profile.recommendedGoal", { kcal: recommendedGoal })}
+        <Card className="gap-3">
+          <View className="gap-0.5">
+            <Text className="text-[15px] font-bold text-content-primary">
+              {t("profile.nutritionGoal")}
             </Text>
-            <Text className="text-brand-primary text-sm font-semibold">
-              {t("profile.useRecommended")}
+            <Text className="text-xs text-content-muted">
+              {t("profile.nutritionGoalSubtitle")}
             </Text>
-          </Pressable>
-        )}
-      </View>
+          </View>
 
-      <View className="gap-1 mt-2">
-        <Text className="text-lg font-semibold text-content-primary">
-          {t("onboarding.trainingPlan")}
-        </Text>
-        <Text className="text-sm text-content-tertiary">
-          {t("onboarding.trainingSubtitle")}
-        </Text>
-      </View>
+          {recommendedGoal != null && (
+            <View className="flex-row items-center gap-3 rounded-2xl bg-info-soft p-3.5">
+              <Ionicons name="flash" size={20} color={colors.brandPrimary} />
+              <View className="flex-1 gap-0.5">
+                <Text className="text-xs font-semibold text-brand-primary-dark">
+                  {t("profile.recommendedCaption")}
+                </Text>
+                <Text className="text-xl font-extrabold text-brand-primary-dark">
+                  {t("profile.recommendedValue", { kcal: recommendedGoal })}
+                </Text>
+              </View>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => {
+                  Haptics.selectionAsync().catch(() => {});
+                  setCalorieGoal(String(recommendedGoal));
+                  clearError();
+                }}
+                className="rounded-lg bg-brand-primary px-4 py-2.5"
+              >
+                <Text className="text-sm font-bold text-white">
+                  {t("profile.useRecommended")}
+                </Text>
+              </Pressable>
+            </View>
+          )}
 
-      <View className="flex-row gap-3">
-        <Input
-          label={t("onboarding.daysPerWeek")}
-          placeholder={t("onboarding.daysPlaceholder")}
-          keyboardType="number-pad"
-          value={daysPerWeek}
-          onChangeText={(v) => {
-            setDaysPerWeek(v);
-            clearError();
-          }}
-          containerClassName="flex-1"
-        />
-        <Input
-          label={t("onboarding.sessionDuration")}
-          placeholder={t("onboarding.durationPlaceholder")}
-          keyboardType="number-pad"
-          value={sessionDuration}
-          onChangeText={(v) => {
-            setSessionDuration(v);
-            clearError();
-          }}
-          containerClassName="flex-1"
-        />
-      </View>
+          <View className="flex-row items-center gap-3 py-0.5">
+            <View className="h-px flex-1 bg-border" />
+            <Text className="text-[11.5px] text-content-muted">
+              {t("profile.orDefineOwnGoal")}
+            </Text>
+            <View className="h-px flex-1 bg-border" />
+          </View>
 
-      <View className="gap-2">
-        <Text className="text-sm font-medium text-content-secondary">
-          {t("onboarding.availableDays")}
-        </Text>
-        <View className="flex-row gap-2 flex-wrap">
-          {DAY_KEYS.map((key, i) => (
-            <Chip
-              key={key}
-              label={t(`days.${key}`)}
-              selected={availableDays.includes(DAY_VALUES[i])}
-              onPress={() => toggleDay(DAY_VALUES[i])}
+          <View className="flex-row items-center rounded-xl border border-border bg-surface px-3.5">
+            <TextInput
+              value={calorieGoal}
+              onChangeText={(v) => {
+                setCalorieGoal(v);
+                clearError();
+              }}
+              placeholder={t("profile.calorieGoalPlaceholder")}
+              placeholderTextColor={colors.contentMuted}
+              keyboardType="number-pad"
+              accessibilityLabel={t("profile.calorieGoal")}
+              className="flex-1 py-3 text-base text-content-primary"
             />
-          ))}
-        </View>
+            <Text className="text-[12.5px] text-content-muted">{t("home.kcal")}</Text>
+          </View>
+        </Card>
       </View>
 
-      {formError != null && (
-        <View className="bg-error-soft rounded-xl p-3">
-          <Text className="text-error text-sm">{formError}</Text>
+      {/* Plan de entrenamiento */}
+      <Card className="gap-3.5">
+        <View className="gap-0.5">
+          <Text className="text-[15px] font-bold text-content-primary">
+            {t("onboarding.trainingPlan")}
+          </Text>
+          <Text className="text-xs text-content-muted">
+            {t("onboarding.trainingSubtitle")}
+          </Text>
         </View>
-      )}
 
-      <Button size="lg" onPress={handleSave} loading={saving}>
-        {t("profile.saveChanges")}
-      </Button>
+        <View className="gap-1.5">
+          <Text className="text-[12.5px] font-semibold text-content-secondary">
+            {t("onboarding.daysPerWeek")}
+          </Text>
+          <View className="flex-row gap-1.5">
+            {DAYS_PER_WEEK_OPTIONS.map((n) => (
+              <Chip
+                key={n}
+                label={String(n)}
+                selected={daysPerWeek === String(n)}
+                onPress={() => {
+                  setDaysPerWeek(String(n));
+                  clearError();
+                }}
+                className="flex-1 items-center justify-center rounded-lg px-0 py-2.5"
+              />
+            ))}
+          </View>
+        </View>
+
+        <View className="gap-1.5">
+          <Text className="text-[12.5px] font-semibold text-content-secondary">
+            {t("profile.sessionDurationLabel")}
+          </Text>
+          <View className="flex-row gap-1.5">
+            {durationChipValues.map((n) => (
+              <Chip
+                key={n}
+                label={`${n} min`}
+                selected={sessionDuration === String(n)}
+                onPress={() => {
+                  setSessionDuration(String(n));
+                  clearError();
+                }}
+                className="flex-1 items-center justify-center rounded-lg px-0 py-2.5"
+              />
+            ))}
+          </View>
+        </View>
+
+        <View className="gap-1.5">
+          <Text className="text-[12.5px] font-semibold text-content-secondary">
+            {t("onboarding.availableDays")}
+          </Text>
+          <View className="flex-row gap-1.5">
+            {DAY_KEYS.map((key, i) => (
+              <Chip
+                key={key}
+                label={t(`days.${key}`)}
+                selected={availableDays.includes(DAY_VALUES[i])}
+                onPress={() => toggleDay(DAY_VALUES[i])}
+                className="min-h-10 flex-1 items-center justify-center rounded-lg px-0 py-2.5"
+              />
+            ))}
+          </View>
+        </View>
+
+        {daysHint != null && (
+          <View className="rounded-[10px] border border-warning bg-warning-soft px-2.5 py-2">
+            <Text className="text-xs text-warning">{daysHint}</Text>
+          </View>
+        )}
+      </Card>
     </Screen>
   );
 }

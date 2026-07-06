@@ -148,9 +148,8 @@ export default {
 
   // Profile
   profile: {
-    yourData: "Tus Datos",
-    yourDataSubtitle: "Se usan para personalizar tu plan de entrenamiento",
-    saveChanges: "Guardar Cambios",
+    subtitle: "Tus datos y preferencias de entrenamiento",
+    saveChanges: "Guardar cambios",
     profileUpdated: "Perfil actualizado",
     aiTitle: "Plan de Entrenamiento IA",
     aiSubtitle:
@@ -162,13 +161,25 @@ export default {
     aiConfirmTitle: "¿Generar rutinas con IA?",
     aiConfirmMessage:
       "Se crearán nuevas rutinas según tu perfil. Las rutinas existentes se conservan.",
-    nutritionGoal: "Meta Nutricional",
+    statWeight: "Peso",
+    unitYears: "años",
+    activityDailyTitle: "Actividad diaria",
+    sedentaryDesc: "Poco movimiento durante el día",
+    veryActiveDesc: "Entrenamiento intenso o trabajo físico exigente",
+    desk: "Escritorio",
+    physical: "Físico",
+    nutritionGoal: "Meta nutricional",
     nutritionGoalSubtitle: "Tu objetivo diario de calorías, usado por el panel",
+    recommendedCaption: "Recomendado para ti",
+    recommendedValue: "{{kcal}} kcal",
+    orDefineOwnGoal: "o define tu propia meta",
     calorieGoal: "Meta diaria de calorías (kcal)",
     calorieGoalPlaceholder: "Ej: 2200",
     calorieGoalBetween: "La meta de calorías debe estar entre 800 y 10000",
-    recommendedGoal: "Recomendado para ti: {{kcal}} kcal",
     useRecommended: "Usar",
+    sessionDurationLabel: "Duración por sesión",
+    hintNeedMore: "Tu plan es de {{days}} días por semana: marca {{remaining}} días más",
+    hintTooMany: "Tu plan es de {{days}} días por semana: quita {{extra}} días",
   },
 
   // Home

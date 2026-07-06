@@ -23,6 +23,8 @@ type ScreenProps = {
   contentContainerClassName?: string;
   /** Access the underlying ScrollView (e.g. to scrollTo a section). */
   scrollRef?: React.Ref<RNScrollView>;
+  /** Pinned below the scroll content, above the tab bar (e.g. a sticky save bar). */
+  footer?: React.ReactNode;
 };
 
 export function Screen({
@@ -34,6 +36,7 @@ export function Screen({
   className,
   contentContainerClassName,
   scrollRef,
+  footer,
 }: ScreenProps) {
   const headerHeight = useHeaderHeight();
 
@@ -79,6 +82,7 @@ export function Screen({
       ) : (
         content
       )}
+      {footer}
     </View>
   );
 }

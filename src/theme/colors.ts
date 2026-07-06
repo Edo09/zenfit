@@ -10,6 +10,7 @@
 export const colors = {
   white: "#ffffff",
   brandPrimary: "#2563eb",
+  brandPrimaryDark: "#1d4ed8",
   brandSecondary: "#dc2626",
   brandDark: "#f8fafc",
   brandLight: "#0f172a",
