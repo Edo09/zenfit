@@ -1,5 +1,5 @@
 -- ============================================================
--- Habbito Database Schema
+-- Hokage Coaching App Database Schema
 -- Run this in Supabase SQL Editor: https://supabase.com/dashboard
 -- ============================================================
 

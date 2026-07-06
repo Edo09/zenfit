@@ -1,10 +1,10 @@
 import { vars } from 'nativewind';
 
-// Habbito palette bridged to gluestack semantic tokens (RGB triplets).
+// Hokage palette bridged to gluestack semantic tokens (RGB triplets).
 // White/red/blue rebrand — app is light-only: "dark" mirrors the light
 // palette so no mode ever renders the stock dark theme. Keep in sync with
 // src/global.css and src/theme/colors.ts.
-const habbitoLight = {
+const hokageLight = {
   '--primary': '37 99 235', // brand-primary #2563eb
   '--primary-foreground': '255 255 255',
   '--card': '255 255 255', // surface #ffffff
@@ -25,8 +25,8 @@ const habbitoLight = {
 };
 
 export const colors = {
-  light: habbitoLight,
-  dark: habbitoLight,
+  light: hokageLight,
+  dark: hokageLight,
 };
 
 // Config for nativewind vars() - used by provider

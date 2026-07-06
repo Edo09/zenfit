@@ -52,7 +52,7 @@
   --color-badge-snack-soft: rgba(220, 38, 38, 0.1);
 }
 
-/* gluestack-ui v5 semantic tokens — Habbito light palette defaults.
+/* gluestack-ui v5 semantic tokens — Hokage light palette defaults.
    GluestackUIProvider overrides these at runtime via nativewind vars();
    values here are the CSS fallbacks. Keep in sync with
    components/ui/gluestack-ui-provider/config.ts */

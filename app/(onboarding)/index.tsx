@@ -516,7 +516,7 @@ export default function Onboarding() {
         <View className="w-12 h-12 bg-brand-primary rounded-xl items-center justify-center">
           <Ionicons name="barbell" size={26} color={colors.white} />
         </View>
-        <Text className="flex-1 text-3xl font-extrabold text-brand-primary">Habbito</Text>
+        <Text className="flex-1 text-3xl font-extrabold text-brand-primary">Hokage</Text>
         <Pressable
           accessibilityRole="button"
           onPress={handleSkip}

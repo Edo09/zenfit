@@ -2,8 +2,8 @@
 // Keyword matching covers English and Spanish routine names.
 
 export const ROUTINE_IMAGES = {
-  strength: require("@/assets/images/strength_card.jpg"),
-  cardio: require("@/assets/images/cardio_card.jpg"),
+  strength: require("@/assets/images/routines/strength_card.jpg"),
+  cardio: require("@/assets/images/routines/cardio_card.jpg"),
 } as const;
 
 const STRENGTH_KEYWORDS = [

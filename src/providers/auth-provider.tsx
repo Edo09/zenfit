@@ -21,7 +21,7 @@ export const AuthContext = createContext<AuthContextType>({
   markOnboarded: () => {},
 });
 
-const ONBOARDED_KEY = (userId: string) => `habbito-onboarded-${userId}`;
+const ONBOARDED_KEY = (userId: string) => `hokage-onboarded-${userId}`;
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);

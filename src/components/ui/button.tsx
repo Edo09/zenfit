@@ -24,7 +24,7 @@ export type ButtonVariant = "primary" | "secondary" | "ghost" | "destructive";
 export type ButtonSize = "sm" | "md" | "lg";
 
 // gluestack variant that most closely matches, then className restores
-// the exact Habbito look on top of it.
+// the exact Hokage look on top of it.
 const VARIANT_GS: Record<ButtonVariant, "default" | "secondary" | "ghost"> = {
   primary: "default",
   secondary: "secondary",

@@ -32,7 +32,7 @@ export type OutboxOp = {
 
 export type FlushResult = "synced" | "dropped" | "paused";
 
-const STORAGE_KEY = "habbito-outbox-v1";
+const STORAGE_KEY = "hokage-outbox-v1";
 
 let queue: OutboxOp[] = [];
 let hydration: Promise<void> | null = null;

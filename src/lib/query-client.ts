@@ -25,6 +25,6 @@ export const queryClient = new QueryClient({
 
 export const persister = createAsyncStoragePersister({
   storage: AsyncStorage,
-  key: "habbito-rq-cache-v1",
+  key: "hokage-rq-cache-v1",
   throttleTime: 2000,
 });

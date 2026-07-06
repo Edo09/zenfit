@@ -55,8 +55,8 @@ export default function Register() {
       {/* Two-tone wordmark, matching the login screen */}
       <View className="items-center mb-12">
         <Text className="text-5xl font-extrabold">
-          <Text className="text-5xl font-extrabold text-content-primary">Hab</Text>
-          <Text className="text-5xl font-extrabold text-brand-secondary">bito</Text>
+          <Text className="text-5xl font-extrabold text-content-primary">Ho</Text>
+          <Text className="text-5xl font-extrabold text-brand-secondary">kage</Text>
         </Text>
         <Text className="text-content-tertiary mt-3 text-base">
           {t("auth.createAccount")}
