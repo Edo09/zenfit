@@ -4,14 +4,14 @@
  * placeholderTextColor, ActivityIndicator/Ionicons/RefreshControl colors.
  * Keep in sync with global.css @theme.
  *
- * White / red / blue rebrand: token names kept from the dark era —
+ * Red primary / blue secondary rebrand: token names kept from the dark era —
  * brandDark is now the LIGHT canvas color, brandLight the dark ink.
  */
 export const colors = {
   white: "#ffffff",
-  brandPrimary: "#2563eb",
-  brandPrimaryDark: "#1d4ed8",
-  brandSecondary: "#dc2626",
+  brandPrimary: "#dc2626",
+  brandPrimaryDark: "#b91c1c",
+  brandSecondary: "#2563eb",
   brandDark: "#f8fafc",
   brandLight: "#0f172a",
   surface: "#ffffff",

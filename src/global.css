@@ -3,19 +3,19 @@
 @import "tailwindcss/utilities.css";
 
 @theme {
-  /* Brand Colors — white / red / blue rebrand (light theme).
+  /* Brand Colors — red primary / blue secondary rebrand (light theme).
      Token names kept from the dark era so screens didn't need touching:
      brand-dark is now the LIGHT canvas color, brand-light the dark ink. */
-  --color-brand-primary: #2563eb;
-  --color-brand-secondary: #dc2626;
+  --color-brand-primary: #dc2626;
+  --color-brand-secondary: #2563eb;
   --color-brand-dark: #f8fafc;
   --color-brand-light: #0f172a;
 
   /* Extended brand palette */
-  --color-brand-primary-light: #3b82f6;
-  --color-brand-primary-dark: #1d4ed8;
-  --color-brand-secondary-light: #ef4444;
-  --color-brand-secondary-dark: #b91c1c;
+  --color-brand-primary-light: #ef4444;
+  --color-brand-primary-dark: #b91c1c;
+  --color-brand-secondary-light: #3b82f6;
+  --color-brand-secondary-dark: #1d4ed8;
 
   /* Surface colors (light mode: white cards on off-white canvas) */
   --color-surface: #ffffff;
@@ -58,11 +58,11 @@
    components/ui/gluestack-ui-provider/config.ts */
 @layer theme {
   :root {
-    --primary: 37 99 235;
+    --primary: 220 38 38;
     --primary-foreground: 255 255 255;
     --card: 255 255 255;
-    --secondary: 241 245 249;
-    --secondary-foreground: 15 23 42;
+    --secondary: 37 99 235;
+    --secondary-foreground: 255 255 255;
     --background: 248 250 252;
     --popover: 255 255 255;
     --popover-foreground: 15 23 42;
