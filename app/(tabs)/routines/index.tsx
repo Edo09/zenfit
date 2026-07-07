@@ -12,6 +12,7 @@ import {
   ErrorState,
   FAB,
   LoadingBlock,
+  SectionHeader,
   useToast,
 } from "@/src/components/ui";
 import { useRefreshOnFocus } from "@/src/hooks/use-refresh-on-focus";
@@ -26,7 +27,8 @@ export default function RoutinesScreen() {
   const colors = useColors();
   const { t } = useTranslation();
   const toast = useToast();
-  const { routines, loading, error, refreshing, refresh, deleteRoutine } = useRoutines();
+  const { routines, assignedRoutines, myRoutines, loading, error, refreshing, refresh, deleteRoutine } =
+    useRoutines();
   const [pendingDelete, setPendingDelete] = useState<Routine | null>(null);
   useRefreshOnFocus(refresh);
 
@@ -61,7 +63,7 @@ export default function RoutinesScreen() {
   return (
     <View className="flex-1 bg-brand-dark">
       <RAnimated.FlatList
-        data={routines}
+        data={myRoutines}
         contentInsetAdjustmentBehavior="automatic"
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 100 }}
@@ -77,8 +79,25 @@ export default function RoutinesScreen() {
           />
         }
         ListHeaderComponent={
-          <AnimatedView entering={enterFade()}>
+          <AnimatedView entering={enterFade()} className="gap-3">
             <AIPlanCard className="mb-1" />
+            {assignedRoutines.length > 0 && (
+              <View className="gap-3">
+                <SectionHeader title={t("coach.assignedRoutines")} />
+                {assignedRoutines.map((item, index) => (
+                  <AnimatedView key={item.id} entering={staggered(index)}>
+                    <RoutineCard
+                      routine={item}
+                      readOnly
+                      onPress={() => router.push(`/(tabs)/routines/${item.id}`)}
+                    />
+                  </AnimatedView>
+                ))}
+                {myRoutines.length > 0 && (
+                  <SectionHeader title={t("routines.myRoutines")} className="mt-1" />
+                )}
+              </View>
+            )}
           </AnimatedView>
         }
         renderItem={({ item, index }) => (
@@ -91,13 +110,24 @@ export default function RoutinesScreen() {
           </AnimatedView>
         )}
         ListEmptyComponent={
-          <EmptyState
-            icon="barbell-outline"
-            title={t("routines.noRoutinesYet")}
-            subtitle={t("routines.createFirstRoutine")}
-            actionLabel={t("routines.createRoutine")}
-            onAction={() => router.push("/(tabs)/routines/create")}
-          />
+          assignedRoutines.length > 0 ? (
+            // Has coach plans but none of their own yet — gentle nudge, not a full empty screen.
+            <EmptyState
+              icon="add-circle-outline"
+              title={t("routines.noOwnRoutinesYet")}
+              subtitle={t("routines.createFirstRoutine")}
+              actionLabel={t("routines.createRoutine")}
+              onAction={() => router.push("/(tabs)/routines/create")}
+            />
+          ) : (
+            <EmptyState
+              icon="barbell-outline"
+              title={t("routines.noRoutinesYet")}
+              subtitle={t("routines.createFirstRoutine")}
+              actionLabel={t("routines.createRoutine")}
+              onAction={() => router.push("/(tabs)/routines/create")}
+            />
+          )
         }
       />
 

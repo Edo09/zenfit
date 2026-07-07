@@ -12,6 +12,7 @@ import type {
 } from "@/src/types/database";
 import { supabase } from "@/src/utils/supabase";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo } from "react";
 
 // Exercises ride along with the list so the routines tab (list + detail) is a
 // single persisted query that works offline.
@@ -45,6 +46,16 @@ export function useRoutines() {
     enabled: !!user,
   });
 
+  // Split by provenance: coach-assigned (read-only) vs the client's own.
+  const assignedRoutines = useMemo(
+    () => routines.filter((r) => r.assigned_by != null),
+    [routines],
+  );
+  const myRoutines = useMemo(
+    () => routines.filter((r) => r.assigned_by == null),
+    [routines],
+  );
+
   const createRoutineMutation = useMutation({
     mutationFn: async (data: RoutineInsert) => {
       const now = new Date().toISOString();
@@ -54,6 +65,7 @@ export function useRoutines() {
         name: data.name,
         description: data.description ?? null,
         day_of_week: data.day_of_week ?? null,
+        assigned_by: null,
         created_at: now,
         updated_at: now,
       };
@@ -140,6 +152,8 @@ export function useRoutines() {
 
   return {
     routines,
+    assignedRoutines,
+    myRoutines,
     loading,
     error,
     refreshing,

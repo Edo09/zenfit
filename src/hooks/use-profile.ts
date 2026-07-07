@@ -47,6 +47,8 @@ export function useProfile(userId: string | undefined) {
           session_duration: null,
           available_days: null,
           calorie_goal: null,
+          role: "user",
+          whatsapp: null,
           onboarding_completed: false,
           created_at: now,
         }),

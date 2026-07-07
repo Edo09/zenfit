@@ -159,11 +159,22 @@ export default function RoutineDetailScreen() {
 
   if (!routine) return null;
 
+  // Coach-assigned routines are read-only for the client (no add/remove exercises).
+  const isAssigned = routine.assigned_by != null;
+
   return (
     <>
       <Stack.Screen options={{ title: routine.name }} />
       <Screen keyboard contentContainerClassName="pb-10">
         {/* Info */}
+        {isAssigned && (
+          <View className="self-start flex-row items-center gap-1.5 bg-brand-primary rounded-full px-3 py-1">
+            <Ionicons name="ribbon-outline" size={14} color={colors.white} />
+            <Text className="text-white text-sm font-semibold">
+              {t("coach.assignedBadge")}
+            </Text>
+          </View>
+        )}
         {routine.description && (
           <Text className="text-content-tertiary">{routine.description}</Text>
         )}
@@ -211,22 +222,24 @@ export default function RoutineDetailScreen() {
                     {ex.weight_kg != null ? ` · ${ex.weight_kg} kg` : ""}
                   </Text>
                 </View>
-                <Pressable
-                  onPress={() => setPendingRemove(ex)}
-                  className="p-2 ml-2"
-                  hitSlop={8}
-                  accessibilityRole="button"
-                  accessibilityLabel={t("routines.removeExercise")}
-                >
-                  <Ionicons name="trash-outline" size={18} color={colors.error} />
-                </Pressable>
+                {!isAssigned && (
+                  <Pressable
+                    onPress={() => setPendingRemove(ex)}
+                    className="p-2 ml-2"
+                    hitSlop={8}
+                    accessibilityRole="button"
+                    accessibilityLabel={t("routines.removeExercise")}
+                  >
+                    <Ionicons name="trash-outline" size={18} color={colors.error} />
+                  </Pressable>
+                )}
               </Card>
               </AnimatedView>
             );
           })}
 
-          {/* Add exercise form */}
-          {showAddExercise ? (
+          {/* Add exercise form — hidden for coach-assigned routines */}
+          {isAssigned ? null : showAddExercise ? (
             <AnimatedView entering={enter()} exiting={exit()}>
             <Card className="gap-3">
               <Text className="font-semibold text-content-primary">

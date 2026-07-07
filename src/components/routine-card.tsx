@@ -12,10 +12,12 @@ import { getRoutineImage } from "@/src/utils/routine-image";
 type Props = {
   routine: Routine;
   onPress: () => void;
-  onDelete: () => void;
+  // Coach-assigned routines are read-only: no delete, shown with a "Coach" badge.
+  onDelete?: () => void;
+  readOnly?: boolean;
 };
 
-export function RoutineCard({ routine, onPress, onDelete }: Props) {
+export function RoutineCard({ routine, onPress, onDelete, readOnly = false }: Props) {
   const colors = useColors();
   const { t } = useTranslation();
 
@@ -35,23 +37,33 @@ export function RoutineCard({ routine, onPress, onDelete }: Props) {
               {routine.description}
             </Text>
           )}
-          {routine.day_of_week != null && (
-            <View className="self-start bg-info-soft rounded-full px-3 py-1 mt-1">
-              <Text className="text-xs font-medium text-brand-primary capitalize">
-                {routine.day_of_week}
-              </Text>
-            </View>
-          )}
+          <View className="flex-row items-center gap-2 mt-1">
+            {readOnly && (
+              <View className="self-start flex-row items-center gap-1 bg-brand-primary rounded-full px-2.5 py-1">
+                <Ionicons name="ribbon-outline" size={12} color={colors.white} />
+                <Text className="text-xs font-semibold text-white">{t("coach.badge")}</Text>
+              </View>
+            )}
+            {routine.day_of_week != null && (
+              <View className="self-start bg-info-soft rounded-full px-3 py-1">
+                <Text className="text-xs font-medium text-brand-primary capitalize">
+                  {routine.day_of_week}
+                </Text>
+              </View>
+            )}
+          </View>
         </View>
-        <Pressable
-          onPress={onDelete}
-          className="p-2"
-          hitSlop={8}
-          accessibilityRole="button"
-          accessibilityLabel={t("routines.deleteRoutine")}
-        >
-          <Ionicons name="trash-outline" size={18} color={colors.error} />
-        </Pressable>
+        {!readOnly && onDelete != null && (
+          <Pressable
+            onPress={onDelete}
+            className="p-2"
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t("routines.deleteRoutine")}
+          >
+            <Ionicons name="trash-outline" size={18} color={colors.error} />
+          </Pressable>
+        )}
       </View>
     </Card>
   );

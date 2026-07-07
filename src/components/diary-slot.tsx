@@ -11,7 +11,8 @@ import { Pressable, Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
 import type { MealItem, MealType } from "@/src/types/database";
 
-export type DiaryEntry = { item: MealItem; mealId: string };
+// `assigned` marks items that belong to a coach-assigned meal — read-only.
+export type DiaryEntry = { item: MealItem; mealId: string; assigned?: boolean };
 
 type Props = {
   slot: MealType;
@@ -79,9 +80,9 @@ export function DiarySlot({ slot, entries, onAdd, onEdit, onRemove }: Props) {
         <View className="gap-2">
           {entries.map((entry) => (
             <AnimatedView key={entry.item.id} entering={enter()} exiting={exit()}>
-              {/* Tapping the row opens the item editor */}
+              {/* Tapping the row opens the item editor (assigned items are read-only) */}
               <Card
-                onPress={() => onEdit(entry)}
+                onPress={entry.assigned ? undefined : () => onEdit(entry)}
                 className="px-4 py-3 flex-row items-center justify-between"
               >
                 {entry.item.photo_path != null && (
@@ -94,9 +95,19 @@ export function DiarySlot({ slot, entries, onAdd, onEdit, onRemove }: Props) {
                   />
                 )}
                 <View className="flex-1 gap-1">
-                  <Text className="font-semibold text-content-primary">
-                    {entry.item.name}
-                  </Text>
+                  <View className="flex-row items-center gap-2">
+                    <Text className="font-semibold text-content-primary">
+                      {entry.item.name}
+                    </Text>
+                    {entry.assigned && (
+                      <View className="flex-row items-center gap-1 bg-brand-primary rounded-full px-2 py-0.5">
+                        <Ionicons name="ribbon-outline" size={10} color={colors.white} />
+                        <Text className="text-[10px] font-semibold text-white">
+                          {t("coach.badge")}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
                   {entry.item.portion != null && entry.item.portion !== "" && (
                     <Text className="text-content-tertiary text-xs">
                       {entry.item.portion}
@@ -132,15 +143,17 @@ export function DiarySlot({ slot, entries, onAdd, onEdit, onRemove }: Props) {
                   </Text>
                   <Text className="text-xs text-content-tertiary">{t("meals.kcal")}</Text>
                 </View>
-                <Pressable
-                  onPress={() => onRemove(entry)}
-                  className="p-2 ml-2"
-                  hitSlop={8}
-                  accessibilityRole="button"
-                  accessibilityLabel={t("meals.removeFoodItem")}
-                >
-                  <Ionicons name="trash-outline" size={18} color={colors.error} />
-                </Pressable>
+                {!entry.assigned && (
+                  <Pressable
+                    onPress={() => onRemove(entry)}
+                    className="p-2 ml-2"
+                    hitSlop={8}
+                    accessibilityRole="button"
+                    accessibilityLabel={t("meals.removeFoodItem")}
+                  >
+                    <Ionicons name="trash-outline" size={18} color={colors.error} />
+                  </Pressable>
+                )}
               </Card>
             </AnimatedView>
           ))}

@@ -264,6 +264,7 @@ export default {
   // Routines
   routines: {
     noRoutinesYet: "No routines yet",
+    noOwnRoutinesYet: "No routines of your own yet",
     createFirstRoutine: "Create your first workout routine to get started",
     createRoutine: "Create Routine",
     routineName: "Routine Name *",
@@ -315,5 +316,28 @@ export default {
     deleteConfirm: 'Remove workout log for "{{name}}"?',
     min: "{{count}} min",
     logDeleted: "Log deleted",
+  },
+
+  // Coach (client-side view of their coach + membership)
+  coach: {
+    badge: "Coach",
+    assignedRoutines: "From your coach",
+    assignedBadge: "Assigned by your coach",
+    yourCoach: "Your coach",
+    noCoachYet: "No coach assigned yet",
+    contactWhatsapp: "Message on WhatsApp",
+    whatsappPrefill: "Hi! I have a question about my plan.",
+    membership: "Membership",
+    noMembership: "No active membership",
+    membershipStatus_active: "Active",
+    membershipStatus_expired: "Expired",
+    membershipStatus_paused: "Paused",
+    membershipStatus_cancelled: "Cancelled",
+    plan: "Plan",
+    expiresOn: "Renews {{date}}",
+    expiresInDays_one: "Renews in {{count}} day",
+    expiresInDays_other: "Renews in {{count}} days",
+    expiredOn: "Expired {{date}}",
+    renewHint: "Contact your coach to renew",
   },
 } as const;

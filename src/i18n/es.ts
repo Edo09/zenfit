@@ -264,6 +264,7 @@ export default {
   // Routines
   routines: {
     noRoutinesYet: "Sin rutinas aún",
+    noOwnRoutinesYet: "Aún no tienes rutinas propias",
     createFirstRoutine: "Crea tu primera rutina de ejercicios para comenzar",
     createRoutine: "Crear Rutina",
     routineName: "Nombre de rutina *",
@@ -315,5 +316,28 @@ export default {
     deleteConfirm: '¿Eliminar registro de entrenamiento de "{{name}}"?',
     min: "{{count}} min",
     logDeleted: "Registro eliminado",
+  },
+
+  // Coach (vista del cliente sobre su coach + membresía)
+  coach: {
+    badge: "Coach",
+    assignedRoutines: "De tu coach",
+    assignedBadge: "Asignada por tu coach",
+    yourCoach: "Tu coach",
+    noCoachYet: "Aún no tienes coach asignado",
+    contactWhatsapp: "Escribir por WhatsApp",
+    whatsappPrefill: "¡Hola! Tengo una duda sobre mi plan.",
+    membership: "Membresía",
+    noMembership: "Sin membresía activa",
+    membershipStatus_active: "Activa",
+    membershipStatus_expired: "Vencida",
+    membershipStatus_paused: "Pausada",
+    membershipStatus_cancelled: "Cancelada",
+    plan: "Plan",
+    expiresOn: "Renueva {{date}}",
+    expiresInDays_one: "Renueva en {{count}} día",
+    expiresInDays_other: "Renueva en {{count}} días",
+    expiredOn: "Venció {{date}}",
+    renewHint: "Contacta a tu coach para renovar",
   },
 } as const;

@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ScrollView as RNScrollView } from "react-native";
 
+import { CoachSection } from "@/src/components/coach-section";
 import {
   Button,
   Card,
@@ -337,6 +338,9 @@ export default function ProfileScreen() {
       <Text className="-mt-1 text-[13px] text-content-tertiary">
         {t("profile.subtitle")}
       </Text>
+
+      {/* Coach: identity + WhatsApp + membership status (read-only) */}
+      <CoachSection />
 
       {/* Datos personales */}
       <Card className="gap-3.5">

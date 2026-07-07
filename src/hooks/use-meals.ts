@@ -65,6 +65,7 @@ export function useMeals() {
         name: data.name,
         meal_type: data.meal_type,
         date: data.date ?? toDateKey(),
+        assigned_by: null,
         created_at: now,
         updated_at: now,
       };

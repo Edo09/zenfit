@@ -1,5 +1,7 @@
 // TypeScript types matching the Supabase database schema
 
+export type UserRole = "user" | "coach";
+
 export type Profile = {
   id: string;
   display_name: string | null;
@@ -14,10 +16,15 @@ export type Profile = {
   session_duration: number | null;
   available_days: string[] | null;
   calorie_goal: number | null;
+  role: UserRole;
+  whatsapp: string | null;
   onboarding_completed: boolean;
   created_at: string;
   updated_at: string;
 };
+
+// Public subset of a coach's profile that clients are allowed to read.
+export type Coach = Pick<Profile, "id" | "display_name" | "avatar_url" | "whatsapp">;
 
 export type Routine = {
   id: string;
@@ -25,6 +32,8 @@ export type Routine = {
   name: string;
   description: string | null;
   day_of_week: string | null;
+  // null = self-made; a coach's profile id = assigned by the coach (read-only).
+  assigned_by: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -51,6 +60,8 @@ export type Meal = {
   name: string;
   meal_type: MealType;
   date: string;
+  // null = self-made; a coach's profile id = assigned by the coach (read-only).
+  assigned_by: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -120,3 +131,21 @@ export type WorkoutLogInsert = Pick<WorkoutLog, "routine_name"> &
   Partial<
     Pick<WorkoutLog, "routine_id" | "date" | "duration_minutes" | "notes" | "completed_exercises">
   >;
+
+export type MembershipStatus = "active" | "expired" | "paused" | "cancelled";
+
+// Coach-managed membership. Editable only by the coach (web); clients read own.
+export type Membership = {
+  id: string;
+  client_id: string;
+  coach_id: string | null;
+  plan_name: string | null;
+  status: MembershipStatus;
+  price: number | null;
+  currency: string | null;
+  started_at: string;
+  expires_at: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+};

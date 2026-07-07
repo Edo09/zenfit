@@ -77,8 +77,9 @@ export default function DiaryScreen() {
       snack: [],
     };
     for (const meal of dayMeals) {
+      const assigned = meal.assigned_by != null;
       for (const item of meal.meal_items) {
-        map[meal.meal_type].push({ item, mealId: meal.id });
+        map[meal.meal_type].push({ item, mealId: meal.id, assigned });
       }
     }
     for (const slot of MEAL_SLOTS) {
