@@ -13,6 +13,7 @@ export default function ProgressLayout() {
         headerStyle: { backgroundColor: colors.brandDark },
         headerTintColor: colors.contentPrimary,
         headerShadowVisible: false,
+        contentStyle: { backgroundColor: colors.brandDark },
         ...(Platform.OS === "android" && { animation: "slide_from_right" as const }),
       }}
     >

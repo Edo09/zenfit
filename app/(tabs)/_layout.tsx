@@ -19,6 +19,9 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         animation: "shift",
+        // Native scene container — themed so tab switches never flash
+        // white in dark mode
+        sceneStyle: { backgroundColor: colors.brandDark },
         tabBarActiveTintColor: colors.brandPrimary,
         tabBarInactiveTintColor: colors.contentMuted,
         tabBarStyle: {

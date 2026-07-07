@@ -8,6 +8,7 @@ import { setupOnlineManager } from "@/src/lib/online";
 import { flushOutbox } from "@/src/lib/outbox";
 import { persister, PERSIST_MAX_AGE, queryClient } from "@/src/lib/query-client";
 import { AuthProvider } from "@/src/providers/auth-provider";
+import { useColors } from "@/src/theme/colors";
 import {
   applyThemeMode,
   getStoredThemeMode,
@@ -78,6 +79,7 @@ function AuthGate() {
 }
 
 export default function RootLayout() {
+  const colors = useColors();
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
@@ -144,6 +146,9 @@ export default function RootLayout() {
                   headerShown: false,
                   animation: "fade",
                   animationDuration: 250,
+                  // Native screen container — themed so transitions never
+                  // flash white in dark mode
+                  contentStyle: { backgroundColor: colors.brandDark },
                 }}
               >
                 <Stack.Screen name="index" />

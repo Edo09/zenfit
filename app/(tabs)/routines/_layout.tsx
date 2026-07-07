@@ -20,6 +20,7 @@ export default function RoutinesLayout() {
         headerStyle: { backgroundColor: colors.brandDark },
         headerTintColor: colors.contentPrimary,
         headerShadowVisible: false,
+        contentStyle: { backgroundColor: colors.brandDark },
         // iOS keeps the native push (parallax + swipe-back); Android's OEM
         // default varies, so pin it
         ...(Platform.OS === "android" && { animation: "slide_from_right" as const }),

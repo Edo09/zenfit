@@ -1,7 +1,23 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Appearance } from "react-native";
+import * as SystemUI from "expo-system-ui";
+import { Appearance, type ColorSchemeName } from "react-native";
+
+import { palettes } from "./colors";
 
 const THEME_KEY = "app_theme";
+
+// Keep the native window background in sync with the scheme — it's what
+// shows through while screens animate, so leaving it at the platform
+// default (white) flashes on every transition in dark mode.
+function syncWindowBackground(scheme: ColorSchemeName | null | undefined) {
+  void SystemUI.setBackgroundColorAsync(
+    palettes[scheme === "dark" ? "dark" : "light"].brandDark,
+  );
+}
+
+Appearance.addChangeListener(({ colorScheme }) => {
+  syncWindowBackground(colorScheme);
+});
 
 export type ThemeMode = "light" | "dark" | "system";
 
@@ -23,6 +39,9 @@ export async function getStoredThemeMode(): Promise<ThemeMode> {
     "unspecified" = follow the OS setting (RN 0.86+; was null before). */
 export function applyThemeMode(mode: ThemeMode) {
   Appearance.setColorScheme(mode === "system" ? "unspecified" : mode);
+  syncWindowBackground(
+    mode === "system" ? Appearance.getColorScheme() : mode,
+  );
 }
 
 /** Persist + apply. Everything re-themes via Appearance subscribers:
