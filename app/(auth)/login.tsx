@@ -1,4 +1,5 @@
 import * as Haptics from "expo-haptics";
+import { Image } from "expo-image";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -56,11 +57,16 @@ export default function Login() {
         </Text>
       </Pressable>
 
-      {/* Two-tone wordmark, sized to dominate the screen */}
+      {/* App icon + two-tone wordmark, sized to dominate the screen */}
       <View className="items-center mb-12">
-        <Text className="text-5xl font-extrabold">
-          <Text className="text-5xl font-extrabold text-content-primary">Ho</Text>
-          <Text className="text-5xl font-extrabold text-brand-secondary">kage</Text>
+        <Image
+          source={require("@/assets/images/app-icon/icon.png")}
+          style={{ width: 112, height: 112, borderRadius: 24 }}
+          accessibilityIgnoresInvertColors
+        />
+        <Text className="text-3xl font-extrabold text-center mt-5">
+          <Text className="text-3xl font-extrabold text-content-primary">Hokage</Text>
+          <Text className="text-3xl font-extrabold text-brand-primary"> Coaching App</Text>
         </Text>
         <Text className="text-content-tertiary mt-3 text-base">
           {t("auth.fitnessCompanion")}

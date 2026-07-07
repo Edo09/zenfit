@@ -17,7 +17,6 @@
         "backgroundColor": "#000000",
         "foregroundImage": "./assets/images/app-icon/android-icon-foreground.png"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.edo09.hokagecoaching"
     },
