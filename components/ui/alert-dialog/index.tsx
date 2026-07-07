@@ -137,6 +137,8 @@ const AlertDialogContent = React.forwardRef<
       pointerEvents="auto"
       entering={ZoomIn.duration(200).withInitialValues({
         transform: [{ scale: 0.9 }],
+        // @ts-expect-error reanimated 4.5 types ZoomIn initial values as
+        // transform-only; opacity is still applied at runtime
         opacity: 0,
       })}
       exiting={FadeOut.duration(200)}

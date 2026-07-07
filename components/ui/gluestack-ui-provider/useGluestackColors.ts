@@ -40,7 +40,7 @@ function rgbToHex(rgbString: string): string {
  */
 export function useGluestackColors(): Record<string, string> {
   const { colorScheme } = useColorScheme();
-  const theme = colors[colorScheme || 'light'];
+  const theme = colors[colorScheme === 'dark' ? 'dark' : 'light'];
 
   // Dynamically convert all CSS variables to camelCase hex colors
   const result: Record<string, string> = {};

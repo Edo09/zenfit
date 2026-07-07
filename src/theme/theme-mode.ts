@@ -20,9 +20,9 @@ export async function getStoredThemeMode(): Promise<ThemeMode> {
 }
 
 /** Apply a mode to RN Appearance — the single runtime theme signal.
-    null = follow the OS setting. */
+    "unspecified" = follow the OS setting (RN 0.86+; was null before). */
 export function applyThemeMode(mode: ThemeMode) {
-  Appearance.setColorScheme(mode === "system" ? null : mode);
+  Appearance.setColorScheme(mode === "system" ? "unspecified" : mode);
 }
 
 /** Persist + apply. Everything re-themes via Appearance subscribers:

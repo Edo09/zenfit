@@ -28,15 +28,15 @@ export function GluestackUIProvider({
 
   useEffect(() => {
     // nativewind setColorScheme is Appearance.setColorScheme; valid values
-    // are 'light' | 'dark' | null — null means follow the OS ("system").
-    setColorScheme((mode === 'system' ? null : mode) as 'light' | 'dark');
+    // are 'light' | 'dark' | 'unspecified' — 'unspecified' follows the OS.
+    setColorScheme(mode === 'system' ? 'unspecified' : mode);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
 
   return (
     <View
       style={[
-        config[colorScheme ?? 'light'],
+        config[colorScheme === 'dark' ? 'dark' : 'light'],
         { flex: 1, height: '100%', width: '100%' },
         props.style,
       ]}

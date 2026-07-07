@@ -39,20 +39,25 @@ type IMotionViewProps = React.ComponentProps<typeof View> &
 const MotionView = Motion.View as React.ComponentType<IMotionViewProps>;
 
 const StyledMotionView = styled(MotionView, { className: 'style' });
-const StyledAnimatedPressable = styled(AnimatedPressable, { className: 'style' });
-const StyledScrollView = styled(ScrollView, {
+// Collapse the generics: styled()'s StyledConfiguration<C> blows TS's union
+// limit (TS2590) against these component types under RN 0.86.
+const StyledAnimatedPressable = styled(
+  AnimatedPressable as React.ComponentType<any>,
+  { className: 'style' }
+);
+const StyledScrollView = styled(ScrollView as React.ComponentType<any>, {
   className: 'style',
   contentContainerClassName: 'contentContainerStyle',
   indicatorClassName: 'indicatorStyle',
 });
-const StyledVirtualizedList = styled(VirtualizedList, {
+const StyledVirtualizedList = styled(VirtualizedList as React.ComponentType<any>, {
   className: 'style',
   ListFooterComponentClassName: 'ListFooterComponentStyle',
   ListHeaderComponentClassName: 'ListHeaderComponentStyle',
   contentContainerClassName: 'contentContainerStyle',
   indicatorClassName: 'indicatorStyle',
 });
-const StyledFlatList = styled(FlatList, {
+const StyledFlatList = styled(FlatList as React.ComponentType<any>, {
   className: 'style',
   ListFooterComponentClassName: 'ListFooterComponentStyle',
   ListHeaderComponentClassName: 'ListHeaderComponentStyle',
@@ -65,7 +70,7 @@ const StyledIcon = styled(UIIcon, {
     target: 'style',
   },
 });
-const StyledSectionList = styled(SectionList, { className: 'style' });
+const StyledSectionList = styled(SectionList as React.ComponentType<any>, { className: 'style' });
 const StyledSectionHeaderText = styled(H4, { className: 'style' });
 
 export const UIActionsheet = createActionsheet({

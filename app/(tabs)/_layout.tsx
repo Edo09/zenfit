@@ -2,12 +2,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React from "react";
 import { useTranslation } from "react-i18next";
+import type { ColorValue } from "react-native";
 
 import { useColors } from "@/src/theme/colors";
 
 type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
 
-function TabIcon({ name, color }: { name: IoniconName; color: string }) {
+function TabIcon({ name, color }: { name: IoniconName; color: ColorValue }) {
   return <Ionicons name={name} size={24} color={color} />;
 }
 

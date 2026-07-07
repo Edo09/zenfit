@@ -1,7 +1,8 @@
 import React from "react";
 import { Pressable as RNPressable } from "react-native";
-import { useCssElement } from "react-native-css";
 import RNAnimated from "react-native-reanimated";
+
+import { useCssElement } from "./css";
 
 // className-aware reanimated primitives. Same useCssElement pattern as
 // AnimatedScrollView in ./index — the css hook wraps the animated component,
