@@ -1,7 +1,8 @@
 import * as Haptics from "expo-haptics";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { ScrollView as RNScrollView } from "react-native";
 
 import {
   Button,
@@ -10,9 +11,11 @@ import {
   Input,
   LoadingBlock,
   Screen,
+  SelectField,
   useToast,
 } from "@/src/components/ui";
 import { useAuth } from "@/src/hooks/use-auth";
+import { useExercises } from "@/src/hooks/use-exercises";
 import { useProfile } from "@/src/hooks/use-profile";
 import { useProgress } from "@/src/hooks/use-progress";
 import { useRoutineDetail, useRoutines } from "@/src/hooks/use-routines";
@@ -53,6 +56,7 @@ export default function RoutineDetailScreen() {
   const online = useIsOnline();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { addExercise, removeExercise } = useRoutines();
+  const { exercises } = useExercises();
   const { createLog } = useProgress();
   const { user } = useAuth();
   const { profile } = useProfile(user?.id);
@@ -61,6 +65,13 @@ export default function RoutineDetailScreen() {
   // mutations flow back in without manual refreshes.
   const { data: routine = null, isPending: loading, isError } = useRoutineDetail(id);
   const [showAddExercise, setShowAddExercise] = useState(false);
+  const scrollViewRef = useRef<RNScrollView>(null);
+
+  function openAddExerciseForm() {
+    setShowAddExercise(true);
+    // Wait for form to mount/animate in before scrolling to it.
+    setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 150);
+  }
   const [loggingWorkout, setLoggingWorkout] = useState(false);
   const [pendingRemove, setPendingRemove] = useState<RoutineExercise | null>(null);
   const [showLogDialog, setShowLogDialog] = useState(false);
@@ -73,12 +84,11 @@ export default function RoutineDetailScreen() {
   const [videoUri, setVideoUri] = useState<string | null>(null);
 
   // New exercise form state
-  const [exName, setExName] = useState("");
-  const [exNameError, setExNameError] = useState<string | undefined>();
+  const [exExerciseId, setExExerciseId] = useState<string | null>(null);
+  const [exExerciseError, setExExerciseError] = useState<string | undefined>();
   const [exSets, setExSets] = useState("3");
   const [exReps, setExReps] = useState("10");
   const [exWeight, setExWeight] = useState("");
-  const [exVideoUrl, setExVideoUrl] = useState("");
 
   useEffect(() => {
     if (isError) {
@@ -93,7 +103,9 @@ export default function RoutineDetailScreen() {
     if (rest == null) return;
     if (rest.remaining <= 0) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-      setRest(null);
+      // Avoid calling setState synchronously inside the effect to prevent cascading renders
+      // Schedule state update on next tick
+      setTimeout(() => setRest(null), 0);
       return;
     }
     const id = setTimeout(
@@ -112,25 +124,25 @@ export default function RoutineDetailScreen() {
 
   const handleAddExercise = async () => {
     if (!routine) return;
-    if (!exName.trim()) {
-      setExNameError(t("common.fieldRequired"));
+    const selected = exercises.find((e) => e.id === exExerciseId);
+    if (!selected) {
+      setExExerciseError(t("common.fieldRequired"));
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
       return;
     }
     try {
       await addExercise({
         routine_id: routine.id,
-        name: exName.trim(),
+        exercise_id: selected.id,
+        exercise: selected,
         sets: parseInt(exSets, 10) || 3,
         reps: parseInt(exReps, 10) || 10,
         weight_kg: exWeight ? parseFloat(exWeight) : undefined,
-        video_url: exVideoUrl.trim() || undefined,
       });
-      setExName("");
+      setExExerciseId(null);
       setExSets("3");
       setExReps("10");
       setExWeight("");
-      setExVideoUrl("");
       setShowAddExercise(false);
     } catch {
       toast.show({ type: "error", message: t("common.somethingWentWrong") });
@@ -150,7 +162,7 @@ export default function RoutineDetailScreen() {
   };
 
   const openDemo = (ex: RoutineExercise) => {
-    if (!ex.video_url) {
+    if (!ex.exercise?.video_url) {
       toast.show({ type: "info", message: t("routines.noVideoYet") });
       return;
     }
@@ -159,7 +171,7 @@ export default function RoutineDetailScreen() {
       return;
     }
     Haptics.selectionAsync().catch(() => {});
-    setVideoUri(ex.video_url);
+    setVideoUri(ex.exercise.video_url);
   };
 
   const toggleExercise = (exId: string) => {
@@ -185,7 +197,8 @@ export default function RoutineDetailScreen() {
 
     const completedNames = routine.routine_exercises
       .filter((ex) => completedExercises[ex.id])
-      .map((ex) => ex.name);
+      .map((ex) => ex.exercise?.name)
+      .filter((name): name is string => !!name);
 
     try {
       await createLog({
@@ -244,6 +257,7 @@ export default function RoutineDetailScreen() {
       />
       <Screen
         keyboard
+        scrollRef={scrollViewRef}
         contentContainerClassName="pb-6"
         footer={
           <View className="px-4 pt-2 pb-6 bg-brand-dark border-t border-border">
@@ -327,7 +341,7 @@ export default function RoutineDetailScreen() {
                       accessibilityLabel={t("routines.watchDemo")}
                     >
                       <Ionicons name="barbell-outline" size={26} color={colors.contentMuted} />
-                      {ex.video_url ? (
+                      {ex.exercise?.video_url ? (
                         <View className="absolute inset-0 items-center justify-center bg-black/30">
                           <Ionicons name="play-circle" size={30} color="#fff" />
                         </View>
@@ -350,7 +364,7 @@ export default function RoutineDetailScreen() {
                       <Text
                         className={`font-bold text-base ${isCompleted ? "text-content-secondary line-through" : "text-content-primary"}`}
                       >
-                        {ex.name}
+                        {ex.exercise?.name}
                       </Text>
                       <Text className="text-content-tertiary text-sm mt-0.5">
                         {ex.sets} × {ex.reps}
@@ -418,15 +432,21 @@ export default function RoutineDetailScreen() {
               <Text className="font-semibold text-content-primary">
                 {t("routines.addExercise")}
               </Text>
-              <Input
-                placeholder={t("routines.exerciseName")}
-                value={exName}
-                onChangeText={(text) => {
-                  setExName(text);
-                  if (exNameError != null) setExNameError(undefined);
+              <SelectField
+                placeholder={t("routines.pickExercise")}
+                value={exExerciseId}
+                options={exercises.map((e) => ({
+                  label: e.body_part?.name ? `${e.name} (${e.body_part.name})` : e.name,
+                  value: e.id,
+                }))}
+                onChange={(value) => {
+                  setExExerciseId(value);
+                  if (exExerciseError != null) setExExerciseError(undefined);
                 }}
-                error={exNameError}
-                className="bg-brand-dark"
+                helper={
+                  exExerciseError ??
+                  (exercises.length === 0 ? t("routines.noExercisesInCatalog") : undefined)
+                }
               />
               <View className="flex-row gap-2">
                 <Input
@@ -458,16 +478,6 @@ export default function RoutineDetailScreen() {
                   className="bg-brand-dark"
                 />
               </View>
-              <Input
-                placeholder={t("routines.videoUrlOpt")}
-                leftIcon="videocam-outline"
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType="url"
-                value={exVideoUrl}
-                onChangeText={setExVideoUrl}
-                className="bg-brand-dark"
-              />
               <View className="flex-row gap-2">
                 <View className="flex-1">
                   <Button variant="secondary" onPress={() => setShowAddExercise(false)} className="w-full">
@@ -484,7 +494,7 @@ export default function RoutineDetailScreen() {
             </AnimatedView>
           ) : (
             <Pressable
-              onPress={() => setShowAddExercise(true)}
+              onPress={openAddExerciseForm}
               accessibilityRole="button"
               className="border-2 border-dashed border-border-strong rounded-2xl py-4 items-center"
             >
@@ -501,7 +511,7 @@ export default function RoutineDetailScreen() {
         visible={pendingRemove != null}
         destructive
         title={t("routines.removeExercise")}
-        message={pendingRemove != null ? t("routines.removeConfirm", { name: pendingRemove.name }) : undefined}
+        message={pendingRemove != null ? t("routines.removeConfirm", { name: pendingRemove.exercise?.name }) : undefined}
         confirmLabel={t("common.remove")}
         onConfirm={handleConfirmRemove}
         onClose={() => setPendingRemove(null)}

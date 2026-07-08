@@ -160,7 +160,7 @@ const { data: clients } = await supabase
 ```ts
 const { data: routines } = await supabase
   .from("routines")
-  .select("*, routine_exercises(*)")
+  .select("*, routine_exercises(*, exercise:exercises(*, body_part:bodyparts(name)))")
   .eq("user_id", clientId)
   .order("created_at", { ascending: false });
 
@@ -176,9 +176,41 @@ const { data: logs } = await supabase
   .order("date", { ascending: false });
 ```
 
+### Manage the exercise catalog
+
+Exercises are a **shared library** (`public.exercises`), not per-routine free text — assigning "Bench Press" to five clients means picking the same catalog row five times, not retyping it. Only the coach can write to it; every signed-in user (coach + clients) can read it.
+
+```ts
+// List (e.g. for a picker in the routine-builder UI)
+const { data: catalog } = await supabase
+  .from("exercises")
+  .select("*, body_part:bodyparts(name)")
+  .order("name");
+
+// Create — name is case-insensitively unique (unique index on lower(name)).
+// Search the list above before creating to avoid a duplicate-key error.
+const { data: exercise, error } = await supabase
+  .from("exercises")
+  .insert({ name: "Bench Press", video_url: "https://.../bench-press.mp4", body_part_id: chestId })
+  .select()
+  .single();
+
+// Update — instantly updates every client this exercise is assigned to
+// (routine_exercises stores only exercise_id, name/video are read live via join).
+await supabase.from("exercises").update({ video_url: newUrl }).eq("id", exercise.id);
+
+// Delete — fails with Postgres error 23503 (foreign key violation) if any
+// routine_exercises row still references it. Catch this and tell the coach
+// to reassign/remove those first rather than showing a raw DB error.
+const { error: delErr } = await supabase.from("exercises").delete().eq("id", exercise.id);
+if (delErr?.code === "23503") {
+  // "Still assigned to one or more clients — remove it from their routines first."
+}
+```
+
 ### Assign a workout plan (this is what the mobile app shows under "From your coach")
 
-Insert routine rows **into the client's account** (`user_id = client`) stamped with `assigned_by = coach`, then their exercises.
+Insert routine rows **into the client's account** (`user_id = client`) stamped with `assigned_by = coach`, then their exercises — referencing the catalog by `exercise_id`, not a free-text name.
 
 ```ts
 const { data: routine, error } = await supabase
@@ -194,9 +226,11 @@ const { data: routine, error } = await supabase
   .single();
 if (error) throw error;
 
+// benchPressId / overheadPressId come from the exercises catalog (see above) —
+// pick them from the list, don't type a name here.
 await supabase.from("routine_exercises").insert([
-  { routine_id: routine.id, user_id: clientId, name: "Bench Press", sets: 4, reps: 8, sort_order: 0 },
-  { routine_id: routine.id, user_id: clientId, name: "Overhead Press", sets: 3, reps: 10, sort_order: 1 },
+  { routine_id: routine.id, user_id: clientId, exercise_id: benchPressId, sets: 4, reps: 8, sort_order: 0 },
+  { routine_id: routine.id, user_id: clientId, exercise_id: overheadPressId, sets: 3, reps: 10, sort_order: 1 },
 ]);
 ```
 
@@ -360,7 +394,7 @@ The new account is created with `role = 'user'` (the default), so the coach imme
 
 ## 8. Schema Reference
 
-Source of truth: **`supabase/migrations/20260707120000_coaching_platform.sql`** (plus the base `supabase-schema.sql`). Columns and objects the panel depends on:
+Source of truth: **`supabase/migrations/20260707120000_coaching_platform.sql`** and **`supabase/migrations/20260708120000_exercise_catalog.sql`** (plus the base `supabase-schema.sql`, which is not fully in sync with either migration). Columns and objects the panel depends on:
 
 **Columns added for coaching**
 
@@ -371,6 +405,8 @@ Source of truth: **`supabase/migrations/20260707120000_coaching_platform.sql`** 
 | `assigned_by` | `routines`, `meals` | `null` = self-made; coach's `profiles.id` = coach-assigned (read-only for the client). |
 
 **Membership table** — `public.memberships`: `client_id`, `coach_id`, `plan_name`, `status` (`active`/`expired`/`paused`/`cancelled`), `price`, `currency`, `started_at`, `expires_at`, `notes`.
+
+**Exercise catalog** — `public.exercises`: `id`, `name` (case-insensitively unique), `video_url`, `body_part_id` (→ `bodyparts.id`), `created_at`, `updated_at`. Coach-writable only (`is_coach()`), readable by everyone. `routine_exercises.exercise_id` (→ `exercises.id`, `not null`, `on delete restrict`) replaced the old per-row `name`/`video_url` text columns — those are gone after the cleanup migration ran.
 
 **Helper functions (security definer)**
 
@@ -398,7 +434,7 @@ Source of truth: **`supabase/migrations/20260707120000_coaching_platform.sql`** 
   ```
 
 - **Pagination** for large client lists — use `.range(from, to)` on the `profiles` query.
-- **Coach-only content later** (announcements, exercise library): add tables with `is_coach()` write policies + public/`user` read policies, following the same pattern as this migration.
+- **Coach-only content later** (announcements): add tables with `is_coach()` write policies + public/`user` read policies, following the same pattern as this migration. (The exercise library described here is already built — see §5 "Manage the exercise catalog" and §8.)
 
 ---
 

@@ -38,21 +38,37 @@ export type Routine = {
   updated_at: string;
 };
 
+// Shared, coach-managed library (Admin Web Panel CRUDs this). Name/video are
+// looked up live via the join below, so editing an entry here updates every
+// client it's assigned to.
+export type Exercise = {
+  id: string;
+  name: string;
+  video_url: string | null;
+  body_part_id: string | null;
+  created_at: string;
+  updated_at: string;
+  // Joined via `body_part:bodyparts(name)`.
+  body_part?: { name: string } | null;
+};
+
 export type RoutineExercise = {
   id: string;
   routine_id: string;
   user_id: string;
-  name: string;
+  exercise_id: string;
   sets: number;
   reps: number;
   weight_kg: number | null;
   rest_seconds: number;
   sort_order: number;
   notes: string | null;
-  // Optional curated demo link (e.g. coach-assigned via the web panel).
-  // Absent for app-created exercises — the UI falls back to a name search.
-  video_url?: string | null;
   created_at: string;
+  // Joined via `exercise:exercises(*, body_part:bodyparts(name))`. Optional
+  // because the offline outbox overlay can transiently reconstruct a pending
+  // row before the exercise catalog cache is populated — always present once
+  // synced. Render code must not assume it's there.
+  exercise?: Exercise;
 };
 
 export type MealType = "breakfast" | "lunch" | "dinner" | "snack";
@@ -110,14 +126,18 @@ export type RoutineInsert = Pick<Routine, "name"> &
 
 export type RoutineExerciseInsert = Pick<
   RoutineExercise,
-  "routine_id" | "name"
+  "routine_id" | "exercise_id"
 > &
   Partial<
     Pick<
       RoutineExercise,
-      "sets" | "reps" | "weight_kg" | "rest_seconds" | "sort_order" | "notes" | "video_url"
+      "sets" | "reps" | "weight_kg" | "rest_seconds" | "sort_order" | "notes"
     >
   >;
+
+// Carries the already-fetched catalog row through the add-exercise mutation
+// so the optimistic cache entry can render name/video before the next sync.
+export type AddRoutineExerciseInput = RoutineExerciseInsert & { exercise: Exercise };
 
 export type MealInsert = Pick<Meal, "name" | "meal_type"> &
   Partial<Pick<Meal, "date">>;

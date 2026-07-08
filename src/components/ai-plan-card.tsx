@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 
 import { Button, Card, ConfirmDialog, useToast } from "@/src/components/ui";
 import { useAuth } from "@/src/hooks/use-auth";
+import { useExercises } from "@/src/hooks/use-exercises";
 import { useProfile } from "@/src/hooks/use-profile";
 import { useRoutines } from "@/src/hooks/use-routines";
 import { useIsOnline } from "@/src/lib/online";
@@ -39,6 +40,7 @@ export function AIPlanCard({ className }: { className?: string }) {
   const { user } = useAuth();
   const { profile } = useProfile(user?.id);
   const { createRoutine, addExercise } = useRoutines();
+  const { exercises } = useExercises();
   const [generating, setGenerating] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
 
@@ -46,6 +48,10 @@ export function AIPlanCard({ className }: { className?: string }) {
     if (!isProfileComplete(profile)) {
       toast.show({ type: "info", message: t("profile.completeProfileFirst") });
       router.push("/(tabs)/profile");
+      return;
+    }
+    if (exercises.length === 0) {
+      toast.show({ type: "info", message: t("routines.noExercisesInCatalog") });
       return;
     }
     setConfirmVisible(true);
@@ -56,7 +62,8 @@ export function AIPlanCard({ className }: { className?: string }) {
     if (!isProfileComplete(profile)) return;
     try {
       setGenerating(true);
-      const aiRoutines = await generateRoutines(profile, i18n.language);
+      const catalogNames = exercises.map((e) => e.name);
+      const aiRoutines = await generateRoutines(profile, i18n.language, catalogNames);
 
       for (const r of aiRoutines) {
         const routine = await createRoutine({
@@ -65,9 +72,17 @@ export function AIPlanCard({ className }: { className?: string }) {
           day_of_week: r.day_of_week ?? undefined,
         });
         for (const ex of r.exercises) {
+          // The model is instructed to only use catalog names, but this is
+          // untrusted output — skip anything that doesn't actually match
+          // (the catalog is coach-managed; the app can't create new entries).
+          const matched = exercises.find(
+            (e) => e.name.toLowerCase() === ex.name.toLowerCase(),
+          );
+          if (!matched) continue;
           await addExercise({
             routine_id: routine.id,
-            name: ex.name,
+            exercise_id: matched.id,
+            exercise: matched,
             sets: ex.sets,
             reps: ex.reps,
             weight_kg: ex.weight_kg ?? undefined,

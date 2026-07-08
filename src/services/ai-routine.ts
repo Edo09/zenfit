@@ -79,7 +79,8 @@ function sanitize(raw: unknown): AIRoutine[] {
 
 export async function generateRoutines(
   profile: Profile,
-  language: string
+  language: string,
+  catalogNames: string[],
 ): Promise<AIRoutine[]> {
   const availableDays = (profile.available_days ?? [])
     .map((d) => SHORT_TO_DAY[d.toLowerCase()] ?? d.toLowerCase())
@@ -97,7 +98,8 @@ export async function generateRoutines(
     "- 4 to 7 exercises per routine, realistic sets (2-5) and reps (5-20).",
     "- weight_kg: null for bodyweight/cardio; conservative starter weights otherwise.",
     "- Session must fit the user's session duration.",
-    `- Routine names, descriptions and exercise names in ${languageName}.`,
+    "- Exercise names MUST be copied verbatim from `exercise_catalog` in the user message — do not invent, translate, or reword any exercise name. Pick the closest matches for the user's goals.",
+    `- Routine names and descriptions in ${languageName}.`,
   ].join("\n");
 
   const user = JSON.stringify({
@@ -110,6 +112,7 @@ export async function generateRoutines(
     days_per_week: profile.days_per_week,
     session_duration_minutes: profile.session_duration,
     available_days: availableDays,
+    exercise_catalog: catalogNames,
   });
 
   const parsed = await completeJSON(system, user);

@@ -4,9 +4,10 @@ import { overlayRoutines } from "@/src/lib/outbox-overlay";
 import { newId } from "@/src/lib/ids";
 import { qk } from "@/src/lib/query-keys";
 import type {
+  AddRoutineExerciseInput,
+  Exercise,
   Routine,
   RoutineExercise,
-  RoutineExerciseInsert,
   RoutineInsert,
   RoutineWithExercises,
 } from "@/src/types/database";
@@ -14,19 +15,26 @@ import { supabase } from "@/src/utils/supabase";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 
+function exercisesById(list: Exercise[] | undefined): Map<string, Exercise> {
+  return new Map((list ?? []).map((e) => [e.id, e]));
+}
+
 // Exercises ride along with the list so the routines tab (list + detail) is a
 // single persisted query that works offline.
-async function fetchRoutines(userId: string): Promise<RoutineWithExercises[]> {
+async function fetchRoutines(
+  userId: string,
+  catalog: Map<string, Exercise>,
+): Promise<RoutineWithExercises[]> {
   const { data, error } = await supabase
     .from("routines")
-    .select("*, routine_exercises(*)")
+    .select("*, routine_exercises(*, exercise:exercises(*, body_part:bodyparts(name)))")
     .order("created_at", { ascending: false })
     .order("sort_order", {
       referencedTable: "routine_exercises",
       ascending: true,
     });
   if (error) throw error;
-  return overlayRoutines(userId, data as RoutineWithExercises[]);
+  return overlayRoutines(userId, data as RoutineWithExercises[], catalog);
 }
 
 export function useRoutines() {
@@ -42,7 +50,11 @@ export function useRoutines() {
     refetch,
   } = useQuery({
     queryKey: listKey,
-    queryFn: () => fetchRoutines(user!.id),
+    queryFn: () =>
+      fetchRoutines(
+        user!.id,
+        exercisesById(queryClient.getQueryData<Exercise[]>(qk.exercises())),
+      ),
     enabled: !!user,
   });
 
@@ -98,29 +110,34 @@ export function useRoutines() {
   });
 
   const addExerciseMutation = useMutation({
-    mutationFn: async (data: RoutineExerciseInsert) => {
+    mutationFn: async (data: AddRoutineExerciseInput) => {
       const siblings =
         queryClient
           .getQueryData<RoutineWithExercises[]>(listKey)
           ?.find((r) => r.id === data.routine_id)?.routine_exercises ?? [];
-      const exercise: RoutineExercise = {
+      // Real table columns only — this is what actually gets sent to
+      // Supabase. Embedding the joined `exercise` object here would make the
+      // insert fail (PostgREST rejects payload keys the table doesn't have).
+      const dbRow: Omit<RoutineExercise, "exercise"> = {
         id: newId(),
         routine_id: data.routine_id,
         user_id: user!.id,
-        name: data.name,
+        exercise_id: data.exercise_id,
         sets: data.sets ?? 3,
         reps: data.reps ?? 10,
         weight_kg: data.weight_kg ?? null,
         rest_seconds: data.rest_seconds ?? 60,
         sort_order: data.sort_order ?? siblings.length,
         notes: data.notes ?? null,
-        video_url: data.video_url ?? null,
         created_at: new Date().toISOString(),
       };
+      // What the UI actually renders — dbRow plus the picked catalog entry,
+      // so the exercise shows its name/video immediately, pre-sync.
+      const cacheRow: RoutineExercise = { ...dbRow, exercise: data.exercise };
       queryClient.setQueryData<RoutineWithExercises[]>(listKey, (old = []) =>
         old.map((r) =>
-          r.id === exercise.routine_id
-            ? { ...r, routine_exercises: [...r.routine_exercises, exercise] }
+          r.id === cacheRow.routine_id
+            ? { ...r, routine_exercises: [...r.routine_exercises, cacheRow] }
             : r,
         ),
       );
@@ -128,9 +145,9 @@ export function useRoutines() {
         userId: user!.id,
         table: "routine_exercises",
         kind: "insert",
-        payload: exercise,
+        payload: dbRow,
       });
-      return exercise;
+      return cacheRow;
     },
   });
 
@@ -169,9 +186,14 @@ export function useRoutines() {
 // Detail view derived from the (persisted) list cache — renders offline.
 export function useRoutineDetail(id: string | undefined) {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   return useQuery({
     queryKey: qk.routines(user?.id),
-    queryFn: () => fetchRoutines(user!.id),
+    queryFn: () =>
+      fetchRoutines(
+        user!.id,
+        exercisesById(queryClient.getQueryData<Exercise[]>(qk.exercises())),
+      ),
     enabled: !!user && !!id,
     select: (all: RoutineWithExercises[]) =>
       all.find((r) => r.id === id) ?? null,

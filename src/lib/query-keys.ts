@@ -9,6 +9,8 @@ export const qk = {
   // carries no userId; membership is per-client.
   coach: () => ["coach"] as const,
   membership: (userId: string | undefined) => ["membership", userId] as const,
+  // Shared exercise catalog, coach-managed via the Admin Web Panel.
+  exercises: () => ["exercises"] as const,
 };
 
 export const qkPrefixes = [

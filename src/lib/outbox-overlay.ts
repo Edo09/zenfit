@@ -1,5 +1,6 @@
 import { getPendingOps } from "@/src/lib/outbox";
 import type {
+  Exercise,
   Meal,
   MealItem,
   MealWithItems,
@@ -48,6 +49,7 @@ export async function overlayMeals(
 export async function overlayRoutines(
   userId: string,
   rows: RoutineWithExercises[],
+  exercisesById: Map<string, Exercise>,
 ): Promise<RoutineWithExercises[]> {
   const ops = await getPendingOps(userId);
   let out = rows.map((r) => ({
@@ -69,7 +71,17 @@ export async function overlayRoutines(
           );
         }
       } else {
-        const exercise = op.payload as RoutineExercise;
+        // op.payload is the real DB row (no embedded `exercise` — see
+        // use-routines.ts's dbRow/cacheRow split). Re-attach it from the
+        // catalog cache so the reconstructed row can still render. This can
+        // legitimately miss (catalog not yet fetched, or entry since
+        // removed) — callers must not assume `.exercise` is always present
+        // on a row that came through this path.
+        const dbRow = op.payload as Omit<RoutineExercise, "exercise">;
+        const exercise: RoutineExercise = {
+          ...dbRow,
+          exercise: exercisesById.get(dbRow.exercise_id),
+        };
         const parent = out.find((r) => r.id === exercise.routine_id);
         if (
           parent &&
