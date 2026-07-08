@@ -114,6 +114,7 @@ export function useRoutines() {
         rest_seconds: data.rest_seconds ?? 60,
         sort_order: data.sort_order ?? siblings.length,
         notes: data.notes ?? null,
+        video_url: data.video_url ?? null,
         created_at: new Date().toISOString(),
       };
       queryClient.setQueryData<RoutineWithExercises[]>(listKey, (old = []) =>

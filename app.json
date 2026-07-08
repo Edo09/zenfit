@@ -64,7 +64,8 @@
       "expo-image",
       "expo-status-bar",
       "expo-web-browser",
-      "./plugins/with-gradle-jvm-args.js"
+      "./plugins/with-gradle-jvm-args.js",
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true,

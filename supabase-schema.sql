@@ -97,8 +97,13 @@ create table public.routine_exercises (
   rest_seconds integer default 60,
   sort_order integer default 0,
   notes text,
+  video_url text,
   created_at timestamptz default now() not null
 );
+
+-- Idempotent: adds the demo-video column to existing databases too.
+alter table public.routine_exercises
+  add column if not exists video_url text;
 
 alter table public.routine_exercises enable row level security;
 

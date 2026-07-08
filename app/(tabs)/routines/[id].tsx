@@ -16,12 +16,14 @@ import { useAuth } from "@/src/hooks/use-auth";
 import { useProfile } from "@/src/hooks/use-profile";
 import { useProgress } from "@/src/hooks/use-progress";
 import { useRoutineDetail, useRoutines } from "@/src/hooks/use-routines";
+import { useIsOnline } from "@/src/lib/online";
 import { enter, exit, pop, staggered } from "@/src/lib/motion";
 import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
 import type { RoutineExercise } from "@/src/types/database";
 import { dayLabel } from "@/src/utils/day-label";
+import { ExerciseVideoModal } from "@/src/components/exercise-video-modal";
 import { Ionicons } from "@expo/vector-icons";
 import {
   AlertDialog,
@@ -32,10 +34,23 @@ import {
   AlertDialogHeader,
 } from "@/components/ui/alert-dialog";
 
+// Numbered-badge colors, cycled per exercise (mirrors the reference's
+// multi-color exercise thumbnails).
+const BADGE_COLORS = ["#3b82f6", "#f59e0b", "#ef4444", "#22c55e", "#a78bfa"];
+
+/** Rest seconds → mm:ss. */
+function formatRest(seconds: number): string {
+  const s = Math.max(0, Math.round(seconds));
+  const mm = String(Math.floor(s / 60)).padStart(2, "0");
+  const ss = String(s % 60).padStart(2, "0");
+  return `${mm}:${ss}`;
+}
+
 export default function RoutineDetailScreen() {
   const colors = useColors();
   const { t } = useTranslation();
   const toast = useToast();
+  const online = useIsOnline();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { addExercise, removeExercise } = useRoutines();
   const { createLog } = useProgress();
@@ -52,6 +67,10 @@ export default function RoutineDetailScreen() {
   const [workoutDuration, setWorkoutDuration] = useState("");
   const [workoutNotes, setWorkoutNotes] = useState("");
   const [completedExercises, setCompletedExercises] = useState<Record<string, boolean>>({});
+  // Single active rest countdown (one timer at a time).
+  const [rest, setRest] = useState<{ exId: string; remaining: number } | null>(null);
+  const [showInfo, setShowInfo] = useState(false);
+  const [videoUri, setVideoUri] = useState<string | null>(null);
 
   // New exercise form state
   const [exName, setExName] = useState("");
@@ -59,6 +78,7 @@ export default function RoutineDetailScreen() {
   const [exSets, setExSets] = useState("3");
   const [exReps, setExReps] = useState("10");
   const [exWeight, setExWeight] = useState("");
+  const [exVideoUrl, setExVideoUrl] = useState("");
 
   useEffect(() => {
     if (isError) {
@@ -67,6 +87,28 @@ export default function RoutineDetailScreen() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isError]);
+
+  // Tick the active rest timer down to zero, then celebrate + clear.
+  useEffect(() => {
+    if (rest == null) return;
+    if (rest.remaining <= 0) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      setRest(null);
+      return;
+    }
+    const id = setTimeout(
+      () => setRest((r) => (r ? { ...r, remaining: r.remaining - 1 } : null)),
+      1000,
+    );
+    return () => clearTimeout(id);
+  }, [rest]);
+
+  const toggleRest = (ex: RoutineExercise) => {
+    Haptics.selectionAsync().catch(() => {});
+    setRest((prev) =>
+      prev?.exId === ex.id ? null : { exId: ex.id, remaining: ex.rest_seconds || 60 },
+    );
+  };
 
   const handleAddExercise = async () => {
     if (!routine) return;
@@ -82,11 +124,13 @@ export default function RoutineDetailScreen() {
         sets: parseInt(exSets, 10) || 3,
         reps: parseInt(exReps, 10) || 10,
         weight_kg: exWeight ? parseFloat(exWeight) : undefined,
+        video_url: exVideoUrl.trim() || undefined,
       });
       setExName("");
       setExSets("3");
       setExReps("10");
       setExWeight("");
+      setExVideoUrl("");
       setShowAddExercise(false);
     } catch {
       toast.show({ type: "error", message: t("common.somethingWentWrong") });
@@ -103,6 +147,19 @@ export default function RoutineDetailScreen() {
     } catch {
       toast.show({ type: "error", message: t("common.somethingWentWrong") });
     }
+  };
+
+  const openDemo = (ex: RoutineExercise) => {
+    if (!ex.video_url) {
+      toast.show({ type: "info", message: t("routines.noVideoYet") });
+      return;
+    }
+    if (!online) {
+      toast.show({ type: "info", message: t("common.requiresInternet") });
+      return;
+    }
+    Haptics.selectionAsync().catch(() => {});
+    setVideoUri(ex.video_url);
   };
 
   const toggleExercise = (exId: string) => {
@@ -165,9 +222,45 @@ export default function RoutineDetailScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: routine.name }} />
-      <Screen keyboard contentContainerClassName="pb-10">
-        {/* Info */}
+      <Stack.Screen
+        options={{
+          title: routine.name.toUpperCase(),
+          headerTitleAlign: "center",
+          headerRight: () => (
+            <Pressable
+              onPress={() => setShowInfo(true)}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={t("common.info")}
+            >
+              <Ionicons
+                name="information-circle-outline"
+                size={24}
+                color={colors.contentPrimary}
+              />
+            </Pressable>
+          ),
+        }}
+      />
+      <Screen
+        keyboard
+        contentContainerClassName="pb-6"
+        footer={
+          <View className="px-4 pt-2 pb-6 bg-brand-dark border-t border-border">
+            <Pressable
+              onPress={openLogDialog}
+              accessibilityRole="button"
+              className="rounded-2xl py-4 items-center active:opacity-90"
+              style={{ backgroundColor: colors.brandAccent }}
+            >
+              <Text className="font-bold text-base" style={{ color: colors.brandDark }}>
+                {t("routines.finishWorkout")}
+              </Text>
+            </Pressable>
+          </View>
+        }
+      >
+        {/* Assigned badge */}
         {isAssigned && (
           <View className="self-start flex-row items-center gap-1.5 bg-brand-primary rounded-full px-3 py-1">
             <Ionicons name="ribbon-outline" size={14} color={colors.white} />
@@ -176,9 +269,12 @@ export default function RoutineDetailScreen() {
             </Text>
           </View>
         )}
-        {routine.description && (
-          <Text className="text-content-tertiary">{routine.description}</Text>
-        )}
+
+        {/* Muscle-group / description title */}
+        <Text className="text-3xl font-bold text-content-primary">
+          {routine.description ?? routine.name}
+        </Text>
+
         {routine.day_of_week && (
           <View className="self-start bg-info-soft rounded-full px-3 py-1">
             <Text className="text-brand-primary text-sm font-medium">
@@ -187,57 +283,133 @@ export default function RoutineDetailScreen() {
           </View>
         )}
 
-        {/* Exercises */}
-        <View className="gap-3">
-          <Text className="text-lg font-semibold text-content-primary">
-            {t("routines.exercises", { count: routine.routine_exercises.length })}
-          </Text>
+        {/* Exercise list */}
+        <Text className="text-content-primary font-bold text-base">
+          {t("routines.exerciseList")}
+        </Text>
 
-          {routine.routine_exercises.map((ex, index) => {
-            const isCompleted = !!completedExercises[ex.id];
-            return (
-              <AnimatedView key={ex.id} entering={staggered(index)} exiting={exit()}>
-              <Card className={`px-4 py-3 flex-row items-center justify-between ${isCompleted ? "opacity-60" : ""}`}>
-                <Pressable
-                  onPress={() => toggleExercise(ex.id)}
-                  className="p-2 mr-2"
-                  hitSlop={8}
-                  accessibilityRole="checkbox"
-                  accessibilityState={{ checked: isCompleted }}
-                >
-                  {/* Keyed by state so the icon pops on every toggle */}
-                  <AnimatedView key={isCompleted ? "done" : "todo"} entering={pop()}>
-                    <Ionicons
-                      name={isCompleted ? "checkmark-circle" : "ellipse-outline"}
-                      size={24}
-                      color={isCompleted ? colors.brandSecondary : colors.contentTertiary}
-                    />
-                  </AnimatedView>
-                </Pressable>
-                <View className="flex-1 gap-0.5">
-                  <Text className={`font-medium ${isCompleted ? "text-content-secondary line-through" : "text-content-primary"}`}>
-                    {index + 1}. {ex.name}
-                  </Text>
-                  <Text className="text-content-tertiary text-sm">
-                    {ex.sets} × {ex.reps}
-                    {ex.weight_kg != null ? ` · ${ex.weight_kg} kg` : ""}
-                  </Text>
-                </View>
-                {!isAssigned && (
-                  <Pressable
-                    onPress={() => setPendingRemove(ex)}
-                    className="p-2 ml-2"
-                    hitSlop={8}
-                    accessibilityRole="button"
-                    accessibilityLabel={t("routines.removeExercise")}
+        <View className="gap-3">
+          <View className="-mx-4">
+            {routine.routine_exercises.map((ex, index) => {
+              const isCompleted = !!completedExercises[ex.id];
+              const badge = BADGE_COLORS[index % BADGE_COLORS.length];
+              const isResting = rest?.exId === ex.id;
+              const restLabel = formatRest(
+                isResting ? rest!.remaining : ex.rest_seconds || 60,
+              );
+              return (
+                <AnimatedView key={ex.id} entering={staggered(index)} exiting={exit()}>
+                  {/* Exercise row */}
+                  <View
+                    className={`flex-row items-center gap-3 px-4 py-3 bg-surface ${isCompleted ? "opacity-60" : ""}`}
                   >
-                    <Ionicons name="trash-outline" size={18} color={colors.error} />
+                    <Pressable
+                      onPress={() => toggleExercise(ex.id)}
+                      hitSlop={8}
+                      accessibilityRole="checkbox"
+                      accessibilityState={{ checked: isCompleted }}
+                    >
+                      {/* Keyed by state so the icon pops on every toggle */}
+                      <AnimatedView key={isCompleted ? "done" : "todo"} entering={pop()}>
+                        <Ionicons
+                          name={isCompleted ? "checkbox" : "square-outline"}
+                          size={26}
+                          color={isCompleted ? colors.brandAccent : colors.contentTertiary}
+                        />
+                      </AnimatedView>
+                    </Pressable>
+
+                    {/* Thumbnail with numbered badge — opens the demo */}
+                    <Pressable
+                      onPress={() => openDemo(ex)}
+                      className="w-16 h-16 rounded-xl overflow-hidden bg-surface-elevated items-center justify-center"
+                      accessibilityRole="button"
+                      accessibilityLabel={t("routines.watchDemo")}
+                    >
+                      <Ionicons name="barbell-outline" size={26} color={colors.contentMuted} />
+                      {ex.video_url ? (
+                        <View className="absolute inset-0 items-center justify-center bg-black/30">
+                          <Ionicons name="play-circle" size={30} color="#fff" />
+                        </View>
+                      ) : null}
+                      <View
+                        className="absolute top-0 left-0 px-1.5 py-0.5 rounded-br-lg"
+                        style={{ backgroundColor: badge }}
+                      >
+                        <Text
+                          className="text-white text-xs font-bold"
+                          style={{ fontVariant: ["tabular-nums"] }}
+                        >
+                          {String(index + 1).padStart(2, "0")}
+                        </Text>
+                      </View>
+                    </Pressable>
+
+                    {/* Name + reps — opens the demo */}
+                    <Pressable onPress={() => openDemo(ex)} className="flex-1">
+                      <Text
+                        className={`font-bold text-base ${isCompleted ? "text-content-secondary line-through" : "text-content-primary"}`}
+                      >
+                        {ex.name}
+                      </Text>
+                      <Text className="text-content-tertiary text-sm mt-0.5">
+                        {ex.sets} × {ex.reps}
+                        {ex.weight_kg != null ? ` · ${ex.weight_kg} kg` : ""}
+                      </Text>
+                    </Pressable>
+
+                    {!isAssigned && (
+                      <Pressable
+                        onPress={() => setPendingRemove(ex)}
+                        hitSlop={8}
+                        className="p-1"
+                        accessibilityRole="button"
+                        accessibilityLabel={t("routines.removeExercise")}
+                      >
+                        <Ionicons name="trash-outline" size={18} color={colors.error} />
+                      </Pressable>
+                    )}
+
+                    <Pressable
+                      onPress={() => openDemo(ex)}
+                      hitSlop={8}
+                      className="pl-0.5"
+                      accessibilityRole="button"
+                      accessibilityLabel={t("routines.watchDemo")}
+                    >
+                      <Ionicons name="chevron-forward" size={22} color={colors.brandAccent} />
+                    </Pressable>
+                  </View>
+
+                  {/* Rest timer row */}
+                  <Pressable
+                    onPress={() => toggleRest(ex)}
+                    className="flex-row items-center gap-2 px-4 py-2.5 bg-surface border-t border-border"
+                    accessibilityRole="button"
+                    accessibilityLabel={t("routines.restBetweenSets")}
+                  >
+                    <Text
+                      className="text-content-primary font-semibold text-sm"
+                      style={{ fontVariant: ["tabular-nums"] }}
+                    >
+                      {restLabel}
+                    </Text>
+                    <Text className="text-content-tertiary text-sm flex-1">
+                      ({t("routines.restBetweenSets")})
+                    </Text>
+                    <Ionicons
+                      name={isResting ? "pause" : "play"}
+                      size={18}
+                      color={isResting ? colors.brandAccent : colors.contentSecondary}
+                    />
                   </Pressable>
-                )}
-              </Card>
-              </AnimatedView>
-            );
-          })}
+
+                  {/* Gap between exercise blocks */}
+                  <View className="h-2 bg-brand-dark" />
+                </AnimatedView>
+              );
+            })}
+          </View>
 
           {/* Add exercise form — hidden for coach-assigned routines */}
           {isAssigned ? null : showAddExercise ? (
@@ -286,6 +458,16 @@ export default function RoutineDetailScreen() {
                   className="bg-brand-dark"
                 />
               </View>
+              <Input
+                placeholder={t("routines.videoUrlOpt")}
+                leftIcon="videocam-outline"
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="url"
+                value={exVideoUrl}
+                onChangeText={setExVideoUrl}
+                className="bg-brand-dark"
+              />
               <View className="flex-row gap-2">
                 <View className="flex-1">
                   <Button variant="secondary" onPress={() => setShowAddExercise(false)} className="w-full">
@@ -313,15 +495,6 @@ export default function RoutineDetailScreen() {
           )}
         </View>
 
-        {/* Log Workout */}
-        <Button
-          size="lg"
-          onPress={openLogDialog}
-          loading={loggingWorkout}
-          className="bg-brand-secondary mt-2"
-        >
-          {t("routines.logWorkout")}
-        </Button>
       </Screen>
 
       <ConfirmDialog
@@ -333,6 +506,41 @@ export default function RoutineDetailScreen() {
         onConfirm={handleConfirmRemove}
         onClose={() => setPendingRemove(null)}
       />
+
+      <AlertDialog isOpen={showInfo} onClose={() => setShowInfo(false)} size="md">
+        <AlertDialogBackdrop />
+        <AlertDialogContent className="bg-surface border-border rounded-3xl gap-3 p-6">
+          <AlertDialogHeader>
+            <Text className="text-lg font-semibold text-content-primary">
+              {routine.name}
+            </Text>
+          </AlertDialogHeader>
+          <AlertDialogBody className="gap-2">
+            {routine.description ? (
+              <Text className="text-content-secondary text-sm">
+                {routine.description}
+              </Text>
+            ) : null}
+            {routine.day_of_week ? (
+              <Text className="text-content-tertiary text-sm">
+                {t("routines.every", { day: dayLabel(routine.day_of_week, t) })}
+              </Text>
+            ) : null}
+            <Text className="text-content-tertiary text-sm">
+              {t("routines.exercises", { count: routine.routine_exercises.length })}
+            </Text>
+          </AlertDialogBody>
+          <AlertDialogFooter>
+            <Button
+              variant="secondary"
+              onPress={() => setShowInfo(false)}
+              className="w-full"
+            >
+              {t("common.close")}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog isOpen={showLogDialog} onClose={() => setShowLogDialog(false)} size="md">
         <AlertDialogBackdrop />
@@ -385,6 +593,8 @@ export default function RoutineDetailScreen() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ExerciseVideoModal uri={videoUri} onClose={() => setVideoUri(null)} />
     </>
   );
 }

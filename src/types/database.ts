@@ -49,6 +49,9 @@ export type RoutineExercise = {
   rest_seconds: number;
   sort_order: number;
   notes: string | null;
+  // Optional curated demo link (e.g. coach-assigned via the web panel).
+  // Absent for app-created exercises — the UI falls back to a name search.
+  video_url?: string | null;
   created_at: string;
 };
 
@@ -112,7 +115,7 @@ export type RoutineExerciseInsert = Pick<
   Partial<
     Pick<
       RoutineExercise,
-      "sets" | "reps" | "weight_kg" | "rest_seconds" | "sort_order" | "notes"
+      "sets" | "reps" | "weight_kg" | "rest_seconds" | "sort_order" | "notes" | "video_url"
     >
   >;
 

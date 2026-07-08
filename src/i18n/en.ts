@@ -29,6 +29,8 @@ export default {
     syncFailedToast: "Some changes couldn't be synced",
     requiresInternet: "Requires an internet connection",
     or: "or",
+    close: "Close",
+    info: "Info",
   },
 
   // Auth
@@ -293,6 +295,12 @@ export default {
     removeExercise: "Remove Exercise",
     removeConfirm: 'Remove "{{name}}" from this routine?',
     addExerciseButton: "+ Add Exercise",
+    watchDemo: "Watch exercise demo",
+    exerciseList: "Exercise list",
+    restBetweenSets: "Rest between sets",
+    finishWorkout: "Finish workout",
+    videoUrlOpt: "Video URL (optional)",
+    noVideoYet: "No video added for this exercise yet",
     logWorkout: "Log Workout 💪",
     workoutLogged: "Workout Logged! 💪",
     greatJob: "Great job completing your routine.",

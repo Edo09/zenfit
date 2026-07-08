@@ -29,6 +29,8 @@ export default {
     syncFailedToast: "Algunos cambios no se pudieron sincronizar",
     requiresInternet: "Requiere conexión a internet",
     or: "ó",
+    close: "Cerrar",
+    info: "Información",
   },
 
   // Auth
@@ -293,6 +295,12 @@ export default {
     removeExercise: "Quitar Ejercicio",
     removeConfirm: '¿Quitar "{{name}}" de esta rutina?',
     addExerciseButton: "+ Agregar Ejercicio",
+    watchDemo: "Ver demostración del ejercicio",
+    exerciseList: "Lista de ejercicios",
+    restBetweenSets: "Descanso entre series",
+    finishWorkout: "Finalizar entrenamiento",
+    videoUrlOpt: "URL del video (opcional)",
+    noVideoYet: "Aún no hay video para este ejercicio",
     logWorkout: "Registrar Entreno 💪",
     workoutLogged: "¡Entreno Registrado! 💪",
     greatJob: "Excelente trabajo completando tu rutina.",
