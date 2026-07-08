@@ -12,7 +12,7 @@ import {
   ErrorState,
   FAB,
   LoadingBlock,
-  SectionHeader,
+  SegmentedControl,
   useToast,
 } from "@/src/components/ui";
 import { useRefreshOnFocus } from "@/src/hooks/use-refresh-on-focus";
@@ -23,14 +23,22 @@ import { View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
 import type { Routine } from "@/src/types/database";
 
+type Tab = "coach" | "mine";
+
 export default function RoutinesScreen() {
   const colors = useColors();
   const { t } = useTranslation();
   const toast = useToast();
-  const { routines, assignedRoutines, myRoutines, loading, error, refreshing, refresh, deleteRoutine } =
+  const { assignedRoutines, myRoutines, routines, loading, error, refreshing, refresh, deleteRoutine } =
     useRoutines();
   const [pendingDelete, setPendingDelete] = useState<Routine | null>(null);
   useRefreshOnFocus(refresh);
+
+  // Default to whichever tab has content — coach plans lead when present,
+  // otherwise the client's own. Derived (not effect-driven) so there's no
+  // flash; a manual choice pins it.
+  const [manualTab, setManualTab] = useState<Tab | null>(null);
+  const tab: Tab = manualTab ?? (assignedRoutines.length > 0 ? "coach" : "mine");
 
   const handleConfirmDelete = async () => {
     const target = pendingDelete;
@@ -60,14 +68,36 @@ export default function RoutinesScreen() {
     );
   }
 
+  const isCoachTab = tab === "coach";
+  const data = isCoachTab ? assignedRoutines : myRoutines;
+
   return (
     <View className="flex-1 bg-brand-dark">
+      <View className="px-4 pt-3 pb-1">
+        <SegmentedControl
+          value={tab}
+          onChange={(k) => setManualTab(k as Tab)}
+          segments={[
+            {
+              key: "coach",
+              label: t("coach.assignedRoutines"),
+              count: assignedRoutines.length,
+            },
+            {
+              key: "mine",
+              label: t("routines.myRoutines"),
+              count: myRoutines.length,
+            },
+          ]}
+        />
+      </View>
+
       <RAnimated.FlatList
-        data={myRoutines}
-        contentInsetAdjustmentBehavior="automatic"
+        // Remount on tab switch so the list resets scroll and replays entrances.
+        key={tab}
+        data={data}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 100 }}
-        // Siblings slide up to close the gap on delete (unreliable on web)
         itemLayoutAnimation={Platform.OS !== "web" ? layout() : undefined}
         refreshControl={
           <RefreshControl
@@ -79,45 +109,29 @@ export default function RoutinesScreen() {
           />
         }
         ListHeaderComponent={
-          <AnimatedView entering={enterFade()} className="gap-3">
-            <AIPlanCard className="mb-1" />
-            {assignedRoutines.length > 0 && (
-              <View className="gap-3">
-                <SectionHeader title={t("coach.assignedRoutines")} />
-                {assignedRoutines.map((item, index) => (
-                  <AnimatedView key={item.id} entering={staggered(index)}>
-                    <RoutineCard
-                      routine={item}
-                      readOnly
-                      onPress={() => router.push(`/(tabs)/routines/${item.id}`)}
-                    />
-                  </AnimatedView>
-                ))}
-                {myRoutines.length > 0 && (
-                  <SectionHeader title={t("routines.myRoutines")} className="mt-1" />
-                )}
-              </View>
-            )}
-          </AnimatedView>
+          // AI generator seeds the client's own plans — only on the "mine" tab.
+          isCoachTab ? null : (
+            <AnimatedView entering={enterFade()} className="mb-1">
+              <AIPlanCard />
+            </AnimatedView>
+          )
         }
         renderItem={({ item, index }) => (
           <AnimatedView entering={staggered(index)} exiting={exit()}>
             <RoutineCard
               routine={item}
+              readOnly={isCoachTab}
               onPress={() => router.push(`/(tabs)/routines/${item.id}`)}
-              onDelete={() => setPendingDelete(item)}
+              onDelete={isCoachTab ? undefined : () => setPendingDelete(item)}
             />
           </AnimatedView>
         )}
         ListEmptyComponent={
-          assignedRoutines.length > 0 ? (
-            // Has coach plans but none of their own yet — gentle nudge, not a full empty screen.
+          isCoachTab ? (
             <EmptyState
-              icon="add-circle-outline"
-              title={t("routines.noOwnRoutinesYet")}
-              subtitle={t("routines.createFirstRoutine")}
-              actionLabel={t("routines.createRoutine")}
-              onAction={() => router.push("/(tabs)/routines/create")}
+              icon="ribbon-outline"
+              title={t("coach.noAssignedRoutines")}
+              subtitle={t("coach.noAssignedRoutinesHint")}
             />
           ) : (
             <EmptyState
@@ -131,10 +145,13 @@ export default function RoutinesScreen() {
         }
       />
 
-      <FAB
-        onPress={() => router.push("/(tabs)/routines/create")}
-        accessibilityLabel={t("routines.createRoutine")}
-      />
+      {/* Create is a "my own" action — hidden on the coach tab. */}
+      {!isCoachTab && (
+        <FAB
+          onPress={() => router.push("/(tabs)/routines/create")}
+          accessibilityLabel={t("routines.createRoutine")}
+        />
+      )}
 
       <ConfirmDialog
         visible={pendingDelete != null}

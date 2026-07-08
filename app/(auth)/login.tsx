@@ -8,10 +8,12 @@ import { Button, Input, Screen } from "@/src/components/ui";
 import { useAuth } from "@/src/hooks/use-auth";
 import { setLanguage } from "@/src/i18n";
 import { useIsOnline } from "@/src/lib/online";
+import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 
 export default function Login() {
   const { t, i18n } = useTranslation();
+  const colors = useColors();
   const online = useIsOnline();
   const { signIn } = useAuth();
   const [email, setEmail] = useState("");
@@ -57,16 +59,27 @@ export default function Login() {
         </Text>
       </Pressable>
 
-      {/* App icon + two-tone wordmark, sized to dominate the screen */}
+      {/* App icon + brush wordmark (Edo SZ), sized to dominate the screen */}
       <View className="items-center mb-12">
         <Image
           source={require("@/assets/images/app-icon/icon.png")}
-          style={{ width: 112, height: 112, borderRadius: 24 }}
+          style={{
+            width: 112,
+            height: 112,
+            borderRadius: 24,
+            borderWidth: 1,
+            borderColor: colors.border,
+          }}
           accessibilityIgnoresInvertColors
         />
-        <Text className="text-3xl font-extrabold text-center mt-5">
-          <Text className="text-3xl font-extrabold text-content-primary">Hokage</Text>
-          <Text className="text-3xl font-extrabold text-brand-primary"> Coaching App</Text>
+        <Text
+          className="font-display text-content-primary text-6xl text-center mt-5"
+          style={{ lineHeight: 64 }}
+        >
+          Hokage
+        </Text>
+        <Text className="text-brand-accent text-sm font-bold uppercase tracking-[4px] mt-1">
+          Coaching App
         </Text>
         <Text className="text-content-tertiary mt-3 text-base">
           {t("auth.fitnessCompanion")}

@@ -7,6 +7,7 @@ import { Card } from "@/src/components/ui";
 import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 import type { Routine } from "@/src/types/database";
+import { dayLabel } from "@/src/utils/day-label";
 import { getRoutineImage } from "@/src/utils/routine-image";
 
 type Props = {
@@ -20,6 +21,7 @@ type Props = {
 export function RoutineCard({ routine, onPress, onDelete, readOnly = false }: Props) {
   const colors = useColors();
   const { t } = useTranslation();
+  const day = dayLabel(routine.day_of_week, t);
 
   return (
     <Card onPress={onPress} className="p-3">
@@ -44,11 +46,9 @@ export function RoutineCard({ routine, onPress, onDelete, readOnly = false }: Pr
                 <Text className="text-xs font-semibold text-white">{t("coach.badge")}</Text>
               </View>
             )}
-            {routine.day_of_week != null && (
+            {day != null && (
               <View className="self-start bg-info-soft rounded-full px-3 py-1">
-                <Text className="text-xs font-medium text-brand-primary capitalize">
-                  {routine.day_of_week}
-                </Text>
+                <Text className="text-xs font-medium text-brand-primary">{day}</Text>
               </View>
             )}
           </View>

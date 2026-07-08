@@ -21,6 +21,7 @@ import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
 import type { RoutineExercise } from "@/src/types/database";
+import { dayLabel } from "@/src/utils/day-label";
 import { Ionicons } from "@expo/vector-icons";
 import {
   AlertDialog,
@@ -180,8 +181,8 @@ export default function RoutineDetailScreen() {
         )}
         {routine.day_of_week && (
           <View className="self-start bg-info-soft rounded-full px-3 py-1">
-            <Text className="text-brand-primary text-sm font-medium capitalize">
-              {t("routines.every", { day: routine.day_of_week })}
+            <Text className="text-brand-primary text-sm font-medium">
+              {t("routines.every", { day: dayLabel(routine.day_of_week, t) })}
             </Text>
           </View>
         )}

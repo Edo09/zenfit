@@ -135,12 +135,21 @@ export default function HomeScreen() {
           >
             <Image
               source={require("@/assets/images/app-icon/icon.png")}
-              style={{ width: 60, height: 60, borderRadius: 14 }}
+              style={{
+                width: 60,
+                height: 60,
+                borderRadius: 14,
+                borderWidth: 1,
+                borderColor: colors.border,
+              }}
               accessibilityIgnoresInvertColors
             />
             <View className="flex-1">
-              <Text className="text-brand-primary text-xs font-semibold uppercase tracking-wider mb-1">
-                Hokage Coaching App
+              <Text
+                className="text-brand-primary font-display text-2xl mb-0.5"
+                numberOfLines={1}
+              >
+                Hokage
               </Text>
               <Text className="text-2xl font-bold text-content-primary" numberOfLines={1}>
                 {t("home.hey", { name: displayName })}

@@ -25,13 +25,15 @@ function isThemeMode(value: string | null): value is ThemeMode {
   return value === "light" || value === "dark" || value === "system";
 }
 
-/** Stored preference; "system" (follow the OS) when nothing saved yet. */
+/** Stored preference; "dark" (dark-first brand default) when nothing saved
+    yet — the logo, brush wordmark, and gym photography all belong on the
+    dark canvas. Users can still switch to light via the header toggle. */
 export async function getStoredThemeMode(): Promise<ThemeMode> {
   try {
     const stored = await AsyncStorage.getItem(THEME_KEY);
-    return isThemeMode(stored) ? stored : "system";
+    return isThemeMode(stored) ? stored : "dark";
   } catch {
-    return "system";
+    return "dark";
   }
 }
 

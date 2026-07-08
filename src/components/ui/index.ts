@@ -7,6 +7,7 @@ export { FAB } from "./fab";
 export { Input } from "./input";
 export { Screen } from "./screen";
 export { SectionHeader } from "./section-header";
+export { SegmentedControl, type Segment } from "./segmented-control";
 export { SelectField, type SelectFieldOption } from "./select-field";
 export { LoadingBlock, Spinner } from "./spinner";
 export { ToastProvider, useToast } from "./toast";

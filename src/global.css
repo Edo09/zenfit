@@ -21,6 +21,10 @@
        brand-light the INK color, in both schemes. */
     --hb-brand-primary: #dc2626;
     --hb-brand-secondary: #2563eb;
+    /* Warm gold — echoes the HOKAGE wordmark's gold outline. Brand accent
+       for premium moments (AI, wordmark tagline), not a semantic feedback hue. */
+    --hb-brand-accent: #a16207;
+    --hb-brand-accent-soft: rgba(161, 98, 7, 0.12);
     --hb-brand-dark: #f8fafc;
     --hb-brand-light: #0f172a;
     --hb-brand-primary-light: #ef4444;
@@ -90,6 +94,8 @@
   :root {
     --hb-brand-primary: #ef4444;
     --hb-brand-secondary: #3b82f6;
+    --hb-brand-accent: #fbbf24;
+    --hb-brand-accent-soft: rgba(251, 191, 36, 0.16);
     --hb-brand-dark: #0f172a;
     --hb-brand-light: #f8fafc;
     --hb-brand-primary-light: #f87171;
@@ -149,6 +155,8 @@
 @theme inline {
   --color-brand-primary: var(--hb-brand-primary);
   --color-brand-secondary: var(--hb-brand-secondary);
+  --color-brand-accent: var(--hb-brand-accent);
+  --color-brand-accent-soft: var(--hb-brand-accent-soft);
   --color-brand-dark: var(--hb-brand-dark);
   --color-brand-light: var(--hb-brand-light);
   --color-brand-primary-light: var(--hb-brand-primary-light);
@@ -204,6 +212,8 @@
     --font-rounded: normal;
     --font-serif: serif;
     --font-sans: Inter_400Regular;
+    /* Brush/graffiti display face — brand wordmark only (font-display) */
+    --font-display: EdoSZ;
   }
 }
 
@@ -213,5 +223,7 @@
     --font-serif: ui-serif;
     --font-sans: Inter_400Regular;
     --font-rounded: ui-rounded;
+    /* Brush/graffiti display face — brand wordmark only (font-display) */
+    --font-display: EdoSZ;
   }
 }

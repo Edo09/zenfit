@@ -87,6 +87,10 @@ export default function RootLayout() {
     Inter_700Bold,
     Inter_800ExtraBold,
     Inter_900Black,
+    // Display face for the brand wordmark only (matches the HOKAGE logo).
+    // Register under the PostScript name so the fontFamily string resolves
+    // on both platforms — see the `font-display` utility in global.css.
+    EdoSZ: require("@/font/edo_sz/edosz.ttf"),
   });
 
   // Restore the saved theme before first paint (joins the splash gate with

@@ -94,8 +94,8 @@ export function AIPlanCard({ className }: { className?: string }) {
     <>
       <Card className={cn("gap-3", className)}>
         <View className="flex-row items-center gap-3">
-          <View className="h-10 w-10 items-center justify-center rounded-full bg-info-soft">
-            <Ionicons name="sparkles" size={20} color={colors.brandPrimary} />
+          <View className="h-10 w-10 items-center justify-center rounded-full bg-brand-accent-soft">
+            <Ionicons name="sparkles" size={20} color={colors.brandAccent} />
           </View>
           <View className="flex-1">
             <Text className="text-base font-semibold text-content-primary">

@@ -138,6 +138,16 @@ export default {
     sun: "Dom",
   },
 
+  daysLong: {
+    monday: "Lunes",
+    tuesday: "Martes",
+    wednesday: "Miércoles",
+    thursday: "Jueves",
+    friday: "Viernes",
+    saturday: "Sábado",
+    sunday: "Domingo",
+  },
+
   // Tabs
   tabs: {
     home: "Inicio",
@@ -322,6 +332,8 @@ export default {
   coach: {
     badge: "Coach",
     assignedRoutines: "De tu coach",
+    noAssignedRoutines: "Aún no tienes rutinas de tu coach",
+    noAssignedRoutinesHint: "Cuando tu coach te asigne un plan, aparecerá aquí.",
     assignedBadge: "Asignada por tu coach",
     yourCoach: "Tu coach",
     noCoachYet: "Aún no tienes coach asignado",
