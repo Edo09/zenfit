@@ -44,10 +44,17 @@ export const View = (props: ViewProps) => {
 View.displayName = "CSS(View)";
 
 // Text
+// `font-app` (global.css) is the app-wide default face — RN doesn't inherit
+// font-family, so it must be set per element. Base-layer, so any explicit
+// font-* utility in the caller's className overrides it.
 export const Text = (
   props: React.ComponentProps<typeof RNText> & { className?: string }
 ) => {
-  return useCssElement(RNText, props, { className: "style" });
+  return useCssElement(
+    RNText,
+    { ...props, className: props.className ? `font-app ${props.className}` : "font-app" },
+    { className: "style" }
+  );
 };
 Text.displayName = "CSS(Text)";
 
@@ -79,7 +86,11 @@ Pressable.displayName = "CSS(Pressable)";
 export const TextInput = (
   props: React.ComponentProps<typeof RNTextInput> & { className?: string }
 ) => {
-  return useCssElement(RNTextInput, props, { className: "style" });
+  return useCssElement(
+    RNTextInput,
+    { ...props, className: props.className ? `font-app ${props.className}` : "font-app" },
+    { className: "style" }
+  );
 };
 TextInput.displayName = "CSS(TextInput)";
 

@@ -229,6 +229,24 @@ export default function ProfileScreen() {
     goal,
   });
 
+  // Enable save only when something actually differs from the loaded profile
+  // (same string-coercion as the seeding effect above, so they stay in sync).
+  const baselineDays = profile?.available_days ?? [];
+  const dirty =
+    age !== (profile?.age != null ? String(profile.age) : "") ||
+    sex !== (profile?.sex ?? null) ||
+    heightCm !== (profile?.height_cm != null ? String(profile.height_cm) : "") ||
+    weightKg !== (profile?.weight_kg != null ? String(profile.weight_kg) : "") ||
+    activityLevel !== (profile?.activity_level ?? null) ||
+    professionType !== (profile?.profession_type ?? null) ||
+    goal !== (profile?.goal ?? null) ||
+    daysPerWeek !== (profile?.days_per_week != null ? String(profile.days_per_week) : "") ||
+    sessionDuration !==
+      (profile?.session_duration != null ? String(profile.session_duration) : "") ||
+    calorieGoal !== (profile?.calorie_goal != null ? String(profile.calorie_goal) : "") ||
+    availableDays.length !== baselineDays.length ||
+    availableDays.some((d) => !baselineDays.includes(d));
+
   const clearError = () => {
     if (formError != null) setFormError(null);
   };
@@ -335,7 +353,12 @@ export default function ProfileScreen() {
           {formError != null && (
             <Text className="text-sm text-error">{formError}</Text>
           )}
-          <Button size="lg" onPress={handleSave} loading={saving}>
+          <Button
+            onPress={handleSave}
+            loading={saving}
+            disabled={!dirty}
+            className="w-full"
+          >
             {t("profile.saveChanges")}
           </Button>
         </View>

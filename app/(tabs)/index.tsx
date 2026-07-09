@@ -16,6 +16,7 @@ import {
 import { AIPlanCard } from "@/src/components/ai-plan-card";
 import { StatCard } from "@/src/components/stat-card";
 import {
+  Card,
   ErrorState,
   LoadingBlock,
   Screen,
@@ -29,7 +30,7 @@ import { useProgress } from "@/src/hooks/use-progress";
 import { useRefreshOnFocus } from "@/src/hooks/use-refresh-on-focus";
 import { useRoutines } from "@/src/hooks/use-routines";
 import { setLanguage } from "@/src/i18n";
-import { enterFade, exit, staggered } from "@/src/lib/motion";
+import { enterFade, exit, PressableScale, staggered } from "@/src/lib/motion";
 import { useColors } from "@/src/theme/colors";
 import { setThemeMode } from "@/src/theme/theme-mode";
 import { Pressable, Text, View } from "@/src/tw";
@@ -136,9 +137,9 @@ export default function HomeScreen() {
             <Image
               source={require("@/assets/images/app-icon/icon.png")}
               style={{
-                width: 60,
-                height: 60,
-                borderRadius: 14,
+                width: 84,
+                height: 84,
+                borderRadius: 20,
                 borderWidth: 1,
                 borderColor: colors.border,
               }}
@@ -146,8 +147,9 @@ export default function HomeScreen() {
             />
             <View className="flex-1">
               <Text
-                className="text-brand-primary font-display text-2xl mb-0.5"
+                className="text-brand-primary font-display text-3xl mb-0.5"
                 numberOfLines={1}
+                adjustsFontSizeToFit
               >
                 Hokage Coaching App
               </Text>
@@ -218,23 +220,43 @@ export default function HomeScreen() {
         <ErrorState onRetry={refreshAll} />
       ) : (
         <AnimatedView entering={enterFade()}>
-          {/* Daily calorie KPIs — health/fitness metrics only */}
-          <View className="px-6 gap-4 mb-8">
-            <View className="flex-row gap-4">
+          {/* Daily calorie KPIs. The goal is a static target (set by the
+              user/coach in the profile) so it gets its own banner; the three
+              cards below are live counters that move as the day progresses. */}
+          <View className="px-6 gap-3 mb-8">
+            <PressableScale
+              onPress={() =>
+                router.push({
+                  pathname: "/(tabs)/profile",
+                  params: { highlight: "calorie-goal", ts: String(Date.now()) },
+                })
+              }
+              accessibilityRole="button"
+              accessibilityLabel={t("home.calorieGoal")}
+            >
+              <Card className="flex-row items-center gap-3 py-3.5">
+                <View className="h-9 w-9 items-center justify-center rounded-full bg-info-soft">
+                  <Ionicons name="flag-outline" size={18} color={colors.brandPrimary} />
+                </View>
+                <Text className="flex-1 text-sm font-medium text-content-secondary">
+                  {t("home.calorieGoal")}
+                </Text>
+                <View className="flex-row items-baseline gap-1">
+                  <Text
+                    className="text-2xl font-bold text-content-primary"
+                    style={{ fontVariant: ["tabular-nums"] }}
+                  >
+                    {kcal(calorieGoal)}
+                  </Text>
+                  <Text className="text-xs text-content-tertiary">{t("home.kcal")}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color={colors.contentMuted} />
+              </Card>
+            </PressableScale>
+
+            <View className="flex-row gap-3">
               <StatCard
-                label={t("home.calorieGoal")}
-                value={kcal(calorieGoal)}
-                unit={t("home.kcal")}
-                color={colors.brandPrimary}
-                icon="flag-outline"
-                onPress={() =>
-                  router.push({
-                    pathname: "/(tabs)/profile",
-                    params: { highlight: "calorie-goal", ts: String(Date.now()) },
-                  })
-                }
-              />
-              <StatCard
+                compact
                 label={t("home.caloriesConsumed")}
                 value={kcal(consumed)}
                 unit={t("home.kcal")}
@@ -242,9 +264,8 @@ export default function HomeScreen() {
                 icon="restaurant-outline"
                 onPress={() => router.push("/(tabs)/meals")}
               />
-            </View>
-            <View className="flex-row gap-4">
               <StatCard
+                compact
                 label={t("home.caloriesBurned")}
                 value={kcal(burned)}
                 unit={t("home.kcal")}
@@ -253,6 +274,7 @@ export default function HomeScreen() {
                 onPress={() => router.push("/(tabs)/routines")}
               />
               <StatCard
+                compact
                 label={t("home.caloriesRemaining")}
                 value={kcal(remaining)}
                 unit={t("home.kcal")}

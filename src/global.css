@@ -227,3 +227,38 @@
     --font-display: EdoSZ;
   }
 }
+
+/* ---- App typography ----
+   RN doesn't inherit font-family, so the src/tw Text/TextInput wrappers
+   inject `font-app` as every element's default face. It lives in the base
+   layer so any explicit font utility (font-display, the weight classes
+   below) takes precedence over it. */
+@layer base {
+  .font-app {
+    font-family: Inter_400Regular;
+  }
+}
+
+/* expo-google-fonts registers each static weight as its own family name
+   (Inter_700Bold etc.) — font-weight alone never switches faces on native.
+   Pair each Tailwind weight utility with its matching Inter face. Unlayered
+   on purpose: these must win over both .font-app (base layer) and the
+   generated font-weight utilities they extend. */
+.font-normal {
+  font-family: Inter_400Regular;
+}
+.font-medium {
+  font-family: Inter_500Medium;
+}
+.font-semibold {
+  font-family: Inter_600SemiBold;
+}
+.font-bold {
+  font-family: Inter_700Bold;
+}
+.font-extrabold {
+  font-family: Inter_800ExtraBold;
+}
+.font-black {
+  font-family: Inter_900Black;
+}

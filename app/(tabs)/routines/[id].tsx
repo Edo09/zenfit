@@ -285,9 +285,17 @@ export default function RoutineDetailScreen() {
         )}
 
         {/* Muscle-group / description title */}
-        <Text className="text-3xl font-bold text-content-primary">
-          {routine.description ?? routine.name}
-        </Text>
+        {/* Description renders as a compact 2-line subtitle (full text lives in
+            the ⓘ info dialog); only the name — short — gets title treatment. */}
+        {routine.description ? (
+          <Text className="text-[15px] text-content-secondary" numberOfLines={2}>
+            {routine.description}
+          </Text>
+        ) : (
+          <Text className="text-3xl font-bold text-content-primary">
+            {routine.name}
+          </Text>
+        )}
 
         {routine.day_of_week && (
           <View className="self-start bg-info-soft rounded-full px-3 py-1">
