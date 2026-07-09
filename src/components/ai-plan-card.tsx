@@ -27,6 +27,7 @@ function isProfileComplete(profile: Profile | null): profile is Profile {
     profile.profession_type != null &&
     profile.days_per_week != null &&
     profile.session_duration != null &&
+    profile.goal != null &&
     (profile.available_days?.length ?? 0) > 0
   );
 }

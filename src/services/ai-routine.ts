@@ -99,6 +99,10 @@ export async function generateRoutines(
     "- weight_kg: null for bodyweight/cardio; conservative starter weights otherwise.",
     "- Session must fit the user's session duration.",
     "- Exercise names MUST be copied verbatim from `exercise_catalog` in the user message — do not invent, translate, or reword any exercise name. Pick the closest matches for the user's goals.",
+    "- Tailor exercise selection and set/rep ranges to the user's `goal`:",
+    "  lose_weight → higher reps (12-20), shorter rest, favor full-body/compound and cardio-style catalog exercises;",
+    "  gain_muscle → moderate reps (6-12), heavier weight_kg, split by muscle group, favor compound lifts;",
+    "  maintain → balanced mix of both.",
     `- Routine names and descriptions in ${languageName}.`,
   ].join("\n");
 
@@ -112,6 +116,7 @@ export async function generateRoutines(
     days_per_week: profile.days_per_week,
     session_duration_minutes: profile.session_duration,
     available_days: availableDays,
+    goal: profile.goal,
     exercise_catalog: catalogNames,
   });
 

@@ -2,6 +2,8 @@
 
 export type UserRole = "user" | "coach";
 
+export type ProfileGoal = "lose_weight" | "gain_muscle" | "maintain";
+
 export type Profile = {
   id: string;
   display_name: string | null;
@@ -16,6 +18,7 @@ export type Profile = {
   session_duration: number | null;
   available_days: string[] | null;
   calorie_goal: number | null;
+  goal: ProfileGoal | null;
   role: UserRole;
   whatsapp: string | null;
   onboarding_completed: boolean;

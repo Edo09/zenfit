@@ -148,6 +148,7 @@ function emptyProfile(userId: string): Profile {
     session_duration: null,
     available_days: null,
     calorie_goal: null,
+    goal: null,
     role: "user",
     whatsapp: null,
     onboarding_completed: false,

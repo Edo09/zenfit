@@ -12,15 +12,24 @@ const ACTIVITY_FACTOR: Record<NonNullable<Profile["activity_level"]>, number> = 
 const WORKOUT_MET = 5.0;
 const DEFAULT_WEIGHT_KG = 70;
 
+// Deficit for lose_weight, surplus for gain_muscle, unchanged for maintain
+// (or when no goal is set — the recommendation defaults to maintenance).
+const GOAL_FACTOR: Record<NonNullable<Profile["goal"]>, number> = {
+  lose_weight: 0.85,
+  gain_muscle: 1.1,
+  maintain: 1,
+};
+
 type RecommendInput = Pick<
   Profile,
-  "age" | "sex" | "height_cm" | "weight_kg" | "activity_level"
+  "age" | "sex" | "height_cm" | "weight_kg" | "activity_level" | "goal"
 >;
 
 /**
- * Maintenance-calorie recommendation from the Mifflin-St Jeor BMR equation
- * scaled by activity level. Null until the profile has the required fields.
- * (No goal/objective field exists yet, so this targets maintenance.)
+ * Calorie recommendation from the Mifflin-St Jeor BMR equation, scaled by
+ * activity level for maintenance, then adjusted for the user's goal (deficit
+ * for lose_weight, surplus for gain_muscle). Null until the profile has the
+ * required fields.
  */
 export function recommendedCalorieGoal(
   profile: RecommendInput | null,
@@ -40,7 +49,8 @@ export function recommendedCalorieGoal(
   const sexConstant =
     profile.sex === "male" ? 5 : profile.sex === "female" ? -161 : -78;
   const factor = ACTIVITY_FACTOR[profile.activity_level ?? "sedentary"];
-  const goal = (base + sexConstant) * factor;
+  const maintenance = (base + sexConstant) * factor;
+  const goal = maintenance * GOAL_FACTOR[profile.goal ?? "maintain"];
   return Math.max(0, Math.round(goal / 50) * 50);
 }
 

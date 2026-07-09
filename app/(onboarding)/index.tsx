@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Keyboard } from "react-native";
 import RAnimated, {
@@ -518,7 +518,7 @@ export default function Onboarding() {
         <View className="w-12 h-12 bg-brand-primary rounded-xl items-center justify-center">
           <Ionicons name="barbell" size={26} color={colors.white} />
         </View>
-        <Text className="flex-1 text-3xl font-extrabold text-brand-primary">Hokage</Text>
+        <Text className="flex-1 text-3xl font-extrabold text-brand-primary">Hokage Coaching APP</Text>
         <Pressable
           accessibilityRole="button"
           onPress={handleSkip}

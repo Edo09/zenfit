@@ -193,6 +193,15 @@ export default {
     sessionDurationLabel: "Session duration",
     hintNeedMore: "Your plan is {{days}} days a week: mark {{remaining}} more days",
     hintTooMany: "Your plan is {{days}} days a week: remove {{extra}} days",
+    goalTitle: "Goal",
+    goalSubtitle: "Shapes your workout plan and calorie target",
+    goalLoseWeight: "Lose weight",
+    goalLoseWeightDesc: "Calorie deficit and higher-rep workouts",
+    goalGainMuscle: "Gain muscle",
+    goalGainMuscleDesc: "Calorie surplus and heavier-weight workouts",
+    goalMaintain: "Stay fit",
+    goalMaintainDesc: "Maintenance calories and balanced training",
+    selectGoal: "Select your goal",
   },
 
   // Home

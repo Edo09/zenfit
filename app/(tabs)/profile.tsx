@@ -12,6 +12,7 @@ import {
   Chip,
   LoadingBlock,
   Screen,
+  SelectField,
   useToast,
 } from "@/src/components/ui";
 import { useAuth } from "@/src/hooks/use-auth";
@@ -179,6 +180,7 @@ export default function ProfileScreen() {
   const [sessionDuration, setSessionDuration] = useState("");
   const [availableDays, setAvailableDays] = useState<string[]>([]);
   const [calorieGoal, setCalorieGoal] = useState("");
+  const [goal, setGoal] = useState<Profile["goal"]>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -196,6 +198,7 @@ export default function ProfileScreen() {
     );
     setAvailableDays(profile.available_days ?? []);
     setCalorieGoal(profile.calorie_goal != null ? String(profile.calorie_goal) : "");
+    setGoal(profile.goal);
   }, [profile]);
 
   useEffect(() => {
@@ -223,6 +226,7 @@ export default function ProfileScreen() {
     height_cm: parseFloat(heightCm) || null,
     weight_kg: parseFloat(weightKg) || null,
     activity_level: activityLevel,
+    goal,
   });
 
   const clearError = () => {
@@ -269,6 +273,7 @@ export default function ProfileScreen() {
     if (isNaN(w) || w < 20 || w > 500) return t("onboarding.weightBetween");
     if (!activityLevel || !professionType)
       return t("onboarding.selectActivityProfession");
+    if (!goal) return t("profile.selectGoal");
     const dpw = parseInt(daysPerWeek, 10);
     if (isNaN(dpw) || dpw < 1 || dpw > 7) return t("onboarding.daysBetween");
     const sd = parseInt(sessionDuration, 10);
@@ -297,6 +302,7 @@ export default function ProfileScreen() {
         weight_kg: parseFloat(weightKg),
         activity_level: activityLevel,
         profession_type: professionType,
+        goal,
         days_per_week: parseInt(daysPerWeek, 10),
         session_duration: parseInt(sessionDuration, 10),
         available_days: availableDays,
@@ -504,6 +510,49 @@ export default function ProfileScreen() {
         </View>
       </Card>
 
+      {/* Objetivo — shapes both the AI training plan and the calorie goal */}
+      <Card className="gap-3.5">
+        <Text className="text-[15px] font-bold text-content-primary">
+          {t("profile.goalTitle")}
+        </Text>
+        <Text className="-mt-2 text-xs text-content-muted">
+          {t("profile.goalSubtitle")}
+        </Text>
+
+        <View className="gap-2">
+          <ActivityOption
+            label={t("profile.goalLoseWeight")}
+            description={t("profile.goalLoseWeightDesc")}
+            selected={goal === "lose_weight"}
+            onPress={() => {
+              Haptics.selectionAsync().catch(() => {});
+              setGoal("lose_weight");
+              clearError();
+            }}
+          />
+          <ActivityOption
+            label={t("profile.goalGainMuscle")}
+            description={t("profile.goalGainMuscleDesc")}
+            selected={goal === "gain_muscle"}
+            onPress={() => {
+              Haptics.selectionAsync().catch(() => {});
+              setGoal("gain_muscle");
+              clearError();
+            }}
+          />
+          <ActivityOption
+            label={t("profile.goalMaintain")}
+            description={t("profile.goalMaintainDesc")}
+            selected={goal === "maintain"}
+            onPress={() => {
+              Haptics.selectionAsync().catch(() => {});
+              setGoal("maintain");
+              clearError();
+            }}
+          />
+        </View>
+      </Card>
+
       {/* Meta nutricional */}
       <View
         onLayout={(e) => {
@@ -588,44 +637,29 @@ export default function ProfileScreen() {
           </Text>
         </View>
 
-        <View className="gap-1.5">
-          <Text className="text-[12.5px] font-semibold text-content-secondary">
-            {t("onboarding.daysPerWeek")}
-          </Text>
-          <View className="flex-row gap-1.5">
-            {DAYS_PER_WEEK_OPTIONS.map((n) => (
-              <Chip
-                key={n}
-                label={String(n)}
-                selected={daysPerWeek === String(n)}
-                onPress={() => {
-                  setDaysPerWeek(String(n));
-                  clearError();
-                }}
-                className="flex-1 items-center justify-center rounded-lg px-0 py-2.5"
-              />
-            ))}
-          </View>
-        </View>
-
-        <View className="gap-1.5">
-          <Text className="text-[12.5px] font-semibold text-content-secondary">
-            {t("profile.sessionDurationLabel")}
-          </Text>
-          <View className="flex-row gap-1.5">
-            {durationChipValues.map((n) => (
-              <Chip
-                key={n}
-                label={`${n} min`}
-                selected={sessionDuration === String(n)}
-                onPress={() => {
-                  setSessionDuration(String(n));
-                  clearError();
-                }}
-                className="flex-1 items-center justify-center rounded-lg px-0 py-2.5"
-              />
-            ))}
-          </View>
+        <View className="flex-row gap-2.5">
+          <SelectField
+            label={t("onboarding.daysPerWeek")}
+            placeholder={t("onboarding.daysPerWeek")}
+            value={daysPerWeek || null}
+            options={DAYS_PER_WEEK_OPTIONS.map((n) => ({ label: String(n), value: String(n) }))}
+            onChange={(v) => {
+              setDaysPerWeek(v);
+              clearError();
+            }}
+            containerClassName="flex-1"
+          />
+          <SelectField
+            label={t("profile.sessionDurationLabel")}
+            placeholder={t("profile.sessionDurationLabel")}
+            value={sessionDuration || null}
+            options={durationChipValues.map((n) => ({ label: `${n} min`, value: String(n) }))}
+            onChange={(v) => {
+              setSessionDuration(v);
+              clearError();
+            }}
+            containerClassName="flex-1"
+          />
         </View>
 
         <View className="gap-1.5">

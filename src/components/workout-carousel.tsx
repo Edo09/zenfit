@@ -40,7 +40,7 @@ export function WorkoutCarousel({ routines }: Props) {
 
   if (routines.length === 0) {
     return (
-      <View className="px-4 py-8 items-center justify-center bg-surface rounded-2xl border border-dashed border-border-strong">
+      <View className="px-4 py-4 items-center justify-center bg-surface rounded-2xl border-2 border-dashed border-border-strong">
         <Text className="text-content-tertiary font-medium">
           {t("routines.noRoutinesFound")}
         </Text>

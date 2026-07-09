@@ -31,6 +31,8 @@ import { useRoutines } from "@/src/hooks/use-routines";
 import { setLanguage } from "@/src/i18n";
 import { enterFade, exit, staggered } from "@/src/lib/motion";
 import { useColors } from "@/src/theme/colors";
+import { setThemeMode } from "@/src/theme/theme-mode";
+import { Pressable, Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
 import {
   caloriesConsumed,
@@ -39,8 +41,6 @@ import {
 } from "@/src/utils/calories";
 import { toDateKey } from "@/src/utils/dates";
 import { MEAL_SLOTS, suggestedSlot } from "@/src/utils/meal-slots";
-import { setThemeMode } from "@/src/theme/theme-mode";
-import { Pressable, Text, View } from "@/src/tw";
 import { useColorScheme as useRNColorScheme } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -149,7 +149,7 @@ export default function HomeScreen() {
                 className="text-brand-primary font-display text-2xl mb-0.5"
                 numberOfLines={1}
               >
-                Hokage
+                Hokage Coaching App
               </Text>
               <Text className="text-2xl font-bold text-content-primary" numberOfLines={1}>
                 {t("home.hey", { name: displayName })}
