@@ -25,7 +25,7 @@ import {
 } from "@expo-google-fonts/inter";
 import { focusManager } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
-import { AppState, View } from "react-native";
+import { AppState, Platform, View } from "react-native";
 import Constants from "expo-constants";
 import { useFonts } from "expo-font";
 import { Stack, useRouter, useSegments } from "expo-router";
@@ -97,13 +97,22 @@ export default function RootLayout() {
   // font loading) so a dark-mode user never sees a light flash on cold start.
   const [themeMode, setThemeModeState] = useState<ThemeMode | null>(null);
   useEffect(() => {
-    getStoredThemeMode().then((mode) => {
-      applyThemeMode(mode);
-      setThemeModeState(mode);
-    });
+    getStoredThemeMode()
+      .then((mode) => {
+        applyThemeMode(mode);
+        setThemeModeState(mode);
+      })
+      // A theme failure must never gate `ready` — fall back and render.
+      .catch(() => setThemeModeState("system"));
   }, []);
 
   const ready = fontsLoaded && themeMode !== null;
+
+  useEffect(() => {
+    if (Platform.OS === "web" && "serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    }
+  }, []);
 
   const onLayoutRootView = useCallback(async () => {
     if (ready) {

@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SystemUI from "expo-system-ui";
-import { Appearance, type ColorSchemeName } from "react-native";
+import { Appearance, type ColorSchemeName, Platform } from "react-native";
 
 import { palettes } from "./colors";
 
@@ -29,6 +29,10 @@ function isThemeMode(value: string | null): value is ThemeMode {
     yet — the logo, brush wordmark, and gym photography all belong on the
     dark canvas. Users can still switch to light via the header toggle. */
 export async function getStoredThemeMode(): Promise<ThemeMode> {
+  // Web can't override the scheme (see applyThemeMode) — honoring a stored
+  // "dark" there would desync gluestack (forced dark) from the CSS/useColors
+  // layer (following the OS). Everything follows the OS instead.
+  if (Platform.OS === "web") return "system";
   try {
     const stored = await AsyncStorage.getItem(THEME_KEY);
     return isThemeMode(stored) ? stored : "dark";
@@ -38,9 +42,14 @@ export async function getStoredThemeMode(): Promise<ThemeMode> {
 }
 
 /** Apply a mode to RN Appearance — the single runtime theme signal.
-    "unspecified" = follow the OS setting (RN 0.86+; was null before). */
+    "unspecified" = follow the OS setting (RN 0.86+; was null before).
+    react-native-web has no setColorScheme — there the CSS dark block and
+    useColorScheme() already follow the OS via prefers-color-scheme, so the
+    override is a native-only capability and web always behaves as "system". */
 export function applyThemeMode(mode: ThemeMode) {
-  Appearance.setColorScheme(mode === "system" ? "unspecified" : mode);
+  if (typeof Appearance.setColorScheme === "function") {
+    Appearance.setColorScheme(mode === "system" ? "unspecified" : mode);
+  }
   syncWindowBackground(
     mode === "system" ? Appearance.getColorScheme() : mode,
   );

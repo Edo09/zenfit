@@ -23,48 +23,57 @@ export function RoutineCard({ routine, onPress, onDelete, readOnly = false }: Pr
   const { t } = useTranslation();
   const day = dayLabel(routine.day_of_week, t);
 
+  const canDelete = !readOnly && onDelete != null;
+
+  // The whole card is pressable (navigates), and delete is its own pressable.
+  // On web both render as <button>; nesting one inside the other is invalid
+  // HTML, so the browser re-parents the inner button and the card jumps
+  // sideways on re-render. Keep the delete control OUTSIDE the card as an
+  // absolute sibling overlaid top-right; `pr-8` reserves room so text clears it.
   return (
-    <Card onPress={onPress} className="p-3">
-      <View className="flex-row items-start justify-between gap-3">
-        <Image
-          source={getRoutineImage(routine.name)}
-          style={{ width: 72, height: 72, borderRadius: 12 }}
-          contentFit="cover"
-          transition={200}
-        />
-        <View className="flex-1 gap-1 py-0.5">
-          <Text className="text-base font-semibold text-content-primary">{routine.name}</Text>
-          {routine.description != null && routine.description.length > 0 && (
-            <Text className="text-sm text-content-tertiary" numberOfLines={2}>
-              {routine.description}
-            </Text>
-          )}
-          <View className="flex-row items-center gap-2 mt-1">
-            {readOnly && (
-              <View className="self-start flex-row items-center gap-1 bg-brand-primary rounded-full px-2.5 py-1">
-                <Ionicons name="ribbon-outline" size={12} color={colors.white} />
-                <Text className="text-xs font-semibold text-white">{t("coach.badge")}</Text>
-              </View>
+    <View>
+      <Card onPress={onPress} className="p-3">
+        <View className="flex-row items-start gap-3">
+          <Image
+            source={getRoutineImage(routine.name)}
+            style={{ width: 72, height: 72, borderRadius: 12 }}
+            contentFit="cover"
+            transition={200}
+          />
+          <View className={`flex-1 gap-1 py-0.5 ${canDelete ? "pr-8" : ""}`}>
+            <Text className="text-base font-semibold text-content-primary">{routine.name}</Text>
+            {routine.description != null && routine.description.length > 0 && (
+              <Text className="text-sm text-content-tertiary" numberOfLines={2}>
+                {routine.description}
+              </Text>
             )}
-            {day != null && (
-              <View className="self-start bg-info-soft rounded-full px-3 py-1">
-                <Text className="text-xs font-medium text-brand-primary">{day}</Text>
-              </View>
-            )}
+            <View className="flex-row items-center gap-2 mt-1">
+              {readOnly && (
+                <View className="self-start flex-row items-center gap-1 bg-brand-primary rounded-full px-2.5 py-1">
+                  <Ionicons name="ribbon-outline" size={12} color={colors.white} />
+                  <Text className="text-xs font-semibold text-white">{t("coach.badge")}</Text>
+                </View>
+              )}
+              {day != null && (
+                <View className="self-start bg-info-soft rounded-full px-3 py-1">
+                  <Text className="text-xs font-medium text-brand-primary">{day}</Text>
+                </View>
+              )}
+            </View>
           </View>
         </View>
-        {!readOnly && onDelete != null && (
-          <Pressable
-            onPress={onDelete}
-            className="p-2"
-            hitSlop={8}
-            accessibilityRole="button"
-            accessibilityLabel={t("routines.deleteRoutine")}
-          >
-            <Ionicons name="trash-outline" size={18} color={colors.error} />
-          </Pressable>
-        )}
-      </View>
-    </Card>
+      </Card>
+      {canDelete && (
+        <Pressable
+          onPress={onDelete}
+          className="absolute right-2 top-2 p-2"
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={t("routines.deleteRoutine")}
+        >
+          <Ionicons name="trash-outline" size={18} color={colors.error} />
+        </Pressable>
+      )}
+    </View>
   );
 }
