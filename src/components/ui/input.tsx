@@ -50,8 +50,11 @@ export function Input({
           error != null && "border-error data-[focus=true]:border-error"
         )}
         // gluestack's tva doesn't reliably let className overrides beat its
-        // base px-3, so horizontal padding is pinned with inline style
-        style={{ paddingHorizontal: 0 }}
+        // base styles, so both the horizontal padding and the background are
+        // pinned inline. Without the bg pin, gluestack's base `dark:bg-input/30`
+        // (a translucent near-white) wins on web and renders a mid-gray box
+        // that kills contrast for the muted icons/placeholder.
+        style={{ paddingHorizontal: 0, backgroundColor: colors.surface }}
       >
         {leftIcon != null && (
           <View className="justify-center pl-4">
