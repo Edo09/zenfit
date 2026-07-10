@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Hokage Coaching App",
-    "slug": "hokagecoaching",
+    "slug": "habbito",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/app-icon/icon.png",
@@ -10,7 +10,10 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.edo09.hokagecoaching"
+      "bundleIdentifier": "com.edo09.hokagecoaching",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -57,8 +60,17 @@
         {
           "android": {
             "enableProguardInReleaseBuilds": true,
-            "enableShrinkResourcesInReleaseBuilds": true
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "enableMinifyInReleaseBuilds": true
           }
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos to attach meal pictures.",
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera to take meal pictures.",
+          "microphonePermission": false
         }
       ],
       "expo-image",
