@@ -158,6 +158,22 @@ export type WorkoutLogInsert = Pick<WorkoutLog, "routine_name"> &
     Pick<WorkoutLog, "routine_id" | "date" | "duration_minutes" | "notes" | "completed_exercises">
   >;
 
+// Daily body-measurement history (P1 migration — supabase/migrations/
+// 20260710120000_body_measurements.sql). One row per user per day; the
+// progress dashboard degrades to an empty weight card while the table is
+// absent.
+export type BodyMeasurement = {
+  id: string;
+  user_id: string;
+  measured_on: string;
+  weight_kg: number | null;
+  body_fat_pct: number | null;
+  waist_cm: number | null;
+  chest_cm: number | null;
+  arm_cm: number | null;
+  thigh_cm: number | null;
+};
+
 export type MembershipStatus = "active" | "expired" | "paused" | "cancelled";
 
 // Coach-managed membership. Editable only by the coach (web); clients read own.

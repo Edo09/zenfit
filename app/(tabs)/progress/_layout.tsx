@@ -12,12 +12,15 @@ export default function ProgressLayout() {
       screenOptions={{
         headerStyle: { backgroundColor: colors.brandDark },
         headerTintColor: colors.contentPrimary,
-        headerShadowVisible: false,
+        // Elevation/hairline under the header so the scrolling dashboard
+        // reads as separate from the title (other tabs stay flat by default).
+        headerShadowVisible: true,
         contentStyle: { backgroundColor: colors.brandDark },
         ...(Platform.OS === "android" && { animation: "slide_from_right" as const }),
       }}
     >
       <Stack.Screen name="index" options={{ title: t("tabs.progress") }} />
+      <Stack.Screen name="history" options={{ title: t("progress.historial") }} />
     </Stack>
   );
 }

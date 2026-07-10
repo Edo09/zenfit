@@ -1,13 +1,21 @@
-import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useHeaderHeight } from "expo-router/react-navigation";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { KeyboardAvoidingView, Platform, RefreshControl } from "react-native";
+import { KeyboardAvoidingView, Modal, Platform, RefreshControl } from "react-native";
 import RAnimated from "react-native-reanimated";
 
-import { EmptyState } from "@/src/components/empty-state";
+import { AchievementChips } from "@/src/components/progress/achievement-chips";
+import { HeroCard } from "@/src/components/progress/hero-card";
+import { HistorySection } from "@/src/components/progress/history-section";
+import { InsightCard } from "@/src/components/progress/insight-card";
+import { MusclesCard } from "@/src/components/progress/muscles-card";
+import { NutritionCard } from "@/src/components/progress/nutrition-card";
+import { PeriodToggle } from "@/src/components/progress/period-toggle";
+import { SkeletonDashboard } from "@/src/components/progress/skeleton-dashboard";
+import { StrengthCard } from "@/src/components/progress/strength-card";
+import { WeightCard } from "@/src/components/progress/weight-card";
 import {
   Button,
   Card,
@@ -16,26 +24,28 @@ import {
   ErrorState,
   FAB,
   Input,
-  LoadingBlock,
   useToast,
 } from "@/src/components/ui";
-import { useProgress } from "@/src/hooks/use-progress";
+import { useProgressDashboard } from "@/src/hooks/use-progress-dashboard";
 import { useRefreshOnFocus } from "@/src/hooks/use-refresh-on-focus";
 import { useRoutines } from "@/src/hooks/use-routines";
-import { enter, exit, layout, staggered } from "@/src/lib/motion";
+import { staggered } from "@/src/lib/motion";
 import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
+import type { Periodo } from "@/src/utils/progress";
 import type { WorkoutLog } from "@/src/types/database";
 
 export default function ProgressScreen() {
   const colors = useColors();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const toast = useToast();
   const headerHeight = useHeaderHeight();
-  const { logs, loading, error, refreshing, refresh, createLog, deleteLog } = useProgress();
+  const [periodo, setPeriodo] = useState<Periodo>("week");
+  const dashboard = useProgressDashboard(periodo);
   const { routines } = useRoutines();
-  useRefreshOnFocus(refresh);
+  useRefreshOnFocus(dashboard.refresh);
+
   const [showLogForm, setShowLogForm] = useState(false);
   const [selectedRoutineId, setSelectedRoutineId] = useState<string | null>(null);
   const [routineError, setRoutineError] = useState<string | undefined>();
@@ -43,15 +53,6 @@ export default function ProgressScreen() {
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<WorkoutLog | null>(null);
-
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr + "T00:00:00");
-    return date.toLocaleDateString(i18n.language === "es" ? "es-ES" : "en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    });
-  };
 
   const handleLogWorkout = async () => {
     if (!selectedRoutineId) {
@@ -61,10 +62,9 @@ export default function ProgressScreen() {
     }
     const routine = routines.find((r) => r.id === selectedRoutineId);
     if (!routine) return;
-
     try {
       setSubmitting(true);
-      await createLog({
+      await dashboard.createLog({
         routine_id: selectedRoutineId,
         routine_name: routine.name,
         duration_minutes: duration ? parseInt(duration, 10) : undefined,
@@ -87,202 +87,226 @@ export default function ProgressScreen() {
     setPendingDelete(null);
     if (target == null) return;
     try {
-      await deleteLog(target.id);
+      await dashboard.deleteLog(target.id);
       toast.show({ type: "success", message: t("progress.logDeleted") });
     } catch {
       toast.show({ type: "error", message: t("common.somethingWentWrong") });
     }
   };
 
-  if (loading && logs.length === 0) {
+  if (dashboard.loading && dashboard.logs.length === 0) {
     return (
       <View className="flex-1 bg-brand-dark">
-        <LoadingBlock />
+        <SkeletonDashboard />
       </View>
     );
   }
 
-  if (error && logs.length === 0) {
+  if (dashboard.error && dashboard.logs.length === 0) {
     return (
       <View className="flex-1 bg-brand-dark">
-        <ErrorState onRetry={refresh} />
+        <ErrorState onRetry={dashboard.refresh} />
       </View>
     );
   }
+
+  const { isEmpty } = dashboard;
 
   return (
     <View className="flex-1 bg-brand-dark">
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        // "padding" on Android too — edge-to-edge disables adjustResize (see Screen)
         behavior="padding"
-        // iOS-only offset: on Android it over-pads (blank strip above keyboard)
         keyboardVerticalOffset={Platform.OS === "ios" ? headerHeight : 0}
       >
-        {/* Log workout inline form */}
-        {showLogForm && (
-          <AnimatedView entering={enter()} exiting={exit()}>
-          <Card className="mx-4 mt-4 gap-3">
-            <Text className="font-semibold text-content-primary">
-              {t("progress.logAWorkout")}
-            </Text>
-
-            {routines.length === 0 ? (
-              <View className="items-center gap-2 py-2">
-                <Text className="text-content-tertiary text-sm">
-                  {t("progress.noRoutinesYet")}
-                </Text>
-                <Pressable
-                  onPress={() => {
-                    setShowLogForm(false);
-                    router.push("/(tabs)/routines/create");
-                  }}
-                  accessibilityRole="button"
-                >
-                  <Text className="text-brand-primary font-medium text-sm">
-                    {t("progress.createRoutineFirst")}
-                  </Text>
-                </Pressable>
-              </View>
-            ) : (
-              <>
-                <Text className="text-sm text-content-tertiary">
-                  {t("progress.selectRoutine")}
-                </Text>
-                <View className="flex-row flex-wrap gap-2">
-                  {routines.map((r) => (
-                    <Chip
-                      key={r.id}
-                      label={r.name}
-                      selected={selectedRoutineId === r.id}
-                      onPress={() => {
-                        setSelectedRoutineId(r.id);
-                        if (routineError != null) setRoutineError(undefined);
-                      }}
-                    />
-                  ))}
-                </View>
-                {routineError != null && (
-                  <Text className="text-xs text-error">{routineError}</Text>
-                )}
-              </>
-            )}
-
-            <View className="flex-row gap-2">
-              <Input
-                label={t("progress.duration")}
-                keyboardType="number-pad"
-                placeholder="45"
-                value={duration}
-                onChangeText={setDuration}
-                containerClassName="flex-1"
-                className="bg-brand-dark"
-              />
-              <Input
-                label={t("progress.notes")}
-                placeholder={t("progress.notesPlaceholder")}
-                value={notes}
-                onChangeText={setNotes}
-                containerClassName="flex-[2]"
-                className="bg-brand-dark"
-              />
-            </View>
-
-            <View className="flex-row gap-2">
-              <View className="flex-1">
-                <Button
-                  variant="secondary"
-                  onPress={() => setShowLogForm(false)}
-                  className="w-full"
-                >
-                  {t("common.cancel")}
-                </Button>
-              </View>
-              <View className="flex-1">
-                <Button onPress={handleLogWorkout} loading={submitting} className="w-full">
-                  {t("common.save")}
-                </Button>
-              </View>
-            </View>
-          </Card>
-          </AnimatedView>
-        )}
-
-        <RAnimated.FlatList
-          data={logs}
+        <RAnimated.ScrollView
           contentInsetAdjustmentBehavior="automatic"
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 100 }}
+          contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 72 }}
           keyboardShouldPersistTaps="handled"
-          // Siblings slide up to close the gap on delete (unreliable on web)
-          itemLayoutAnimation={Platform.OS !== "web" ? layout() : undefined}
+          showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
-              refreshing={refreshing}
-              onRefresh={refresh}
+              refreshing={dashboard.refreshing}
+              onRefresh={dashboard.refresh}
               tintColor={colors.brandPrimary}
               colors={[colors.brandPrimary]}
               progressBackgroundColor={colors.surface}
             />
           }
-          renderItem={({ item, index }) => (
-            <AnimatedView entering={staggered(index)} exiting={exit()}>
-            <Card className="px-4 py-4 flex-row items-start justify-between">
-              <View className="flex-1 gap-1">
-                <Text className="font-semibold text-content-primary">{item.routine_name}</Text>
-                <Text className="text-content-tertiary text-sm">{formatDate(item.date)}</Text>
-                {item.duration_minutes != null && (
-                  <View className="self-start bg-success-soft rounded-full px-3 py-0.5 mt-1">
-                    <Text className="text-brand-secondary text-xs font-medium">
-                      {t("progress.min", { count: item.duration_minutes })}
-                    </Text>
-                  </View>
-                )}
-                {item.notes && (
-                  <Text className="text-content-tertiary text-sm mt-1" selectable>
-                    {item.notes}
-                  </Text>
-                )}
-                {item.completed_exercises && item.completed_exercises.length > 0 && (
-                  <View className="mt-2 gap-1 border-t border-border/50 pt-2">
-                    {item.completed_exercises.map((exName, idx) => (
-                      <View key={idx} className="flex-row items-center gap-1.5">
-                        <Ionicons name="checkmark" size={14} color={colors.brandSecondary} />
-                        <Text className="text-content-secondary text-sm">{exName}</Text>
-                      </View>
-                    ))}
-                  </View>
-                )}
-              </View>
-              <Pressable
-                onPress={() => setPendingDelete(item)}
-                className="p-2 ml-2"
-                hitSlop={8}
-                accessibilityRole="button"
-                accessibilityLabel={t("progress.deleteLog")}
-              >
-                <Ionicons name="trash-outline" size={18} color={colors.error} />
-              </Pressable>
-            </Card>
+        >
+          {!isEmpty && (
+            <AnimatedView entering={staggered(0)}>
+              <PeriodToggle value={periodo} onChange={setPeriodo} />
             </AnimatedView>
           )}
-          ListEmptyComponent={
-            <EmptyState
-              icon="bar-chart-outline"
-              title={t("progress.noWorkoutsLogged")}
-              subtitle={t("progress.logFirstWorkout")}
-              actionLabel={t("progress.logWorkout")}
-              onAction={() => setShowLogForm(true)}
+
+          <AnimatedView entering={staggered(1)}>
+            <HeroCard
+              periodo={periodo}
+              hero={dashboard.hero}
+              firstRun={isEmpty}
+              onLogFirst={() => setShowLogForm(true)}
             />
-          }
-        />
+          </AnimatedView>
+
+          <AnimatedView entering={staggered(2)}>
+            <WeightCard
+              weight={dashboard.weight}
+              profile={dashboard.profile}
+              onLogWeight={dashboard.logWeight}
+            />
+          </AnimatedView>
+
+          {!isEmpty && (
+            <>
+              <AnimatedView entering={staggered(3)}>
+                <StrengthCard
+                  weekVolume={dashboard.strength.weekVolume}
+                  series={dashboard.strength.series}
+                  deltaPct={dashboard.strength.deltaPct}
+                />
+              </AnimatedView>
+
+              <AnimatedView entering={staggered(4)}>
+                <NutritionCard periodo={periodo} nutrition={dashboard.nutrition} />
+              </AnimatedView>
+
+              <AnimatedView entering={staggered(5)}>
+                <MusclesCard
+                  periodo={periodo}
+                  rows={dashboard.muscles.rows}
+                  alert={dashboard.muscles.alert}
+                />
+              </AnimatedView>
+
+              {dashboard.insight != null && (
+                <AnimatedView entering={staggered(6)}>
+                  <InsightCard insight={dashboard.insight} />
+                </AnimatedView>
+              )}
+
+              <AnimatedView entering={staggered(6)}>
+                <AchievementChips chips={dashboard.logros} />
+              </AnimatedView>
+            </>
+          )}
+
+          {isEmpty && (
+            <NutritionCard periodo={periodo} nutrition={dashboard.nutrition} />
+          )}
+
+          <AnimatedView entering={staggered(6)}>
+            <HistorySection
+              logs={dashboard.logs}
+              onDelete={setPendingDelete}
+              onLogWorkout={() => setShowLogForm(true)}
+            />
+          </AnimatedView>
+        </RAnimated.ScrollView>
       </KeyboardAvoidingView>
 
+      {/* Log form as a real modal: dim backdrop over the whole screen (header
+          included), tap-outside to dismiss. Same form + handlers as before. */}
+      <Modal
+        visible={showLogForm}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        onRequestClose={() => setShowLogForm(false)}
+      >
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+          <Pressable
+            className="flex-1 justify-center"
+            style={{ backgroundColor: "rgba(0, 0, 0, 0.6)" }}
+            onPress={() => setShowLogForm(false)}
+            accessibilityRole="button"
+            accessibilityLabel={t("common.cancel")}
+          >
+            {/* Swallow taps on the card so they don't close the modal */}
+            <Pressable onPress={() => {}} className="mx-4">
+              <Card className="gap-3">
+                <Text className="font-semibold text-content-primary">
+                  {t("progress.logAWorkout")}
+                </Text>
+                {routines.length === 0 ? (
+                  <View className="items-center gap-2 py-2">
+                    <Text className="text-content-tertiary text-sm">
+                      {t("progress.noRoutinesYet")}
+                    </Text>
+                    <Pressable
+                      onPress={() => {
+                        setShowLogForm(false);
+                        router.push("/(tabs)/routines/create");
+                      }}
+                      accessibilityRole="button"
+                    >
+                      <Text className="text-brand-primary font-medium text-sm">
+                        {t("progress.createRoutineFirst")}
+                      </Text>
+                    </Pressable>
+                  </View>
+                ) : (
+                  <>
+                    <Text className="text-sm text-content-tertiary">
+                      {t("progress.selectRoutine")}
+                    </Text>
+                    <View className="flex-row flex-wrap gap-2">
+                      {routines.map((r) => (
+                        <Chip
+                          key={r.id}
+                          label={r.name}
+                          selected={selectedRoutineId === r.id}
+                          onPress={() => {
+                            setSelectedRoutineId(r.id);
+                            if (routineError != null) setRoutineError(undefined);
+                          }}
+                        />
+                      ))}
+                    </View>
+                    {routineError != null && (
+                      <Text className="text-xs text-error">{routineError}</Text>
+                    )}
+                  </>
+                )}
+                <View className="flex-row gap-2">
+                  <Input
+                    label={t("progress.duration")}
+                    keyboardType="number-pad"
+                    placeholder="45"
+                    value={duration}
+                    onChangeText={setDuration}
+                    containerClassName="flex-1"
+                    className="bg-brand-dark"
+                  />
+                  <Input
+                    label={t("progress.notes")}
+                    placeholder={t("progress.notesPlaceholder")}
+                    value={notes}
+                    onChangeText={setNotes}
+                    containerClassName="flex-[2]"
+                    className="bg-brand-dark"
+                  />
+                </View>
+                <View className="flex-row gap-2">
+                  <View className="flex-1">
+                    <Button variant="secondary" onPress={() => setShowLogForm(false)} className="w-full">
+                      {t("common.cancel")}
+                    </Button>
+                  </View>
+                  <View className="flex-1">
+                    <Button onPress={handleLogWorkout} loading={submitting} className="w-full">
+                      {t("common.save")}
+                    </Button>
+                  </View>
+                </View>
+              </Card>
+            </Pressable>
+          </Pressable>
+        </KeyboardAvoidingView>
+      </Modal>
+
       {!showLogForm && (
-        <FAB
-          onPress={() => setShowLogForm(true)}
-          accessibilityLabel={t("progress.logWorkout")}
-        />
+        <FAB onPress={() => setShowLogForm(true)} accessibilityLabel={t("progress.logWorkout")} />
       )}
 
       <ConfirmDialog
