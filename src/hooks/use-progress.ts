@@ -10,9 +10,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 async function fetchLogs(userId: string): Promise<WorkoutLog[]> {
+  // Explicit user filter on top of RLS (coach role reads all clients' rows)
   const { data, error } = await supabase
     .from("workout_logs")
     .select("*")
+    .eq("user_id", userId)
     .order("date", { ascending: false })
     .order("created_at", { ascending: false });
   if (error) throw error;

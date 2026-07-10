@@ -36,10 +36,14 @@ export async function overlayMeals(
         }
       } else {
         const item = op.payload as MealItem;
-        const parent = out.find((m) => m.id === item.meal_id);
-        if (parent && !parent.meal_items.some((i) => i.id === item.id)) {
-          parent.meal_items.push(item);
+        // Upserts can edit values in place or move the item to another meal.
+        // Drop any server copy first so the pending row always wins — leaving
+        // it would show stale values (edit) or a duplicate (move).
+        for (const m of out) {
+          m.meal_items = m.meal_items.filter((i) => i.id !== item.id);
         }
+        const parent = out.find((m) => m.id === item.meal_id);
+        if (parent) parent.meal_items.push(item);
       }
     }
   }

@@ -218,11 +218,15 @@ const AlertDialogBody = React.forwardRef<
 const AlertDialogBackdrop = React.forwardRef<
   React.ComponentRef<typeof UIAccessibleAlertDialog.Backdrop>,
   IAlertDialogBackdropProps
->(function AlertDialogBackdrop({ className, ...props }, ref) {
+>(function AlertDialogBackdrop({ className, style, ...props }, ref) {
   return (
     <UIAccessibleAlertDialog.Backdrop
       ref={ref}
       {...props}
+      // Explicit rgba via style: the bg-black/50 class uses an opacity
+      // modifier, which react-native-css doesn't compile — leaving the
+      // backdrop invisible on native.
+      style={[{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }, style]}
       entering={FadeIn.duration(200).easing(Easing.linear)}
       exiting={FadeOut.duration(200).easing(Easing.linear)}
       className={alertDialogBackdropStyle({

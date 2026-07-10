@@ -17,6 +17,7 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState<string | undefined>();
   const [formError, setFormError] = useState<string | null>(null);
+  const [confirmEmailSent, setConfirmEmailSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
@@ -40,7 +41,13 @@ export default function Register() {
     try {
       setLoading(true);
       setFormError(null);
-      await signUp(email.trim(), password, name.trim());
+      const { needsEmailConfirmation } = await signUp(email.trim(), password, name.trim());
+      if (needsEmailConfirmation) {
+        // No session yet — the user must verify their email, then sign in.
+        // Navigating to tabs would just bounce back to login with no context.
+        setConfirmEmailSent(true);
+        return;
+      }
       router.replace("/(tabs)");
     } catch {
       setFormError(t("common.somethingWentWrong"));
@@ -63,6 +70,25 @@ export default function Register() {
         </Text>
       </View>
 
+      {confirmEmailSent ? (
+        <View className="gap-4">
+          <View className="bg-success-soft rounded-xl p-4 gap-1">
+            <Text className="text-success font-semibold">
+              {t("auth.confirmEmailTitle")}
+            </Text>
+            <Text className="text-content-secondary text-sm">
+              {t("auth.confirmEmailBody", { email: email.trim() })}
+            </Text>
+          </View>
+          <Button
+            size="lg"
+            onPress={() => router.replace("/(auth)/login")}
+            className="rounded-2xl"
+          >
+            {t("auth.signIn")}
+          </Button>
+        </View>
+      ) : (
       <View className="gap-4">
         <Input
           placeholder={t("auth.namePlaceholder")}
@@ -136,6 +162,7 @@ export default function Register() {
           </Text>
         </Pressable>
       </View>
+      )}
     </Screen>
   );
 }

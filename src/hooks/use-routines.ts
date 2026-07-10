@@ -25,9 +25,13 @@ async function fetchRoutines(
   userId: string,
   catalog: Map<string, Exercise>,
 ): Promise<RoutineWithExercises[]> {
+  // Explicit user filter on top of RLS: the coach role can read every
+  // client's rows — without it a coach signing into the app would see all
+  // clients' routines as their own.
   const { data, error } = await supabase
     .from("routines")
     .select("*, routine_exercises(*, exercise:exercises(*, body_part:bodyparts(name)))")
+    .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .order("sort_order", {
       referencedTable: "routine_exercises",

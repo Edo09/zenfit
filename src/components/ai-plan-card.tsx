@@ -66,20 +66,27 @@ export function AIPlanCard({ className }: { className?: string }) {
       const catalogNames = exercises.map((e) => e.name);
       const aiRoutines = await generateRoutines(profile, i18n.language, catalogNames);
 
+      let created = 0;
       for (const r of aiRoutines) {
+        // The model is instructed to only use catalog names, but this is
+        // untrusted output — resolve matches BEFORE creating the routine
+        // (the catalog is coach-managed; the app can't create new entries),
+        // so a routine whose exercises all fail to match is never persisted
+        // as an empty shell.
+        const matchedExercises = r.exercises.flatMap((ex) => {
+          const matched = exercises.find(
+            (e) => e.name.toLowerCase() === ex.name.toLowerCase(),
+          );
+          return matched ? [{ ex, matched }] : [];
+        });
+        if (matchedExercises.length === 0) continue;
+
         const routine = await createRoutine({
           name: r.name,
           description: r.description ?? undefined,
           day_of_week: r.day_of_week ?? undefined,
         });
-        for (const ex of r.exercises) {
-          // The model is instructed to only use catalog names, but this is
-          // untrusted output — skip anything that doesn't actually match
-          // (the catalog is coach-managed; the app can't create new entries).
-          const matched = exercises.find(
-            (e) => e.name.toLowerCase() === ex.name.toLowerCase(),
-          );
-          if (!matched) continue;
+        for (const { ex, matched } of matchedExercises) {
           await addExercise({
             routine_id: routine.id,
             exercise_id: matched.id,
@@ -89,12 +96,14 @@ export function AIPlanCard({ className }: { className?: string }) {
             weight_kg: ex.weight_kg ?? undefined,
           });
         }
+        created++;
       }
+      if (created === 0) throw new Error("no routine matched the catalog");
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       toast.show({
         type: "success",
-        message: t("profile.aiSuccess", { count: aiRoutines.length }),
+        message: t("profile.aiSuccess", { count: created }),
       });
       if (!pathname.includes("/routines")) {
         router.push("/(tabs)/routines");

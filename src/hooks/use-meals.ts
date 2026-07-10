@@ -21,9 +21,13 @@ import { useMemo } from "react";
 // Items ride along with the list so the whole meals tab (diary) is a single
 // persisted query that works offline.
 async function fetchMeals(userId: string): Promise<MealWithItems[]> {
+  // Explicit user filter on top of RLS: the coach role can read every
+  // client's rows, so without it a coach signing into the app would see
+  // all clients' data merged into their own diary.
   const { data, error } = await supabase
     .from("meals")
     .select("*, meal_items(*)")
+    .eq("user_id", userId)
     .order("created_at", { ascending: false });
   if (error) throw error;
   return overlayMeals(userId, data as MealWithItems[]);
@@ -150,13 +154,18 @@ export function useMeals() {
   // items. Reuse the oldest existing container (legacy data may have several
   // per slot); create one lazily otherwise. The cache lookup is synchronous
   // over optimistic state, so this works offline.
+  // Coach-assigned containers are never reused: an item that lands in one is
+  // flagged read-only by the diary, locking the user out of their own entry.
   const getOrCreateSlotMeal = async (
     date: string,
     mealType: MealType,
   ): Promise<Meal> => {
     const cached = queryClient.getQueryData<MealWithItems[]>(listKey) ?? [];
     const existing = cached
-      .filter((m) => m.date === date && m.meal_type === mealType)
+      .filter(
+        (m) =>
+          m.date === date && m.meal_type === mealType && m.assigned_by == null,
+      )
       .sort((a, b) => a.created_at.localeCompare(b.created_at))[0];
     if (existing != null) return existing;
 

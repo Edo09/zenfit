@@ -246,15 +246,21 @@ export default function AddFoodScreen() {
                 style={{ width: "100%", height: 180 }}
                 contentFit="cover"
               />
+              {/* Inline rgba: bg-black/60 (opacity modifier) doesn't compile
+                  under react-native-css */}
               <Pressable
                 onPress={() => setPhoto(null)}
                 accessibilityRole="button"
                 accessibilityLabel={t("meals.removePhoto")}
-                className="absolute top-2 right-2 h-8 w-8 items-center justify-center rounded-full bg-black/60"
+                className="absolute top-2 right-2 h-8 w-8 items-center justify-center rounded-full"
+                style={{ backgroundColor: "rgba(0, 0, 0, 0.6)" }}
               >
                 <Ionicons name="close" size={18} color={colors.white} />
               </Pressable>
-              <View className="absolute bottom-2 left-2 flex-row items-center gap-1.5 rounded-full bg-black/60 px-3 py-1">
+              <View
+                className="absolute bottom-2 left-2 flex-row items-center gap-1.5 rounded-full px-3 py-1"
+                style={{ backgroundColor: "rgba(0, 0, 0, 0.6)" }}
+              >
                 <Ionicons name="sparkles" size={12} color={colors.brandPrimary} />
                 <Text className="text-xs text-white">{t("meals.aiEstimate")}</Text>
               </View>

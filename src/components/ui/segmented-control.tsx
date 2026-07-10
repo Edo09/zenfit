@@ -60,8 +60,15 @@ export function SegmentedControl({ segments, value, onChange, className }: Props
               <View
                 className={cn(
                   "min-w-5 items-center rounded-full px-1.5 py-0.5",
-                  active ? "bg-white/25" : "bg-surface-elevated",
+                  active ? "" : "bg-surface-elevated",
                 )}
+                // Inline rgba: bg-white/25 (opacity modifier) doesn't compile
+                // under react-native-css
+                style={
+                  active
+                    ? { backgroundColor: "rgba(255, 255, 255, 0.25)" }
+                    : undefined
+                }
               >
                 <Text
                   className={cn(

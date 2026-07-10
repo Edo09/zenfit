@@ -4,7 +4,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 
 import { Card } from "@/src/components/ui";
-import { enter, exit, PressableScale } from "@/src/lib/motion";
+import { enter, exit } from "@/src/lib/motion";
 import { mealPhotoUrl } from "@/src/services/meal-photos";
 import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
@@ -42,38 +42,32 @@ export function DiarySlot({ slot, entries, onAdd, onEdit, onRemove }: Props) {
 
   return (
     <View className="gap-2">
-      <View className="flex-row items-center justify-between">
-        <View className="flex-row items-center gap-2">
-          <Ionicons name={SLOT_ICON[slot]} size={16} color={colors.contentTertiary} />
-          <Text className="text-base font-semibold text-content-primary capitalize">
-            {slotLabel}
+      <View className="flex-row items-center gap-2">
+        <Ionicons name={SLOT_ICON[slot]} size={16} color={colors.contentTertiary} />
+        <Text className="text-base font-semibold text-content-primary capitalize">
+          {slotLabel}
+        </Text>
+        {entries.length > 0 && (
+          <Text
+            className="text-sm text-content-tertiary"
+            style={{ fontVariant: ["tabular-nums"] }}
+          >
+            {kcalFmt} {t("meals.kcal")}
           </Text>
-          {entries.length > 0 && (
-            <Text
-              className="text-sm text-content-tertiary"
-              style={{ fontVariant: ["tabular-nums"] }}
-            >
-              {kcalFmt} {t("meals.kcal")}
-            </Text>
-          )}
-        </View>
-        <PressableScale
-          onPress={onAdd}
-          haptic
-          accessibilityRole="button"
-          accessibilityLabel={t("meals.addToSlot", { slot: slotLabel })}
-          className="h-8 w-8 items-center justify-center rounded-full bg-info-soft"
-        >
-          <Ionicons name="add" size={20} color={colors.brandPrimary} />
-        </PressableScale>
+        )}
       </View>
 
       {entries.length === 0 ? (
         <Pressable
           onPress={onAdd}
           accessibilityRole="button"
-          className="border-2 border-dashed border-border-strong rounded-2xl py-4 items-center"
+          accessibilityLabel={t("meals.addToSlot", { slot: slotLabel })}
+          className="border-2 border-dashed border-border-strong rounded-2xl py-5 items-center gap-2.5"
         >
+          {/* Oval add pill — the slot's single add affordance */}
+          <View className="bg-info-soft rounded-full px-7 py-2 items-center justify-center">
+            <Ionicons name="add" size={22} color={colors.brandPrimary} />
+          </View>
           <Text className="text-content-muted text-sm">{t("meals.emptySlotHint")}</Text>
         </Pressable>
       ) : (
@@ -157,6 +151,18 @@ export function DiarySlot({ slot, entries, onAdd, onEdit, onRemove }: Props) {
               </Card>
             </AnimatedView>
           ))}
+
+          {/* Compact add row so filled slots keep an add affordance */}
+          <Pressable
+            onPress={onAdd}
+            accessibilityRole="button"
+            accessibilityLabel={t("meals.addToSlot", { slot: slotLabel })}
+            className="border-2 border-dashed border-border-strong rounded-2xl py-2 items-center"
+          >
+            <View className="bg-info-soft rounded-full px-6 py-1.5 items-center justify-center">
+              <Ionicons name="add" size={18} color={colors.brandPrimary} />
+            </View>
+          </Pressable>
         </View>
       )}
     </View>

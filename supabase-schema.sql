@@ -220,14 +220,13 @@ create policy "Users can delete own workout logs"
 
 
 -- Grant table permissions to authenticated users
+-- (bodyparts grants live in section 7, after the table exists)
 grant select, insert, update on public.profiles to authenticated;
 grant select, insert, update, delete on public.routines to authenticated;
 grant select, insert, update, delete on public.routine_exercises to authenticated;
 grant select, insert, update, delete on public.meals to authenticated;
 grant select, insert, update, delete on public.meal_items to authenticated;
 grant select, insert, update, delete on public.workout_logs to authenticated;
-grant select on public.bodyparts to authenticated;
-grant select on public.bodyparts to anon;
 
 -- Indexes for common queries
 create index idx_routines_user_id on public.routines(user_id);
@@ -249,6 +248,9 @@ alter table public.bodyparts enable row level security;
 create policy "Body parts are viewable by everyone"
   on public.bodyparts for select
   using (true);
+
+grant select on public.bodyparts to authenticated;
+grant select on public.bodyparts to anon;
 
 insert into public.bodyparts (name) values
   ('back'), ('cardio'), ('chest'), ('lower arms'), ('lower legs'),

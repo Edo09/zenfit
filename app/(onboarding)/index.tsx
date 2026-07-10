@@ -18,9 +18,10 @@ import { DUR, EASE_OUT, enter, exit, slideEnter } from "@/src/lib/motion";
 import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
+import type { ProfileGoal } from "@/src/types/database";
 import { cn } from "@/src/utils/cn";
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
 
 const DAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
 const DAY_VALUES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
@@ -36,6 +37,7 @@ type FormData = {
   weight_unit: "kg" | "lbs";
   activity_level: "sedentary" | "active" | "very_active" | null;
   profession_type: "desk" | "physical" | null;
+  goal: ProfileGoal | null;
   days_per_week: string;
   session_duration: string;
   available_days: string[];
@@ -134,6 +136,7 @@ export default function Onboarding() {
     weight_unit: "kg",
     activity_level: null,
     profession_type: null,
+    goal: null,
     days_per_week: "4",
     session_duration: "60",
     available_days: [],
@@ -184,6 +187,10 @@ export default function Onboarding() {
         return true;
       }
       case 3: {
+        if (!form.goal) return failStep(t("profile.selectGoal"));
+        return true;
+      }
+      case 4: {
         const dpw = parseInt(form.days_per_week, 10);
         const sd = parseInt(form.session_duration, 10);
         if (isNaN(dpw) || dpw < 1 || dpw > 7) return failStep(t("onboarding.daysBetween"));
@@ -234,6 +241,7 @@ export default function Onboarding() {
         weight_kg: Math.round(toWeightKg(form) * 10) / 10,
         activity_level: form.activity_level,
         profession_type: form.profession_type,
+        goal: form.goal,
         days_per_week: parseInt(form.days_per_week, 10),
         session_duration: parseInt(form.session_duration, 10),
         available_days: form.available_days,
@@ -462,6 +470,38 @@ export default function Onboarding() {
         );
 
       case 3:
+        return (
+          <View className="gap-6">
+            <View className="gap-1">
+              <Text className="text-2xl font-bold text-content-primary">
+                {t("profile.goalTitle")}
+              </Text>
+              <Text className="text-content-tertiary text-base">
+                {t("profile.goalSubtitle")}
+              </Text>
+            </View>
+
+            <View className="gap-2">
+              <OptionButton
+                label={t("profile.goalLoseWeight")}
+                selected={form.goal === "lose_weight"}
+                onPress={() => updateForm("goal", "lose_weight")}
+              />
+              <OptionButton
+                label={t("profile.goalGainMuscle")}
+                selected={form.goal === "gain_muscle"}
+                onPress={() => updateForm("goal", "gain_muscle")}
+              />
+              <OptionButton
+                label={t("profile.goalMaintain")}
+                selected={form.goal === "maintain"}
+                onPress={() => updateForm("goal", "maintain")}
+              />
+            </View>
+          </View>
+        );
+
+      case 4:
         return (
           <View className="gap-6">
             <View className="gap-1">

@@ -120,17 +120,32 @@ function CarouselItem({
           contentFit="cover"
           transition={500}
         />
-        <View className="absolute inset-0 bg-black/30" />
+        {/* Translucent colors via style: opacity-modifier classes
+            (bg-black/30 etc.) don't compile under react-native-css */}
+        <View
+          className="absolute inset-0"
+          style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}
+        />
 
         <View className="flex-1 p-5 justify-end">
-          <View className="bg-white/20 self-start px-2 py-1 rounded-full border border-white/30 mb-2">
+          <View
+            className="self-start px-2 py-1 rounded-full border mb-2"
+            style={{
+              backgroundColor: "rgba(255, 255, 255, 0.2)",
+              borderColor: "rgba(255, 255, 255, 0.3)",
+            }}
+          >
             <Text className="text-white text-[10px] font-bold uppercase tracking-wider">
               {t("routines.readyToStart")}
             </Text>
           </View>
           <Text className="text-white text-2xl font-bold">{item.name}</Text>
           {item.description && (
-            <Text className="text-white/80 text-sm mt-1" numberOfLines={1}>
+            <Text
+              className="text-sm mt-1"
+              style={{ color: "rgba(255, 255, 255, 0.8)" }}
+              numberOfLines={1}
+            >
               {item.description}
             </Text>
           )}

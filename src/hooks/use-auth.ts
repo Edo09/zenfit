@@ -14,7 +14,7 @@ export function useAuth() {
   };
 
   const signUp = async (email: string, password: string, name: string) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -22,6 +22,10 @@ export function useAuth() {
       },
     });
     if (error) throw error;
+    // With "Confirm email" enabled in Supabase Auth, signUp succeeds but
+    // returns no session — the user must verify before signing in. (Also the
+    // anti-enumeration response for an already-registered email.)
+    return { needsEmailConfirmation: data.session == null };
   };
 
   const signOut = async () => {

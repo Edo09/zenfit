@@ -59,6 +59,9 @@ export default {
     showPassword: "Show password",
     hidePassword: "Hide password",
     enterPassword: "Enter your password",
+    confirmEmailTitle: "Check your email",
+    confirmEmailBody:
+      "We sent a confirmation link to {{email}}. Verify your address, then sign in.",
   },
 
   // Onboarding

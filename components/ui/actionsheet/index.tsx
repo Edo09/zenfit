@@ -309,7 +309,7 @@ const ActionsheetDragIndicatorWrapper = React.forwardRef<
 const ActionsheetBackdrop = React.forwardRef<
   React.ComponentRef<typeof UIActionsheet.Backdrop>,
   IActionsheetBackdropProps
->(function ActionsheetBackdrop({ className, ...props }, ref) {
+>(function ActionsheetBackdrop({ className, style, ...props }, ref) {
   return (
     <UIActionsheet.Backdrop
       initial={{
@@ -326,6 +326,15 @@ const ActionsheetBackdrop = React.forwardRef<
         duration: 200,
       }}
       {...props}
+      // Explicit rgba via style: the bg-[#000]/50 class uses an opacity
+      // modifier, which react-native-css doesn't compile — leaving the
+      // backdrop invisible on native. Also covers SelectBackdrop (delegates
+      // here). Pressable style may be a press-state function — compose it.
+      style={
+        typeof style === 'function'
+          ? (state) => [{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }, style(state)]
+          : [{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }, style]
+      }
       className={actionsheetBackdropStyle({
         class: className,
       })}

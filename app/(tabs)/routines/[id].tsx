@@ -350,7 +350,12 @@ export default function RoutineDetailScreen() {
                     >
                       <Ionicons name="barbell-outline" size={26} color={colors.contentMuted} />
                       {ex.exercise?.video_url ? (
-                        <View className="absolute inset-0 items-center justify-center bg-black/30">
+                        // Inline rgba: bg-black/30 (opacity modifier) doesn't
+                        // compile under react-native-css
+                        <View
+                          className="absolute inset-0 items-center justify-center"
+                          style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}
+                        >
                           <Ionicons name="play-circle" size={30} color="#fff" />
                         </View>
                       ) : null}
