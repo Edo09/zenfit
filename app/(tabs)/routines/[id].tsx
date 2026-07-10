@@ -1,6 +1,6 @@
 import * as Haptics from "expo-haptics";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ScrollView as RNScrollView } from "react-native";
 
@@ -57,7 +57,7 @@ export default function RoutineDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { addExercise, removeExercise } = useRoutines();
   const { exercises } = useExercises();
-  const { createLog } = useProgress();
+  const { createLog, todaysLogs } = useProgress();
   const { user } = useAuth();
   const { profile } = useProfile(user?.id);
 
@@ -77,6 +77,9 @@ export default function RoutineDetailScreen() {
   const [showLogDialog, setShowLogDialog] = useState(false);
   const [workoutDuration, setWorkoutDuration] = useState("");
   const [workoutNotes, setWorkoutNotes] = useState("");
+  // Local check overrides (keyed by exercise row id). The effective checked
+  // state layers these on top of what's already logged today — see
+  // isExerciseCompleted below.
   const [completedExercises, setCompletedExercises] = useState<Record<string, boolean>>({});
   // Single active rest countdown (one timer at a time).
   const [rest, setRest] = useState<{ exId: string; remaining: number } | null>(null);
@@ -174,14 +177,31 @@ export default function RoutineDetailScreen() {
     setVideoUri(ex.exercise.video_url);
   };
 
-  const toggleExercise = (exId: string) => {
+  // Exercises already saved in one of today's logs for this routine start
+  // checked, so the checkmarks survive saving, navigation, and restarts
+  // (logs are persisted + offline-overlaid). Logs store exercise NAMES.
+  const loggedTodayNames = useMemo(() => {
+    const names = new Set<string>();
+    for (const log of todaysLogs) {
+      if (log.routine_id !== id) continue;
+      for (const n of log.completed_exercises ?? []) names.add(n);
+    }
+    return names;
+  }, [todaysLogs, id]);
+
+  const isExerciseCompleted = (ex: RoutineExercise): boolean =>
+    completedExercises[ex.id] ??
+    (ex.exercise != null && loggedTodayNames.has(ex.exercise.name));
+
+  const toggleExercise = (ex: RoutineExercise) => {
+    const current = isExerciseCompleted(ex);
     // Haptic on completion only — un-checking shouldn't celebrate
-    if (!completedExercises[exId]) {
+    if (!current) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     }
     setCompletedExercises((prev) => ({
       ...prev,
-      [exId]: !prev[exId],
+      [ex.id]: !current,
     }));
   };
 
@@ -196,7 +216,7 @@ export default function RoutineDetailScreen() {
     setLoggingWorkout(true);
 
     const completedNames = routine.routine_exercises
-      .filter((ex) => completedExercises[ex.id])
+      .filter((ex) => isExerciseCompleted(ex))
       .map((ex) => ex.exercise?.name)
       .filter((name): name is string => !!name);
 
@@ -313,7 +333,7 @@ export default function RoutineDetailScreen() {
         <View className="gap-3">
           <View className="-mx-4">
             {routine.routine_exercises.map((ex, index) => {
-              const isCompleted = !!completedExercises[ex.id];
+              const isCompleted = isExerciseCompleted(ex);
               const badge = BADGE_COLORS[index % BADGE_COLORS.length];
               const isResting = rest?.exId === ex.id;
               const restLabel = formatRest(
@@ -326,7 +346,7 @@ export default function RoutineDetailScreen() {
                     className={`flex-row items-center gap-3 px-4 py-3 bg-surface ${isCompleted ? "opacity-60" : ""}`}
                   >
                     <Pressable
-                      onPress={() => toggleExercise(ex.id)}
+                      onPress={() => toggleExercise(ex)}
                       hitSlop={8}
                       accessibilityRole="checkbox"
                       accessibilityState={{ checked: isCompleted }}
