@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Platform } from "react-native";
 import {
   useAnimatedStyle,
   useSharedValue,
@@ -60,10 +61,20 @@ export function OfflineBanner() {
     opacity: progress.value,
   }));
 
+  // On web, overlay the banner instead of keeping it in flow: its animated
+  // height would otherwise reflow every screen below it each time online/pending
+  // toggles (a refetch or reachability blip), shifting all content ~28px and
+  // making components "jump" after interaction. Native keeps the in-flow push,
+  // where the reflow is intended and smooth.
+  const webOverlay =
+    Platform.OS === "web"
+      ? ({ position: "absolute", top: 0, left: 0, right: 0, zIndex: 50 } as const)
+      : null;
+
   return (
     <AnimatedView
       className={online ? "bg-info-soft" : "bg-warning-soft"}
-      style={[{ overflow: "hidden" }, containerStyle]}
+      style={[{ overflow: "hidden" }, webOverlay, containerStyle]}
       pointerEvents={visible ? "auto" : "none"}
     >
       <View

@@ -1,6 +1,6 @@
 import * as Haptics from "expo-haptics";
 import React from "react";
-import { Pressable as RNPressable } from "react-native";
+import { Platform, Pressable as RNPressable } from "react-native";
 import RNAnimated, {
   Easing,
   FadeIn,
@@ -25,20 +25,35 @@ export const DUR = { fast: 150, base: 250, slow: 400 } as const;
 export const EASE_OUT = Easing.out(Easing.cubic);
 export const EASE_IN = Easing.in(Easing.cubic);
 
+// react-native-web's Reanimated implementation of TRANSFORM-based entering
+// animations (FadeInDown's translateY, SlideIn*'s translateX, ZoomIn's scale)
+// doesn't clean up its offset — the element stays shifted "out of place" after
+// the animation. Opacity-only FadeIn/FadeOut are unaffected. So on web every
+// transform entrance degrades to a plain fade; native keeps the full motion.
+// (Same reason itemLayoutAnimation is already web-gated at the FlatList sites.)
+const IS_WEB = Platform.OS === "web";
+
 // Factories, not constants: builder methods like .delay() mutate the
 // instance, so a shared const would leak delays between call sites.
 export const enter = () =>
-  FadeInDown.duration(DUR.base)
-    .easing(EASE_OUT)
-    .withInitialValues({ opacity: 0, transform: [{ translateY: 12 }] });
+  IS_WEB
+    ? FadeIn.duration(DUR.base).easing(EASE_OUT)
+    : FadeInDown.duration(DUR.base)
+        .easing(EASE_OUT)
+        .withInitialValues({ opacity: 0, transform: [{ translateY: 12 }] });
 
 export const enterFade = () => FadeIn.duration(DUR.base).easing(EASE_OUT);
 export const exit = () => FadeOut.duration(DUR.fast).easing(EASE_IN);
-export const pop = () => ZoomIn.duration(DUR.fast).easing(EASE_OUT);
+export const pop = () =>
+  IS_WEB
+    ? FadeIn.duration(DUR.fast).easing(EASE_OUT)
+    : ZoomIn.duration(DUR.fast).easing(EASE_OUT);
 export const slideEnter = (direction: 1 | -1) =>
-  (direction === 1 ? SlideInRight : SlideInLeft)
-    .duration(DUR.base)
-    .easing(EASE_OUT);
+  IS_WEB
+    ? FadeIn.duration(DUR.base).easing(EASE_OUT)
+    : (direction === 1 ? SlideInRight : SlideInLeft)
+        .duration(DUR.base)
+        .easing(EASE_OUT);
 export const layout = () => LinearTransition.duration(DUR.base).easing(EASE_OUT);
 
 // Stagger only the first few items; cells mounted later (FlatList windowing

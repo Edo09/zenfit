@@ -74,7 +74,10 @@ export function DiarySlot({ slot, entries, onAdd, onEdit, onRemove }: Props) {
         <View className="gap-2">
           {entries.map((entry) => (
             <AnimatedView key={entry.item.id} entering={enter()} exiting={exit()}>
-              {/* Tapping the row opens the item editor (assigned items are read-only) */}
+              {/* Tapping the row opens the item editor (assigned items are read-only).
+                  Delete is an absolute sibling, NOT nested in the card's pressable —
+                  a nested <button> on web re-parents and shifts the row out of place. */}
+              <View>
               <Card
                 onPress={entry.assigned ? undefined : () => onEdit(entry)}
                 className="px-4 py-3 flex-row items-center justify-between"
@@ -128,7 +131,7 @@ export function DiarySlot({ slot, entries, onAdd, onEdit, onRemove }: Props) {
                     </Text>
                   </View>
                 </View>
-                <View className="items-end ml-2">
+                <View className={`items-end ml-2 ${!entry.assigned ? "pr-6" : ""}`}>
                   <Text
                     className="text-lg font-bold text-content-primary"
                     style={{ fontVariant: ["tabular-nums"] }}
@@ -137,18 +140,19 @@ export function DiarySlot({ slot, entries, onAdd, onEdit, onRemove }: Props) {
                   </Text>
                   <Text className="text-xs text-content-tertiary">{t("meals.kcal")}</Text>
                 </View>
-                {!entry.assigned && (
-                  <Pressable
-                    onPress={() => onRemove(entry)}
-                    className="p-2 ml-2"
-                    hitSlop={8}
-                    accessibilityRole="button"
-                    accessibilityLabel={t("meals.removeFoodItem")}
-                  >
-                    <Ionicons name="trash-outline" size={18} color={colors.error} />
-                  </Pressable>
-                )}
               </Card>
+              {!entry.assigned && (
+                <Pressable
+                  onPress={() => onRemove(entry)}
+                  className="absolute right-1 top-0 bottom-0 justify-center px-2"
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("meals.removeFoodItem")}
+                >
+                  <Ionicons name="trash-outline" size={18} color={colors.error} />
+                </Pressable>
+              )}
+              </View>
             </AnimatedView>
           ))}
 
