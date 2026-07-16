@@ -37,6 +37,10 @@
     </style>
 
     <link rel="manifest" href="/manifest.json" />
+    <!-- Browser chrome color (address bar / task switcher). Matches the
+         app canvas per scheme — keep in sync with src/theme/colors.ts. -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f8fafc" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f172a" />
 
     <!-- iOS Safari ignores the manifest for install prompts; it needs these
          specific tags to behave like an installed app. -->
