@@ -82,6 +82,9 @@ export function useRoutines() {
         description: data.description ?? null,
         day_of_week: data.day_of_week ?? null,
         assigned_by: null,
+        // 'user' unless the AI generator says otherwise ('coach' only ever
+        // comes from the admin panel, never from this client-side path).
+        source: data.source ?? "user",
         created_at: now,
         updated_at: now,
       };

@@ -328,6 +328,7 @@ export default {
     newRoutine: "Nueva Rutina",
     exerciseRemoved: "Ejercicio eliminado",
     routineDeleted: "Rutina eliminada",
+    aiBadge: "IA",
   },
 
   // Progress

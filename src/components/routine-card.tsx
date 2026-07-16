@@ -54,6 +54,16 @@ export function RoutineCard({ routine, onPress, onDelete, readOnly = false }: Pr
                   <Text className="text-xs font-semibold text-white">{t("coach.badge")}</Text>
                 </View>
               )}
+              {/* Provenance: AI-generated plans get the gold accent badge
+                  (rows without the migrated column just show nothing). */}
+              {!readOnly && routine.source === "ai" && (
+                <View className="self-start flex-row items-center gap-1 bg-brand-accent-soft rounded-full px-2.5 py-1">
+                  <Ionicons name="sparkles-outline" size={12} color={colors.brandAccent} />
+                  <Text className="text-xs font-semibold text-brand-accent">
+                    {t("routines.aiBadge")}
+                  </Text>
+                </View>
+              )}
               {day != null && (
                 <View className="self-start bg-info-soft rounded-full px-3 py-1">
                   <Text className="text-xs font-medium text-brand-primary">{day}</Text>

@@ -29,6 +29,11 @@ export type Profile = {
 // Public subset of a coach's profile that clients are allowed to read.
 export type Coach = Pick<Profile, "id" | "display_name" | "avatar_url" | "whatsapp">;
 
+// Provenance: 'user' = made by the client, 'ai' = in-app AI generator,
+// 'coach' = assigned via the admin panel (a DB trigger forces 'coach'
+// whenever assigned_by is set, so external writers can't desync it).
+export type RoutineSource = "user" | "ai" | "coach";
+
 export type Routine = {
   id: string;
   user_id: string;
@@ -37,6 +42,7 @@ export type Routine = {
   day_of_week: string | null;
   // null = self-made; a coach's profile id = assigned by the coach (read-only).
   assigned_by: string | null;
+  source: RoutineSource;
   created_at: string;
   updated_at: string;
 };
@@ -125,7 +131,7 @@ export type MealWithItems = Meal & {
 
 // Insert types (omit auto-generated fields)
 export type RoutineInsert = Pick<Routine, "name"> &
-  Partial<Pick<Routine, "description" | "day_of_week">>;
+  Partial<Pick<Routine, "description" | "day_of_week" | "source">>;
 
 export type RoutineExerciseInsert = Pick<
   RoutineExercise,

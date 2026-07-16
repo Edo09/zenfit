@@ -85,6 +85,7 @@ export function AIPlanCard({ className }: { className?: string }) {
           name: r.name,
           description: r.description ?? undefined,
           day_of_week: r.day_of_week ?? undefined,
+          source: "ai",
         });
         for (const { ex, matched } of matchedExercises) {
           await addExercise({
