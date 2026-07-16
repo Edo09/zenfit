@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { Ring } from "@/src/components/progress/ring";
 import { Card } from "@/src/components/ui";
+import { kgToUnit, useWeightUnit } from "@/src/lib/weight-unit";
 import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 import {
@@ -41,6 +42,7 @@ export function HeroCard({ periodo, hero, firstRun, onLogFirst }: HeroCardProps)
   const colors = useColors();
   const { t, i18n } = useTranslation();
   const locale = i18n.language === "es" ? "es-ES" : "en-US";
+  const unit = useWeightUnit();
 
   const frac = hero.plan > 0 ? hero.done / hero.plan : 0;
   const ringColor = hero.done >= hero.plan ? colors.success : colors.brandPrimary;
@@ -192,8 +194,8 @@ export function HeroCard({ periodo, hero, firstRun, onLogFirst }: HeroCardProps)
           <View className="w-px bg-border" />
           <TrioStat
             icon="barbell-outline"
-            value={hero.volumeKg.toLocaleString(locale)}
-            label={t("progress.kgVolumen")}
+            value={Math.round(kgToUnit(hero.volumeKg, unit)).toLocaleString(locale)}
+            label={t("progress.kgVolumen", { unit })}
           />
         </View>
       )}

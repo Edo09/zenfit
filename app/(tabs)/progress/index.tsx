@@ -179,9 +179,9 @@ export default function ProgressScreen() {
                 />
               </AnimatedView>
 
-              {dashboard.insight != null && (
+              {(dashboard.insight != null || dashboard.aiInsight != null) && (
                 <AnimatedView entering={staggered(6)}>
-                  <InsightCard insight={dashboard.insight} />
+                  <InsightCard insight={dashboard.insight} ai={dashboard.aiInsight} />
                 </AnimatedView>
               )}
 

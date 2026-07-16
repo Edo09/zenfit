@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { useTranslation } from "react-i18next";
 
+import { KG_PER_LB, useWeightUnit } from "@/src/lib/weight-unit";
 import { useColors } from "@/src/theme/colors";
 import { ScrollView, Text, View } from "@/src/tw";
 import type { AchievementChip } from "@/src/utils/progress";
@@ -17,6 +18,7 @@ type AchievementChipsProps = {
 export function AchievementChips({ chips }: AchievementChipsProps) {
   const colors = useColors();
   const { t } = useTranslation();
+  const unit = useWeightUnit();
 
   if (chips.length === 0) return null;
 
@@ -35,10 +37,16 @@ export function AchievementChips({ chips }: AchievementChipsProps) {
           label: t("progress.chipEntrenos", { count: chip.value }),
         };
       case "tonnage":
+        // chip.value is metric tonnes (1000 kg); lb mode shows klb instead.
         return {
           icon: "barbell-outline" as const,
           color: colors.brandSecondary,
-          label: t("progress.chipToneladas", { count: chip.value }),
+          label:
+            unit === "lb"
+              ? t("progress.chipKlb", {
+                  count: Math.max(1, Math.round(chip.value / KG_PER_LB)),
+                })
+              : t("progress.chipToneladas", { count: chip.value }),
         };
     }
   };

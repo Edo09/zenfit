@@ -15,6 +15,7 @@ import { Button, Chip, Input, Screen, useToast } from "@/src/components/ui";
 import { useAuth } from "@/src/hooks/use-auth";
 import { useProfile } from "@/src/hooks/use-profile";
 import { DUR, EASE_OUT, enter, exit, slideEnter } from "@/src/lib/motion";
+import { setWeightUnit } from "@/src/lib/weight-unit";
 import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
@@ -248,6 +249,8 @@ export default function Onboarding() {
         onboarding_completed: true,
       });
       markOnboarded();
+      // The unit picked on the weight step becomes the app-wide preference.
+      void setWeightUnit(form.weight_unit === "lbs" ? "lb" : "kg");
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       router.replace("/(tabs)");
     } catch {

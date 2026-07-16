@@ -1,7 +1,10 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useAuth } from "@/src/hooks/use-auth";
+import { useWeightUnit } from "@/src/lib/weight-unit";
+import { generateWeeklyInsight, type WeeklyInsightStats } from "@/src/services/ai-insight";
 import { useExercises } from "@/src/hooks/use-exercises";
 import { useMeals } from "@/src/hooks/use-meals";
 import { useProfile } from "@/src/hooks/use-profile";
@@ -18,6 +21,7 @@ import {
   compliance,
   estimatedVolume,
   lastWeekCompliance,
+  mondayOf,
   monthWeekPills,
   muscleAlert,
   muscleDistribution,
@@ -59,7 +63,7 @@ export function useProgressDashboard(periodo: Periodo) {
   const queryClient = useQueryClient();
   const progress = useProgress();
   const routinesData = useRoutines();
-  const { exercises } = useExercises();
+  const { exercises, loading: exercisesLoading } = useExercises();
   const mealsData = useMeals();
   const { profile, updateProfile } = useProfile(user?.id);
 
@@ -165,6 +169,42 @@ export function useProgressDashboard(periodo: Periodo) {
     const hasMeals = meals.some((m) => m.meal_items.length > 0);
     const isEmpty = logs.length === 0 && !hasMeals;
 
+    const weight = weightStats(
+      measurements.filter(
+        (m): m is BodyMeasurement & { weight_kg: number } => m.weight_kg != null,
+      ),
+      profile,
+      now,
+    );
+    const strength = {
+      weekVolume: estimatedVolume(weekLogs, plan),
+      series: series8w,
+      deltaPct:
+        series8w[6] > 0
+          ? Math.round(((series8w[7] - series8w[6]) / series8w[6]) * 100)
+          : null,
+    };
+
+    // Snapshot for the AI weekly analysis — aggregates only, no raw rows.
+    const insightStats: WeeklyInsightStats = {
+      goal: profile?.goal ?? null,
+      week: { done: weekCompliance.done, plan: weekCompliance.plan },
+      lastWeek: { done: lastWeek.done, plan: lastWeek.plan },
+      streakWeeks: streak,
+      weekVolumeKg: strength.weekVolume,
+      volumeDeltaPct: strength.deltaPct,
+      avgKcal: nutrition.avgKcal,
+      kcalGoal: goalKcal,
+      avgProteinG: nutrition.avgProtein,
+      // Same 1.4 g/kg heuristic the rule-based insight uses.
+      proteinTargetG:
+        profile?.weight_kg != null ? Math.round(1.4 * profile.weight_kg) : null,
+      weightKg: weight.current,
+      weightDelta30dKg: weight.delta30,
+      muscleSets: muscles.map((m) => ({ group: m.group, sets: m.sets })),
+      neglected: alert != null ? { group: alert.group, days: alert.days } : null,
+    };
+
     return {
       isEmpty,
       daysPerWeek,
@@ -179,22 +219,10 @@ export function useProgressDashboard(periodo: Periodo) {
         kcal: burnedKcal(periodLogs, profile),
         volumeKg: estimatedVolume(periodLogs, plan),
       },
-      weight: weightStats(
-        measurements.filter(
-          (m): m is BodyMeasurement & { weight_kg: number } => m.weight_kg != null,
-        ),
-        profile,
-        now,
-      ),
-      strength: {
-        weekVolume: estimatedVolume(weekLogs, plan),
-        series: series8w,
-        deltaPct:
-          series8w[6] > 0
-            ? Math.round(((series8w[7] - series8w[6]) / series8w[6]) * 100)
-            : null,
-      },
+      weight,
+      strength,
       nutrition: { ...nutrition, goal: goalKcal, hasData: hasMeals },
+      insightStats,
       muscles: { rows: muscles, alert },
       insight: ruleInsights({
         alert,
@@ -209,8 +237,27 @@ export function useProgressDashboard(periodo: Periodo) {
     };
   }, [logs, routines, exercises, meals, profile, measurements, periodo]);
 
+  // AI weekly analysis (P3). Keyed per user+week+language: generated once
+  // per Monday-based week, regenerated on language switch, served from the
+  // persisted react-query cache otherwise (works offline once fetched).
+  // Failure/offline is fine — the UI falls back to the rule-based insight.
+  const { i18n } = useTranslation();
+  const weightUnit = useWeightUnit();
+  const { data: aiInsight = null } = useQuery({
+    queryKey: ["ai-insight", user?.id, mondayOf(toDateKey()), i18n.language, weightUnit],
+    queryFn: () => generateWeeklyInsight(vm.insightStats, i18n.language, weightUnit),
+    // exercisesLoading gate: muscleSets is computed through the exercise
+    // catalog — generating before it loads would freeze a wrong snapshot
+    // into the week's cached insight.
+    enabled: !!user && !loading && !exercisesLoading && !vm.isEmpty,
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 60 * 24 * 21,
+    retry: 1,
+  });
+
   return {
     ...vm,
+    aiInsight,
     logs,
     profile,
     loading,

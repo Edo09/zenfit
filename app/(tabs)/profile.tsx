@@ -1,11 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ScrollView as RNScrollView } from "react-native";
 
-import { CoachSection } from "@/src/components/coach-section";
+import { kgToUnit1, unitToKg, useWeightUnit } from "@/src/lib/weight-unit";
+
 import {
   Button,
   Card,
@@ -170,7 +171,14 @@ export default function ProfileScreen() {
   const [age, setAge] = useState("");
   const [sex, setSex] = useState<Profile["sex"]>(null);
   const [heightCm, setHeightCm] = useState("");
+  // Held in the DISPLAY unit (kg or lb) — converted to kg on save.
+  const weightUnit = useWeightUnit();
   const [weightKg, setWeightKg] = useState("");
+  const weightSeed = useCallback(
+    (p: Profile | null | undefined) =>
+      p?.weight_kg != null ? String(kgToUnit1(p.weight_kg, weightUnit)) : "",
+    [weightUnit],
+  );
   const [editingStat, setEditingStat] = useState<"age" | "height" | "weight" | null>(
     null
   );
@@ -189,7 +197,7 @@ export default function ProfileScreen() {
     setAge(profile.age != null ? String(profile.age) : "");
     setSex(profile.sex);
     setHeightCm(profile.height_cm != null ? String(profile.height_cm) : "");
-    setWeightKg(profile.weight_kg != null ? String(profile.weight_kg) : "");
+    setWeightKg(weightSeed(profile));
     setActivityLevel(profile.activity_level);
     setProfessionType(profile.profession_type);
     setDaysPerWeek(profile.days_per_week != null ? String(profile.days_per_week) : "");
@@ -199,7 +207,7 @@ export default function ProfileScreen() {
     setAvailableDays(profile.available_days ?? []);
     setCalorieGoal(profile.calorie_goal != null ? String(profile.calorie_goal) : "");
     setGoal(profile.goal);
-  }, [profile]);
+  }, [profile, weightSeed]);
 
   useEffect(() => {
     if (highlight !== "calorie-goal" || loading) return;
@@ -224,7 +232,7 @@ export default function ProfileScreen() {
     age: parseInt(age, 10) || null,
     sex,
     height_cm: parseFloat(heightCm) || null,
-    weight_kg: parseFloat(weightKg) || null,
+    weight_kg: unitToKg(parseFloat(weightKg), weightUnit) || null,
     activity_level: activityLevel,
     goal,
   });
@@ -236,7 +244,7 @@ export default function ProfileScreen() {
     age !== (profile?.age != null ? String(profile.age) : "") ||
     sex !== (profile?.sex ?? null) ||
     heightCm !== (profile?.height_cm != null ? String(profile.height_cm) : "") ||
-    weightKg !== (profile?.weight_kg != null ? String(profile.weight_kg) : "") ||
+    weightKg !== weightSeed(profile) ||
     activityLevel !== (profile?.activity_level ?? null) ||
     professionType !== (profile?.profession_type ?? null) ||
     goal !== (profile?.goal ?? null) ||
@@ -287,7 +295,7 @@ export default function ProfileScreen() {
     if (!sex) return t("onboarding.fillAgeSex");
     const h = parseFloat(heightCm);
     if (isNaN(h) || h < 50 || h > 300) return t("onboarding.heightBetween");
-    const w = parseFloat(weightKg);
+    const w = unitToKg(parseFloat(weightKg), weightUnit);
     if (isNaN(w) || w < 20 || w > 500) return t("onboarding.weightBetween");
     if (!activityLevel || !professionType)
       return t("onboarding.selectActivityProfession");
@@ -317,7 +325,7 @@ export default function ProfileScreen() {
         age: parseInt(age, 10),
         sex,
         height_cm: parseFloat(heightCm),
-        weight_kg: parseFloat(weightKg),
+        weight_kg: Math.round(unitToKg(parseFloat(weightKg), weightUnit) * 10) / 10,
         activity_level: activityLevel,
         profession_type: professionType,
         goal,
@@ -368,9 +376,6 @@ export default function ProfileScreen() {
         {t("profile.subtitle")}
       </Text>
 
-      {/* Coach: identity + WhatsApp + membership status (read-only) */}
-      <CoachSection />
-
       {/* Datos personales */}
       <Card className="gap-3.5">
         <Text className="text-[15px] font-bold text-content-primary">
@@ -412,7 +417,7 @@ export default function ProfileScreen() {
           />
           <StatTile
             label={t("profile.statWeight")}
-            unit={t("onboarding.unitKg")}
+            unit={weightUnit}
             value={weightKg}
             editing={editingStat === "weight"}
             onEdit={() => {

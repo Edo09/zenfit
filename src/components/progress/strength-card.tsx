@@ -3,6 +3,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 
 import { Card } from "@/src/components/ui";
+import { kgToUnit, useWeightUnit } from "@/src/lib/weight-unit";
 import { useColors } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
 
@@ -23,6 +24,7 @@ export function StrengthCard({ weekVolume, series, deltaPct }: StrengthCardProps
   const colors = useColors();
   const { t, i18n } = useTranslation();
   const locale = i18n.language === "es" ? "es-ES" : "en-US";
+  const unit = useWeightUnit();
 
   const max = Math.max(...series, 1);
 
@@ -40,10 +42,10 @@ export function StrengthCard({ weekVolume, series, deltaPct }: StrengthCardProps
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-baseline gap-1.5">
           <Text className="text-[22px] font-extrabold text-content-primary" style={TABULAR}>
-            {weekVolume.toLocaleString(locale)}
+            {Math.round(kgToUnit(weekVolume, unit)).toLocaleString(locale)}
           </Text>
           <Text className="text-[13px] text-content-tertiary">
-            {t("progress.kgEstaSemana")}
+            {t("progress.kgEstaSemana", { unit })}
           </Text>
         </View>
         {deltaPct != null && (

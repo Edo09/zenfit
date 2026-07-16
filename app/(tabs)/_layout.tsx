@@ -1,10 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Tabs } from "expo-router";
+import { router, Tabs } from "expo-router";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import type { ColorValue } from "react-native";
 
 import { useColors } from "@/src/theme/colors";
+import { Pressable } from "@/src/tw";
 
 type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
 
@@ -70,6 +71,26 @@ export default function TabsLayout() {
         options={{
           title: t("tabs.profile"),
           tabBarIcon: ({ color }) => <TabIcon name="person" color={color} />,
+        }}
+      />
+      {/* Reached from the home menu, not the tab bar (href: null hides it).
+          Tabs headers have no native back button — provide one. */}
+      <Tabs.Screen
+        name="settings"
+        options={{
+          href: null,
+          title: t("settings.title"),
+          headerLeft: () => (
+            <Pressable
+              onPress={() => router.back()}
+              accessibilityRole="button"
+              accessibilityLabel={t("common.back")}
+              className="pl-3 pr-2 py-1"
+              hitSlop={8}
+            >
+              <Ionicons name="chevron-back" size={24} color={colors.contentPrimary} />
+            </Pressable>
+          ),
         }}
       />
     </Tabs>

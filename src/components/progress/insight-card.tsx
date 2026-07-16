@@ -3,12 +3,16 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 
 import { Card } from "@/src/components/ui";
+import type { AIInsight } from "@/src/services/ai-insight";
 import { useColors } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
 import type { Insight } from "@/src/utils/progress";
 
 type InsightCardProps = {
-  insight: Insight;
+  /** Rule-based fallback (instant/offline); may be null when only AI has content. */
+  insight: Insight | null;
+  /** LLM-written weekly analysis — wins over the rule-based body when present. */
+  ai?: AIInsight | null;
 };
 
 type Action = {
@@ -17,10 +21,10 @@ type Action = {
   label: string;
 };
 
-// P0: deterministic rule-based synthesis (utils/progress.ts ruleInsights).
-// P3 swaps the body for the cached ai_insights.summary — the layout stays.
+// Body priority: AI summary (use-progress-dashboard `aiInsight`, cached per
+// week+language) → rule-based synthesis (utils/progress.ts ruleInsights).
 // Only card with a tinted (gold) border, marking the AI/insight accent.
-export function InsightCard({ insight }: InsightCardProps) {
+export function InsightCard({ insight, ai }: InsightCardProps) {
   const colors = useColors();
   const { t } = useTranslation();
 
@@ -28,7 +32,20 @@ export function InsightCard({ insight }: InsightCardProps) {
 
   let body: string;
   let actions: Action[];
-  switch (insight.kind) {
+  if (ai != null) {
+    body = ai.summary;
+    actions = ai.actions.map((action) => ({
+      icon:
+        action.type === "nutrition"
+          ? ("nutrition-outline" as const)
+          : ("barbell-outline" as const),
+      color: action.type === "nutrition" ? ("success" as const) : ("info" as const),
+      label: action.label,
+    }));
+  } else if (insight == null) {
+    return null;
+  } else {
+    switch (insight.kind) {
     case "muscle":
       body = t("progress.insightMusculo", {
         grupo: groupName(insight.group),
@@ -66,6 +83,7 @@ export function InsightCard({ insight }: InsightCardProps) {
         { icon: "barbell-outline", color: "info", label: t("progress.accionRutina") },
       ];
       break;
+    }
   }
 
   return (

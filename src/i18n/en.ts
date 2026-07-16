@@ -228,6 +228,16 @@ export default {
     minutes: "Minutes",
   },
 
+  // Settings
+  settings: {
+    title: "Settings",
+    theme: "Theme",
+    language: "Language",
+    weightUnit: "Weight unit",
+    unitKgLabel: "Kilograms (kg)",
+    unitLbLabel: "Pounds (lb)",
+  },
+
   // Meals
   meals: {
     breakfast: "breakfast",
@@ -304,7 +314,7 @@ export default {
     noExercisesInCatalog: "Your coach hasn't added any exercises to the catalog yet",
     sets: "Sets",
     reps: "Reps",
-    weightOpt: "kg (opt)",
+    weightOpt: "{{unit}} (opt)",
     removeExercise: "Remove Exercise",
     removeConfirm: 'Remove "{{name}}" from this routine?',
     addExerciseButton: "+ Add Exercise",
@@ -365,14 +375,14 @@ export default {
     semPill: "Wk {{n}}",
     entrenados: "trained",
     kcalQuemadas: "kcal burned",
-    kgVolumen: "kg of volume",
+    kgVolumen: "{{unit}} of volume",
     empiezaPlan: "Start your plan",
     emptyHero: "Your plan is {{count}} sessions per week. You haven't logged any workouts yet.",
     primerEntreno: "Log my first workout →",
 
     pesoCorporal: "Body weight",
     registrarPeso: "Log weight",
-    pesoKg: "Weight (kg)",
+    pesoKg: "Weight ({{unit}})",
     pesoGuardado: "Weight logged",
     emptyPeso: "Log your weight to see your trend and progress toward your goal.",
     dias: "days",
@@ -381,7 +391,7 @@ export default {
     ochoSemanas: "8 weeks",
 
     fuerzaVolumen: "Strength & volume",
-    kgEstaSemana: "kg this week",
+    kgEstaSemana: "{{unit}} this week",
     estimadoPlan: "estimated from your plan",
     records: "Personal records",
     emptyRecords: "Log your sets to unlock records and estimated 1RM.",
@@ -423,6 +433,7 @@ export default {
     chipRacha: "{{count}}-week streak",
     chipEntrenos: "{{count}} workouts",
     chipToneladas: "{{count}} t lifted",
+    chipKlb: "{{count}} klb lifted",
 
     historial: "History",
     verTodo: "View full history",

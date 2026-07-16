@@ -21,6 +21,7 @@ import { useProgress } from "@/src/hooks/use-progress";
 import { useRoutineDetail, useRoutines } from "@/src/hooks/use-routines";
 import { useIsOnline } from "@/src/lib/online";
 import { enter, exit, pop, staggered } from "@/src/lib/motion";
+import { kgToUnit1, unitToKg, useWeightUnit } from "@/src/lib/weight-unit";
 import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
@@ -54,6 +55,7 @@ export default function RoutineDetailScreen() {
   const { t } = useTranslation();
   const toast = useToast();
   const online = useIsOnline();
+  const weightUnit = useWeightUnit();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { addExercise, removeExercise } = useRoutines();
   const { exercises } = useExercises();
@@ -140,7 +142,10 @@ export default function RoutineDetailScreen() {
         exercise: selected,
         sets: parseInt(exSets, 10) || 3,
         reps: parseInt(exReps, 10) || 10,
-        weight_kg: exWeight ? parseFloat(exWeight) : undefined,
+        // Typed in the display unit; stored in kg.
+        weight_kg: exWeight
+          ? Math.round(unitToKg(parseFloat(exWeight), weightUnit) * 10) / 10
+          : undefined,
       });
       setExExerciseId(null);
       setExSets("3");
@@ -401,7 +406,9 @@ export default function RoutineDetailScreen() {
                       </Text>
                       <Text className="text-content-tertiary text-sm mt-0.5">
                         {ex.sets} × {ex.reps}
-                        {ex.weight_kg != null ? ` · ${ex.weight_kg} kg` : ""}
+                        {ex.weight_kg != null
+                          ? ` · ${kgToUnit1(ex.weight_kg, weightUnit)} ${weightUnit}`
+                          : ""}
                       </Text>
                     </Pressable>
 
@@ -501,7 +508,7 @@ export default function RoutineDetailScreen() {
                   className="bg-brand-dark"
                 />
                 <Input
-                  label={t("routines.weightOpt")}
+                  label={t("routines.weightOpt", { unit: weightUnit })}
                   keyboardType="decimal-pad"
                   placeholder="—"
                   value={exWeight}

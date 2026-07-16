@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { LineChart } from "@/src/components/progress/line-chart";
 import { Button, Card, Input, useToast } from "@/src/components/ui";
+import { kgToUnit1, unitToKg, useWeightUnit } from "@/src/lib/weight-unit";
 import { useColors } from "@/src/theme/colors";
 import type { Profile } from "@/src/types/database";
 import { Pressable, Text, View } from "@/src/tw";
@@ -27,12 +28,15 @@ export function WeightCard({ weight, profile, onLogWeight }: WeightCardProps) {
   const toast = useToast();
   const { t, i18n } = useTranslation();
   const locale = i18n.language === "es" ? "es-ES" : "en-US";
+  const unit = useWeightUnit();
   const [logging, setLogging] = useState(false);
   const [value, setValue] = useState("");
   const [saving, setSaving] = useState(false);
 
   const kg1 = (n: number) =>
     n.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  // Stored kg → the display unit, 1 decimal, locale-formatted.
+  const w1 = (kg: number) => kg1(kgToUnit1(kg, unit));
 
   const goalKey =
     profile?.goal === "lose_weight"
@@ -52,7 +56,9 @@ export function WeightCard({ weight, profile, onLogWeight }: WeightCardProps) {
         : delta > 0;
 
   const handleSave = async () => {
-    const kg = parseFloat(value.replace(",", "."));
+    // Input is typed in the display unit; storage is always kg.
+    const entered = parseFloat(value.replace(",", "."));
+    const kg = unitToKg(entered, unit);
     if (Number.isNaN(kg) || kg < 30 || kg > 300) return;
     try {
       setSaving(true);
@@ -99,7 +105,7 @@ export function WeightCard({ weight, profile, onLogWeight }: WeightCardProps) {
               }
               style={TABULAR}
             >
-              {`${delta > 0 ? "+" : "−"}${kg1(Math.abs(delta))} kg / 30 ${t("progress.dias")}`}
+              {`${delta > 0 ? "+" : "−"}${w1(Math.abs(delta))} ${unit} / 30 ${t("progress.dias")}`}
             </Text>
           </View>
         )}
@@ -113,9 +119,9 @@ export function WeightCard({ weight, profile, onLogWeight }: WeightCardProps) {
                 className="text-[28px] font-extrabold text-content-primary"
                 style={TABULAR}
               >
-                {kg1(weight.current)}
+                {w1(weight.current)}
               </Text>
-              <Text className="text-sm text-content-tertiary">kg</Text>
+              <Text className="text-sm text-content-tertiary">{unit}</Text>
             </View>
             {weight.bmi != null && goalKey != null && (
               <Text className="text-xs text-content-muted" style={TABULAR}>
@@ -164,10 +170,10 @@ export function WeightCard({ weight, profile, onLogWeight }: WeightCardProps) {
         {logging ? (
           <View className="flex-row items-end gap-2">
             <Input
-              label={t("progress.pesoKg")}
+              label={t("progress.pesoKg", { unit })}
               keyboardType="decimal-pad"
               placeholder={
-                weight.current != null ? kg1(weight.current) : "70,0"
+                weight.current != null ? w1(weight.current) : unit === "lb" ? "155,0" : "70,0"
               }
               value={value}
               onChangeText={setValue}
@@ -181,7 +187,7 @@ export function WeightCard({ weight, profile, onLogWeight }: WeightCardProps) {
         ) : (
           <Pressable
             onPress={() => {
-              setValue(weight.current != null ? String(weight.current) : "");
+              setValue(weight.current != null ? String(kgToUnit1(weight.current, unit)) : "");
               setLogging(true);
             }}
             accessibilityRole="button"

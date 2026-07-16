@@ -228,6 +228,16 @@ export default {
     minutes: "Minutos",
   },
 
+  // Settings
+  settings: {
+    title: "Configuración",
+    theme: "Tema",
+    language: "Idioma",
+    weightUnit: "Unidad de peso",
+    unitKgLabel: "Kilogramos (kg)",
+    unitLbLabel: "Libras (lb)",
+  },
+
   // Meals
   meals: {
     breakfast: "desayuno",
@@ -304,7 +314,7 @@ export default {
     noExercisesInCatalog: "Tu entrenador aún no ha agregado ejercicios al catálogo",
     sets: "Series",
     reps: "Reps",
-    weightOpt: "kg (opc)",
+    weightOpt: "{{unit}} (opc)",
     removeExercise: "Quitar Ejercicio",
     removeConfirm: '¿Quitar "{{name}}" de esta rutina?',
     addExerciseButton: "+ Agregar Ejercicio",
@@ -365,14 +375,14 @@ export default {
     semPill: "Sem {{n}}",
     entrenados: "entrenados",
     kcalQuemadas: "kcal quemadas",
-    kgVolumen: "kg de volumen",
+    kgVolumen: "{{unit}} de volumen",
     empiezaPlan: "Empieza tu plan",
     emptyHero: "Tu plan es de {{count}} sesiones por semana. Aún no registras entrenamientos.",
     primerEntreno: "Registrar mi primer entrenamiento →",
 
     pesoCorporal: "Peso corporal",
     registrarPeso: "Registrar peso",
-    pesoKg: "Peso (kg)",
+    pesoKg: "Peso ({{unit}})",
     pesoGuardado: "Peso registrado",
     emptyPeso: "Registra tu peso para ver tu tendencia y tu avance hacia la meta.",
     dias: "días",
@@ -381,7 +391,7 @@ export default {
     ochoSemanas: "8 semanas",
 
     fuerzaVolumen: "Fuerza y volumen",
-    kgEstaSemana: "kg esta semana",
+    kgEstaSemana: "{{unit}} esta semana",
     estimadoPlan: "estimado según tu plan",
     records: "Récords personales",
     emptyRecords: "Registra tus series para desbloquear récords y 1RM estimado.",
@@ -423,6 +433,7 @@ export default {
     chipRacha: "Racha de {{count}} semanas",
     chipEntrenos: "{{count}} entrenamientos",
     chipToneladas: "{{count}} t levantadas",
+    chipKlb: "{{count}} klb levantadas",
 
     historial: "Historial",
     verTodo: "Ver todo el historial",

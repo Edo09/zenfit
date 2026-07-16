@@ -29,10 +29,8 @@ import { useProfile } from "@/src/hooks/use-profile";
 import { useProgress } from "@/src/hooks/use-progress";
 import { useRefreshOnFocus } from "@/src/hooks/use-refresh-on-focus";
 import { useRoutines } from "@/src/hooks/use-routines";
-import { setLanguage } from "@/src/i18n";
 import { enterFade, exit, PressableScale, staggered } from "@/src/lib/motion";
 import { useColors } from "@/src/theme/colors";
-import { setThemeMode } from "@/src/theme/theme-mode";
 import { Pressable, Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
 import {
@@ -42,16 +40,11 @@ import {
 } from "@/src/utils/calories";
 import { toDateKey } from "@/src/utils/dates";
 import { MEAL_SLOTS, suggestedSlot } from "@/src/utils/meal-slots";
-import { useThemeScheme } from "@/src/theme/theme-store";
 import { Platform, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   const colors = useColors();
-  // Effective scheme (includes the web override) so the toggle's icon/label
-  // track the actual theme, not just the OS setting.
-  const scheme = useThemeScheme();
-  const isDark = scheme === "dark";
   const { width } = useWindowDimensions();
   // Stack the wordmark where one line can't render at a readable size:
   // web (react-native-web ignores adjustsFontSizeToFit, so it truncates)
@@ -193,26 +186,21 @@ export default function HomeScreen() {
           <ActionsheetItem
             onPress={() => {
               setMenuOpen(false);
-              void setThemeMode(isDark ? "light" : "dark");
+              router.push("/(tabs)/profile");
             }}
           >
-            <Ionicons
-              name={isDark ? "sunny-outline" : "moon-outline"}
-              size={20}
-              color={colors.contentSecondary}
-            />
-            <ActionsheetItemText>{t(isDark ? "home.light" : "home.dark")}</ActionsheetItemText>
+            <Ionicons name="person-outline" size={20} color={colors.contentSecondary} />
+            <ActionsheetItemText>{t("tabs.profile")}</ActionsheetItemText>
           </ActionsheetItem>
+          {/* Theme/language/unit toggles live in Settings now */}
           <ActionsheetItem
             onPress={() => {
               setMenuOpen(false);
-              setLanguage(i18n.language === "en" ? "es" : "en");
+              router.push("/(tabs)/settings");
             }}
           >
-            <Ionicons name="language-outline" size={20} color={colors.contentSecondary} />
-            <ActionsheetItemText>
-              {i18n.language === "en" ? t("common.spanish") : t("common.english")}
-            </ActionsheetItemText>
+            <Ionicons name="settings-outline" size={20} color={colors.contentSecondary} />
+            <ActionsheetItemText>{t("settings.title")}</ActionsheetItemText>
           </ActionsheetItem>
           <ActionsheetItem
             onPress={() => {
