@@ -1,4 +1,4 @@
-import { useColorScheme } from "react-native";
+import { useThemeScheme } from "./theme-store";
 
 /**
  * Raw color constants mirroring the CSS tokens in src/global.css.
@@ -7,7 +7,8 @@ import { useColorScheme } from "react-native";
  * Keep in sync with global.css (:root light block + dark media block).
  *
  * Scheme-aware: components read the palette via useColors(), which follows
- * RN Appearance (same signal that drives the CSS dark media block). There
+ * the effective scheme (RN Appearance, plus the web override — see
+ * theme-store.ts). There
  * is deliberately no static `colors` export — every consumer must go
  * through the hook so no site can silently stay light-only.
  *
@@ -75,6 +76,8 @@ export const palettes: { light: Palette; dark: Palette } = {
 };
 
 export function useColors(): Palette {
-  const scheme = useColorScheme();
-  return palettes[scheme === "dark" ? "dark" : "light"];
+  // useThemeScheme (not RN useColorScheme): on web an explicit toggle can't
+  // reach Appearance, so the effective scheme lives in the theme store.
+  const scheme = useThemeScheme();
+  return palettes[scheme];
 }

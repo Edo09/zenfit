@@ -1,4 +1,4 @@
-import { useColorScheme } from 'nativewind';
+import { useThemeScheme } from '@/src/theme/theme-store';
 import { colors } from './config';
 
 /**
@@ -39,8 +39,10 @@ function rgbToHex(rgbString: string): string {
  *          colors.forest -> '#228b22' (if you add --forest to config)
  */
 export function useGluestackColors(): Record<string, string> {
-  const { colorScheme } = useColorScheme();
-  const theme = colors[colorScheme === 'dark' ? 'dark' : 'light'];
+  // Effective scheme (Appearance + web override) — nativewind's hook can't
+  // see the explicit web toggle, which never reaches Appearance there.
+  const colorScheme = useThemeScheme();
+  const theme = colors[colorScheme];
 
   // Dynamically convert all CSS variables to camelCase hex colors
   const result: Record<string, string> = {};

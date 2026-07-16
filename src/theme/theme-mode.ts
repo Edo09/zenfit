@@ -3,8 +3,13 @@ import * as SystemUI from "expo-system-ui";
 import { Appearance, type ColorSchemeName, Platform } from "react-native";
 
 import { palettes } from "./colors";
+// Web-only CSS override blocks (:root.light/.dark) — empty module on native.
+import "./theme-overrides";
+import { getThemeMode, setThemeModeState, type ThemeMode } from "./theme-store";
 
 const THEME_KEY = "app_theme";
+
+export type { ThemeMode } from "./theme-store";
 
 // Keep the native window background in sync with the scheme — it's what
 // shows through while screens animate, so leaving it at the platform
@@ -16,48 +21,73 @@ function syncWindowBackground(scheme: ColorSchemeName | null | undefined) {
 }
 
 Appearance.addChangeListener(({ colorScheme }) => {
-  syncWindowBackground(colorScheme);
+  // Web only follows the OS in "system" mode — an explicit choice wins
+  // (native never diverges: Appearance itself carries the override there).
+  const mode = getThemeMode();
+  const overridden =
+    Platform.OS === "web" && (mode === "light" || mode === "dark");
+  syncWindowBackground(overridden ? mode : colorScheme);
 });
-
-export type ThemeMode = "light" | "dark" | "system";
 
 function isThemeMode(value: string | null): value is ThemeMode {
   return value === "light" || value === "dark" || value === "system";
 }
 
-/** Stored preference; "dark" (dark-first brand default) when nothing saved
-    yet — the logo, brush wordmark, and gym photography all belong on the
-    dark canvas. Users can still switch to light via the header toggle. */
+/** Stored preference. Defaults: "dark" on native (dark-first brand — the
+    logo, brush wordmark, and gym photography all belong on the dark canvas),
+    "system" on web (first visits keep following the OS, matching how web
+    behaved before the toggle worked there). */
 export async function getStoredThemeMode(): Promise<ThemeMode> {
-  // Web can't override the scheme (see applyThemeMode) — honoring a stored
-  // "dark" there would desync gluestack (forced dark) from the CSS/useColors
-  // layer (following the OS). Everything follows the OS instead.
-  if (Platform.OS === "web") return "system";
+  const fallback: ThemeMode = Platform.OS === "web" ? "system" : "dark";
   try {
     const stored = await AsyncStorage.getItem(THEME_KEY);
-    return isThemeMode(stored) ? stored : "dark";
+    return isThemeMode(stored) ? stored : fallback;
   } catch {
-    return "dark";
+    return fallback;
   }
 }
 
-/** Apply a mode to RN Appearance — the single runtime theme signal.
-    "unspecified" = follow the OS setting (RN 0.86+; was null before).
-    react-native-web has no setColorScheme — there the CSS dark block and
-    useColorScheme() already follow the OS via prefers-color-scheme, so the
-    override is a native-only capability and web always behaves as "system". */
+/** Web: react-native-web has no Appearance.setColorScheme, so the override
+    is a documentElement class + inline color-scheme. The class drives the
+    :root.light/.dark blocks (theme-overrides.css) and the gluestack
+    provider's injected .dark vars; the theme-store carries it to JS
+    consumers (useColors / useThemeScheme). "system" resolves to the OS
+    scheme rather than clearing the class — the gluestack :root/.dark var
+    blocks rely on the class being present (same as the provider's own
+    script), and the provider's media listener keeps it updated on OS
+    changes while in system mode. */
+function applyWebThemeMode(mode: ThemeMode) {
+  if (typeof document === "undefined") return;
+  const root = document.documentElement;
+  const scheme =
+    mode === "system"
+      ? window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light"
+      : mode;
+  root.classList.remove(scheme === "light" ? "dark" : "light");
+  root.classList.add(scheme);
+  root.style.colorScheme = scheme;
+}
+
+/** Apply a mode at runtime. Native: RN Appearance is the single theme
+    signal — "unspecified" follows the OS (RN 0.86+; was null before), and
+    the CSS dark media block, useColors() consumers, and the gluestack
+    provider vars all re-theme via Appearance subscribers. Web: see
+    applyWebThemeMode. */
 export function applyThemeMode(mode: ThemeMode) {
-  if (typeof Appearance.setColorScheme === "function") {
+  if (Platform.OS === "web") {
+    applyWebThemeMode(mode);
+  } else if (typeof Appearance.setColorScheme === "function") {
     Appearance.setColorScheme(mode === "system" ? "unspecified" : mode);
   }
+  setThemeModeState(mode);
   syncWindowBackground(
     mode === "system" ? Appearance.getColorScheme() : mode,
   );
 }
 
-/** Persist + apply. Everything re-themes via Appearance subscribers:
-    the CSS dark media block (react-native-css), useColors() consumers,
-    and the gluestack provider vars. */
+/** Persist + apply. */
 export async function setThemeMode(mode: ThemeMode) {
   applyThemeMode(mode);
   try {

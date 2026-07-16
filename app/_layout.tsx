@@ -9,11 +9,8 @@ import { flushOutbox } from "@/src/lib/outbox";
 import { persister, PERSIST_MAX_AGE, queryClient } from "@/src/lib/query-client";
 import { AuthProvider } from "@/src/providers/auth-provider";
 import { useColors } from "@/src/theme/colors";
-import {
-  applyThemeMode,
-  getStoredThemeMode,
-  type ThemeMode,
-} from "@/src/theme/theme-mode";
+import { applyThemeMode, getStoredThemeMode } from "@/src/theme/theme-mode";
+import { useThemeMode } from "@/src/theme/theme-store";
 import { supabase } from "@/src/utils/supabase";
 import {
   Inter_400Regular,
@@ -31,7 +28,7 @@ import { useFonts } from "expo-font";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { I18nextProvider } from "react-i18next";
 
 SplashScreen.preventAutoHideAsync();
@@ -95,15 +92,14 @@ export default function RootLayout() {
 
   // Restore the saved theme before first paint (joins the splash gate with
   // font loading) so a dark-mode user never sees a light flash on cold start.
-  const [themeMode, setThemeModeState] = useState<ThemeMode | null>(null);
+  // Store-backed (not local state) so later toggles re-render the provider —
+  // on web its mode prop controls the OS media listener.
+  const themeMode = useThemeMode();
   useEffect(() => {
     getStoredThemeMode()
-      .then((mode) => {
-        applyThemeMode(mode);
-        setThemeModeState(mode);
-      })
+      .then(applyThemeMode)
       // A theme failure must never gate `ready` — fall back and render.
-      .catch(() => setThemeModeState("system"));
+      .catch(() => applyThemeMode("system"));
   }, []);
 
   const ready = fontsLoaded && themeMode !== null;
@@ -146,7 +142,7 @@ export default function RootLayout() {
       }}
     >
       <I18nextProvider i18n={i18n}>
-        <GluestackUIProvider mode={themeMode}>
+        <GluestackUIProvider mode={themeMode ?? "system"}>
           <AuthProvider>
           <ToastProvider>
             {/* "auto" tracks the active scheme: light icons on dark, dark on light */}

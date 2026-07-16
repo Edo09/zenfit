@@ -1,0 +1,129 @@
+/* WEB ONLY — loaded via theme-overrides.web.ts (native resolves the empty
+   theme-overrides.ts instead, so react-native-css never parses this file).
+
+   Explicit theme override: applyThemeMode() in theme-mode.ts toggles a
+   .light/.dark class on <html>. These blocks out-rank both the layered
+   :root defaults and the unlayered prefers-color-scheme block in global.css
+   (:root.light / :root.dark = 0-2-0 specificity vs :root = 0-1-0), so the
+   class wins regardless of the OS scheme. No class = system mode = the
+   global.css media block behaves as before.
+
+   KEEP IN SYNC with src/global.css (both :root blocks). */
+
+:root.light {
+  --hb-brand-primary: #dc2626;
+  --hb-brand-secondary: #2563eb;
+  --hb-brand-accent: #a16207;
+  --hb-brand-accent-soft: rgba(161, 98, 7, 0.12);
+  --hb-brand-dark: #f8fafc;
+  --hb-brand-light: #0f172a;
+  --hb-brand-primary-light: #ef4444;
+  --hb-brand-primary-dark: #b91c1c;
+  --hb-brand-secondary-light: #3b82f6;
+  --hb-brand-secondary-dark: #1d4ed8;
+
+  --hb-surface: #ffffff;
+  --hb-surface-elevated: #f1f5f9;
+
+  --hb-content-primary: #0f172a;
+  --hb-content-secondary: #334155;
+  --hb-content-tertiary: #64748b;
+  --hb-content-muted: #94a3b8;
+
+  --hb-border: #e2e8f0;
+  --hb-border-strong: #cbd5e1;
+
+  --hb-success: #16a34a;
+  --hb-success-soft: rgba(22, 163, 74, 0.12);
+  --hb-error: #dc2626;
+  --hb-error-soft: rgba(220, 38, 38, 0.1);
+  --hb-warning: #d97706;
+  --hb-warning-soft: rgba(217, 119, 6, 0.12);
+  --hb-info: #2563eb;
+  --hb-info-soft: rgba(37, 99, 235, 0.1);
+
+  --hb-badge-breakfast: #d97706;
+  --hb-badge-breakfast-soft: rgba(217, 119, 6, 0.12);
+  --hb-badge-lunch: #16a34a;
+  --hb-badge-lunch-soft: rgba(22, 163, 74, 0.12);
+  --hb-badge-dinner: #7c3aed;
+  --hb-badge-dinner-soft: rgba(124, 58, 237, 0.1);
+  --hb-badge-snack: #dc2626;
+  --hb-badge-snack-soft: rgba(220, 38, 38, 0.1);
+
+  --primary: 220 38 38;
+  --primary-foreground: 255 255 255;
+  --card: 255 255 255;
+  --secondary: 37 99 235;
+  --secondary-foreground: 255 255 255;
+  --background: 248 250 252;
+  --popover: 255 255 255;
+  --popover-foreground: 15 23 42;
+  --muted: 241 245 249;
+  --muted-foreground: 100 116 139;
+  --destructive: 220 38 38;
+  --foreground: 15 23 42;
+  --input: 241 245 249;
+  --ring: 203 213 225;
+  --accent: 241 245 249;
+  --accent-foreground: 15 23 42;
+}
+
+:root.dark {
+  --hb-brand-primary: #ef4444;
+  --hb-brand-secondary: #3b82f6;
+  --hb-brand-accent: #fbbf24;
+  --hb-brand-accent-soft: rgba(251, 191, 36, 0.16);
+  --hb-brand-dark: #0f172a;
+  --hb-brand-light: #f8fafc;
+  --hb-brand-primary-light: #f87171;
+  --hb-brand-primary-dark: #dc2626;
+  --hb-brand-secondary-light: #60a5fa;
+  --hb-brand-secondary-dark: #2563eb;
+
+  --hb-surface: #1e293b;
+  --hb-surface-elevated: #334155;
+
+  --hb-content-primary: #f8fafc;
+  --hb-content-secondary: #cbd5e1;
+  --hb-content-tertiary: #94a3b8;
+  --hb-content-muted: #64748b;
+
+  --hb-border: #334155;
+  --hb-border-strong: #475569;
+
+  --hb-success: #22c55e;
+  --hb-success-soft: rgba(34, 197, 94, 0.15);
+  --hb-error: #ef4444;
+  --hb-error-soft: rgba(239, 68, 68, 0.15);
+  --hb-warning: #f59e0b;
+  --hb-warning-soft: rgba(245, 158, 11, 0.15);
+  --hb-info: #3b82f6;
+  --hb-info-soft: rgba(59, 130, 246, 0.16);
+
+  --hb-badge-breakfast: #f59e0b;
+  --hb-badge-breakfast-soft: rgba(245, 158, 11, 0.15);
+  --hb-badge-lunch: #22c55e;
+  --hb-badge-lunch-soft: rgba(34, 197, 94, 0.15);
+  --hb-badge-dinner: #a78bfa;
+  --hb-badge-dinner-soft: rgba(167, 139, 250, 0.15);
+  --hb-badge-snack: #f87171;
+  --hb-badge-snack-soft: rgba(248, 113, 113, 0.15);
+
+  --primary: 239 68 68;
+  --primary-foreground: 255 255 255;
+  --card: 30 41 59;
+  --secondary: 59 130 246;
+  --secondary-foreground: 248 250 252;
+  --background: 15 23 42;
+  --popover: 30 41 59;
+  --popover-foreground: 248 250 252;
+  --muted: 51 65 85;
+  --muted-foreground: 148 163 184;
+  --destructive: 239 68 68;
+  --foreground: 248 250 252;
+  --input: 51 65 85;
+  --ring: 71 85 105;
+  --accent: 51 65 85;
+  --accent-foreground: 248 250 252;
+}

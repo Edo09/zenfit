@@ -42,13 +42,21 @@ import {
 } from "@/src/utils/calories";
 import { toDateKey } from "@/src/utils/dates";
 import { MEAL_SLOTS, suggestedSlot } from "@/src/utils/meal-slots";
-import { useColorScheme as useRNColorScheme } from "react-native";
+import { useThemeScheme } from "@/src/theme/theme-store";
+import { Platform, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   const colors = useColors();
-  const scheme = useRNColorScheme();
+  // Effective scheme (includes the web override) so the toggle's icon/label
+  // track the actual theme, not just the OS setting.
+  const scheme = useThemeScheme();
   const isDark = scheme === "dark";
+  const { width } = useWindowDimensions();
+  // Stack the wordmark where one line can't render at a readable size:
+  // web (react-native-web ignores adjustsFontSizeToFit, so it truncates)
+  // and narrow phones (auto-shrink fits but gets too small).
+  const stackedWordmark = Platform.OS === "web" || width < 380;
   const [menuOpen, setMenuOpen] = useState(false);
   const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
@@ -146,13 +154,19 @@ export default function HomeScreen() {
               accessibilityIgnoresInvertColors
             />
             <View className="flex-1">
-              <Text
-                className="text-brand-primary font-display text-3xl mb-0.5"
-                numberOfLines={1}
-                adjustsFontSizeToFit
-              >
-                Hokage Coaching App
-              </Text>
+              {stackedWordmark ? (
+                <Text className="text-brand-primary font-display text-3xl leading-tight mb-0.5">
+                  Hokage{"\n"}Coaching App
+                </Text>
+              ) : (
+                <Text
+                  className="text-brand-primary font-display text-3xl mb-0.5"
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                >
+                  Hokage Coaching App
+                </Text>
+              )}
               <Text className="text-2xl font-bold text-content-primary" numberOfLines={1}>
                 {t("home.hey", { name: displayName })}
               </Text>
