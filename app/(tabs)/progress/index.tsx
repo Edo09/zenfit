@@ -164,6 +164,8 @@ export default function ProgressScreen() {
                   weekVolume={dashboard.strength.weekVolume}
                   series={dashboard.strength.series}
                   deltaPct={dashboard.strength.deltaPct}
+                  prs={dashboard.strength.prs}
+                  estimated={dashboard.strength.estimated}
                 />
               </AnimatedView>
 

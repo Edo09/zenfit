@@ -18,7 +18,9 @@ export type OutboxTable =
   | "meal_items"
   | "routines"
   | "routine_exercises"
-  | "workout_logs";
+  | "workout_logs"
+  | "program_exercise_completions"
+  | "workout_set_logs";
 
 export type OutboxOp = {
   opId: string;

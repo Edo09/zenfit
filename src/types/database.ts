@@ -180,6 +180,113 @@ export type BodyMeasurement = {
   thigh_cm: number | null;
 };
 
+// ---- Coach Programs (multi-week periodized blocks) ------------------------
+// docs/COACH-PROGRAMS-SPEC.md. Read-only to clients; coach/admin-panel CRUD.
+// A program has days (the split); each day has exercises (the base
+// prescription); a GLOBAL program_weeks table modulates RIR/%load per week.
+
+export type ProgramStatus = "active" | "completed" | "archived";
+export type LoadQualitative = "light" | "moderate" | "heavy";
+
+export type Program = {
+  id: string;
+  user_id: string;
+  assigned_by: string | null;
+  source: "coach";
+  name: string;
+  description: string | null;
+  focus: string | null;
+  duration_weeks: number;
+  start_date: string;
+  status: ProgramStatus;
+  progression_rule: string | null;
+  tempo_default: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ProgramDay = {
+  id: string;
+  program_id: string;
+  day_index: number;
+  label: string | null;
+  weekday: string | null;
+  sort_order: number;
+  created_at: string;
+};
+
+export type ProgramExercise = {
+  id: string;
+  program_day_id: string;
+  exercise_id: string | null;
+  custom_name: string | null;
+  sets: number;
+  rep_min: number | null;
+  rep_max: number | null;
+  is_unilateral: boolean;
+  rir_min: number | null;
+  rir_max: number | null;
+  load_pct_1rm: number | null;
+  load_qualitative: LoadQualitative | null;
+  tempo: string | null;
+  rest_seconds: number | null;
+  notes: string | null;
+  sort_order: number;
+  created_at: string;
+  // Joined via `exercise:exercises(*, body_part:bodyparts(name))`; absent when
+  // the prescription is a custom_name with no catalog entry.
+  exercise?: Exercise | null;
+};
+
+export type ProgramWeek = {
+  id: string;
+  program_id: string;
+  week_number: number;
+  label: string | null;
+  rir_min: number | null;
+  rir_max: number | null;
+  load_pct_min: number | null;
+  load_pct_max: number | null;
+  is_deload: boolean;
+  sets_override: number | null;
+  notes: string | null;
+  created_at: string;
+};
+
+export type ProgramDayWithExercises = ProgramDay & {
+  program_exercises: ProgramExercise[];
+};
+
+export type ProgramWithDetails = Program & {
+  program_days: ProgramDayWithExercises[];
+  program_weeks: ProgramWeek[];
+};
+
+// Client's logged actuals per prescribed set (Phase 3).
+export type WorkoutSetLog = {
+  id: string;
+  user_id: string;
+  program_exercise_id: string;
+  week_number: number;
+  date: string;
+  set_index: number;
+  weight_kg: number | null;
+  reps: number | null;
+  rir: number | null;
+  created_at: string;
+};
+
+// "Client finished this exercise in this week" — the completion checkbox.
+export type ProgramExerciseCompletion = {
+  id: string;
+  user_id: string;
+  program_exercise_id: string;
+  week_number: number;
+  completed_at: string;
+  created_at: string;
+};
+
 export type MembershipStatus = "active" | "expired" | "paused" | "cancelled";
 
 // Coach-managed membership. Editable only by the coach (web); clients read own.

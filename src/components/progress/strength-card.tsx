@@ -3,9 +3,10 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 
 import { Card } from "@/src/components/ui";
-import { kgToUnit, useWeightUnit } from "@/src/lib/weight-unit";
+import { kgToUnit, kgToUnit1, useWeightUnit } from "@/src/lib/weight-unit";
 import { useColors } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
+import type { PersonalRecord } from "@/src/utils/progress";
 
 const TABULAR = { fontVariant: ["tabular-nums" as const] };
 const BAR_AREA_HEIGHT = 72;
@@ -14,19 +15,31 @@ type StrengthCardProps = {
   weekVolume: number;
   series: number[];
   deltaPct: number | null;
+  /** Best logged lifts (Phase 4). Empty when nothing logged. */
+  prs?: PersonalRecord[];
+  /** true = volume is plan-estimated; false = measured from logged sets. */
+  estimated?: boolean;
 };
 
 // Progressive overload made visible. P0 volume is ESTIMATED from the routine
 // plan (sets×reps×weight over completed exercises) — the caption says so and
 // goes away when P2 ships real per-set logging. The PR block renders its
 // pending state until workout_log_sets exists (migration B).
-export function StrengthCard({ weekVolume, series, deltaPct }: StrengthCardProps) {
+export function StrengthCard({
+  weekVolume,
+  series,
+  deltaPct,
+  prs = [],
+  estimated = true,
+}: StrengthCardProps) {
   const colors = useColors();
   const { t, i18n } = useTranslation();
   const locale = i18n.language === "es" ? "es-ES" : "en-US";
   const unit = useWeightUnit();
 
   const max = Math.max(...series, 1);
+  const w1 = (kg: number) =>
+    kgToUnit1(kg, unit).toLocaleString(locale, { maximumFractionDigits: 1 });
 
   return (
     <Card className="gap-3">
@@ -82,9 +95,11 @@ export function StrengthCard({ weekVolume, series, deltaPct }: StrengthCardProps
           />
         ))}
       </View>
-      <Text className="text-[10px] text-content-muted">
-        {t("progress.estimadoPlan")}
-      </Text>
+      {estimated && (
+        <Text className="text-[10px] text-content-muted">
+          {t("progress.estimadoPlan")}
+        </Text>
+      )}
 
       <View className="gap-2 border-t border-border pt-3">
         <Text
@@ -93,9 +108,26 @@ export function StrengthCard({ weekVolume, series, deltaPct }: StrengthCardProps
         >
           {t("progress.records")}
         </Text>
-        <Text className="text-xs text-content-muted">
-          {t("progress.emptyRecords")}
-        </Text>
+        {prs.length === 0 ? (
+          <Text className="text-xs text-content-muted">
+            {t("progress.emptyRecords")}
+          </Text>
+        ) : (
+          prs.map((pr) => (
+            <View key={pr.name} className="flex-row items-center gap-2">
+              <Ionicons name="trophy-outline" size={13} color={colors.brandAccent} />
+              <Text className="flex-1 text-[13px] text-content-secondary" numberOfLines={1}>
+                {pr.name}
+              </Text>
+              <Text className="text-[13px] font-semibold text-content-primary" style={TABULAR}>
+                {t("progress.prWeight", { weight: w1(pr.weightKg), unit, reps: pr.reps })}
+              </Text>
+              <Text className="text-[11px] text-content-tertiary" style={TABULAR}>
+                {t("progress.prE1rm", { value: w1(pr.e1rm), unit })}
+              </Text>
+            </View>
+          ))
+        )}
       </View>
     </Card>
   );

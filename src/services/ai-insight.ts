@@ -24,6 +24,10 @@ export type WeeklyInsightStats = {
   streakWeeks: number;
   weekVolumeKg: number;
   volumeDeltaPct: number | null;
+  /** true when volume/PRs come from logged sets, not plan estimates. */
+  volumeIsReal: boolean;
+  /** strongest logged lift by est. 1RM (kg), or null if nothing logged. */
+  topPr: { name: string; e1rmKg: number } | null;
   avgKcal: number | null;
   kcalGoal: number | null;
   avgProteinG: number | null;
@@ -75,6 +79,12 @@ export async function generateWeeklyInsight(
     weightUnit: unit,
     weekVolume: Math.round(kgToUnit(stats.weekVolumeKg, unit)),
     volumeDeltaPct: stats.volumeDeltaPct,
+    // "logged" volume is measured from real sets; "estimated" from the plan.
+    volumeSource: stats.volumeIsReal ? "logged" : "estimated",
+    topLift:
+      stats.topPr != null
+        ? { name: stats.topPr.name, estimated1RM: Math.round(kgToUnit(stats.topPr.e1rmKg, unit)) }
+        : null,
     avgKcal: stats.avgKcal,
     kcalGoal: stats.kcalGoal,
     avgProteinG: stats.avgProteinG,
@@ -93,7 +103,8 @@ export async function generateWeeklyInsight(
     "- summary: 2-3 sentences, max 55 words, plain text (no markdown, no emoji).",
     "- Address the user directly and informally.",
     "- Pick the ONE most important finding in the stats (missed sessions, protein gap, neglected muscle group, weight trend vs goal, volume drop) and lead with it, citing its concrete numbers.",
-    "- End on a brief encouraging note grounded in something that went well (streak, volume up, adherence).",
+    "- End on a brief encouraging note grounded in something that went well (streak, volume up, adherence, a topLift PR).",
+    "- volumeSource 'logged' = real logged sets (speak confidently about volume/PRs); 'estimated' = derived from the plan (don't cite it as an achieved number).",
     "- Only use numbers present in the stats; a null field is unknown — never mention or invent it.",
     `- units: weights in ${unit}, protein in g, energy in kcal. Weeks run Monday-Sunday; \`week\` is the current (partial) week.`,
     "- actions: 1-2 chips, imperative, max 4 words each; type reflects the domain.",

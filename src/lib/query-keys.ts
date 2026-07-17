@@ -11,6 +11,10 @@ export const qk = {
   membership: (userId: string | undefined) => ["membership", userId] as const,
   // Shared exercise catalog, coach-managed via the Admin Web Panel.
   exercises: () => ["exercises"] as const,
+  // Read-only coach-assigned multi-week program (docs/COACH-PROGRAMS-SPEC.md).
+  program: (userId: string | undefined) => ["program", userId] as const,
+  // The client's completion checks + logged sets against a program.
+  programLog: (userId: string | undefined) => ["program-log", userId] as const,
 };
 
 export const qkPrefixes = [
@@ -18,4 +22,5 @@ export const qkPrefixes = [
   ["routines"],
   ["progress"],
   ["profile"],
+  ["program-log"],
 ] as const;

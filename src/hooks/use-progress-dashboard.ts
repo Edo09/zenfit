@@ -26,6 +26,9 @@ import {
   muscleAlert,
   muscleDistribution,
   nutritionStats,
+  personalRecords,
+  realVolume,
+  realVolumeSeries8w,
   ruleInsights,
   trainedMinutes,
   volumeSeries8w,
@@ -33,6 +36,7 @@ import {
   weeklyStreak,
   weightStats,
   type Periodo,
+  type SetLogEntry,
 } from "@/src/utils/progress";
 import { supabase } from "@/src/utils/supabase";
 
@@ -58,6 +62,42 @@ async function fetchMeasurements(userId: string): Promise<BodyMeasurement[]> {
   return data as BodyMeasurement[];
 }
 
+const setLogsKey = (userId: string | undefined) => ["set-logs", userId] as const;
+
+// Logged program sets (last 60d) enriched with the exercise name + laterality,
+// so the dashboard can show REAL volume/PRs (Phase 4) instead of plan
+// estimates. Degrades to [] when the tables aren't present yet.
+async function fetchSetLogs(userId: string): Promise<SetLogEntry[]> {
+  const cutoff = addDays(toDateKey(), -60);
+  const { data, error } = await supabase
+    .from("workout_set_logs")
+    .select(
+      "date, weight_kg, reps, program_exercise:program_exercises(custom_name, is_unilateral, exercise:exercises(name))",
+    )
+    .eq("user_id", userId)
+    .gte("date", cutoff);
+  if (error || data == null) return [];
+  return (data as unknown[]).map((row) => {
+    const r = row as {
+      date: string;
+      weight_kg: number | null;
+      reps: number | null;
+      program_exercise: {
+        custom_name: string | null;
+        is_unilateral: boolean;
+        exercise: { name: string } | null;
+      } | null;
+    };
+    return {
+      date: r.date,
+      weight_kg: r.weight_kg,
+      reps: r.reps,
+      name: r.program_exercise?.exercise?.name ?? r.program_exercise?.custom_name ?? "—",
+      isUnilateral: r.program_exercise?.is_unilateral ?? false,
+    };
+  });
+}
+
 export function useProgressDashboard(periodo: Periodo) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -70,6 +110,12 @@ export function useProgressDashboard(periodo: Periodo) {
   const { data: measurements = [] } = useQuery({
     queryKey: measurementsKey(user?.id),
     queryFn: () => fetchMeasurements(user!.id),
+    enabled: !!user,
+  });
+
+  const { data: setLogs = [] } = useQuery({
+    queryKey: setLogsKey(user?.id),
+    queryFn: () => fetchSetLogs(user!.id),
     enabled: !!user,
   });
 
@@ -89,6 +135,7 @@ export function useProgressDashboard(periodo: Periodo) {
     mealsRefresh();
     routinesRefresh();
     queryClient.invalidateQueries({ queryKey: ["body-measurements"] });
+    queryClient.invalidateQueries({ queryKey: ["set-logs"] });
   }, [progressRefresh, mealsRefresh, routinesRefresh, queryClient]);
 
   /** Quick weight log. Writes profiles.weight_kg through the offline-first
@@ -176,14 +223,33 @@ export function useProgressDashboard(periodo: Periodo) {
       profile,
       now,
     );
-    const strength = {
-      weekVolume: estimatedVolume(weekLogs, plan),
-      series: series8w,
-      deltaPct:
-        series8w[6] > 0
-          ? Math.round(((series8w[7] - series8w[6]) / series8w[6]) * 100)
-          : null,
-    };
+    // Real volume/PRs from logged sets (Phase 4). When the client has logged
+    // any sets, these replace the plan-based estimates below.
+    const weekMon = addDays(today, -((now.getDay() + 6) % 7));
+    const hasRealVolume = setLogs.length > 0;
+    const realSeries = realVolumeSeries8w(setLogs, now);
+    const deltaOf = (s: number[]) =>
+      s[6] > 0 ? Math.round(((s[7] - s[6]) / s[6]) * 100) : null;
+    const prs = personalRecords(setLogs);
+
+    const strength = hasRealVolume
+      ? {
+          weekVolume: realVolume(setLogs, weekMon, today),
+          series: realSeries,
+          deltaPct: deltaOf(realSeries),
+          prs,
+          estimated: false,
+        }
+      : {
+          weekVolume: estimatedVolume(weekLogs, plan),
+          series: series8w,
+          deltaPct: deltaOf(series8w),
+          prs: [] as typeof prs,
+          estimated: true,
+        };
+    const periodVolume = hasRealVolume
+      ? realVolume(setLogs, periodFrom, today)
+      : estimatedVolume(periodLogs, plan);
 
     // Snapshot for the AI weekly analysis — aggregates only, no raw rows.
     const insightStats: WeeklyInsightStats = {
@@ -193,6 +259,8 @@ export function useProgressDashboard(periodo: Periodo) {
       streakWeeks: streak,
       weekVolumeKg: strength.weekVolume,
       volumeDeltaPct: strength.deltaPct,
+      volumeIsReal: hasRealVolume,
+      topPr: prs[0] != null ? { name: prs[0].name, e1rmKg: prs[0].e1rm } : null,
       avgKcal: nutrition.avgKcal,
       kcalGoal: goalKcal,
       avgProteinG: nutrition.avgProtein,
@@ -217,7 +285,7 @@ export function useProgressDashboard(periodo: Periodo) {
         best: bestMonth(logs, now),
         minutes: trainedMinutes(periodLogs, profile),
         kcal: burnedKcal(periodLogs, profile),
-        volumeKg: estimatedVolume(periodLogs, plan),
+        volumeKg: periodVolume,
       },
       weight,
       strength,
@@ -235,7 +303,7 @@ export function useProgressDashboard(periodo: Periodo) {
       }),
       logros: achievements(totalWorkouts, streak, lifetimeVolume),
     };
-  }, [logs, routines, exercises, meals, profile, measurements, periodo]);
+  }, [logs, routines, exercises, meals, profile, measurements, setLogs, periodo]);
 
   // AI weekly analysis (P3). Keyed per user+week+language: generated once
   // per Monday-based week, regenerated on language switch, served from the

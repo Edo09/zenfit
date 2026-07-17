@@ -580,6 +580,80 @@ export function ruleInsights(input: {
 export const e1rm = (weightKg: number, reps: number) =>
   weightKg * (1 + reps / 30);
 
+// ---- Real volume & PRs from logged sets (Phase 4) -------------------------
+// Powered by workout_set_logs (program set logging). When present, these
+// replace the plan-based estimates above so the dashboard shows what the
+// client actually lifted.
+
+export type SetLogEntry = {
+  date: string;
+  weight_kg: number | null;
+  reps: number | null;
+  name: string;
+  isUnilateral: boolean;
+};
+
+/** Real kg volume (Σ weight·reps) for sets logged in [from, to]. Unilateral
+ *  work counts both sides. Sets missing weight or reps are skipped. */
+export function realVolume(logs: SetLogEntry[], from: string, to: string): number {
+  let total = 0;
+  for (const s of logs) {
+    if (s.date < from || s.date > to) continue;
+    if (s.weight_kg != null && s.reps != null) {
+      total += s.weight_kg * s.reps * (s.isUnilateral ? 2 : 1);
+    }
+  }
+  return Math.round(total);
+}
+
+/** 8 weekly real-volume totals, oldest→newest, ending the current week. */
+export function realVolumeSeries8w(
+  logs: SetLogEntry[],
+  now = new Date(),
+): number[] {
+  const curMon = mondayOf(toDateKey(now));
+  const series: number[] = [];
+  for (let w = 7; w >= 0; w--) {
+    const mon = addDays(curMon, -7 * w);
+    series.push(realVolume(logs, mon, addDays(mon, 6)));
+  }
+  return series;
+}
+
+export type PersonalRecord = {
+  name: string;
+  weightKg: number;
+  reps: number;
+  e1rm: number;
+};
+
+/** Best set per exercise by estimated 1RM, strongest first. Ties broken by
+ *  heavier absolute weight. Only weighted sets qualify. */
+export function personalRecords(
+  logs: SetLogEntry[],
+  limit = 3,
+): PersonalRecord[] {
+  const best = new Map<string, PersonalRecord>();
+  for (const s of logs) {
+    if (s.weight_kg == null || s.reps == null || s.weight_kg <= 0) continue;
+    const est = e1rm(s.weight_kg, s.reps);
+    const prev = best.get(s.name);
+    if (
+      prev == null ||
+      est > prev.e1rm ||
+      (est === prev.e1rm && s.weight_kg > prev.weightKg)
+    ) {
+      best.set(s.name, {
+        name: s.name,
+        weightKg: s.weight_kg,
+        reps: s.reps,
+        e1rm: Math.round(est),
+      });
+    }
+  }
+  return [...best.values()].sort((a, b) => b.e1rm - a.e1rm).slice(0, limit);
+}
+
 // ---- Weight (P1 — powered by body_measurements once migration A runs) ----
 
 export type BodyMeasurementPoint = { measured_on: string; weight_kg: number };
