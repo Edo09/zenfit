@@ -6,6 +6,9 @@ export type ProfileGoal = "lose_weight" | "gain_muscle" | "maintain";
 
 export type Profile = {
   id: string;
+  // Denormalized from auth.users (20260717150000_profiles_email_sync.sql) —
+  // kept in sync by a trigger so admin-panel queries can read it directly.
+  email: string | null;
   display_name: string | null;
   avatar_url: string | null;
   age: number | null;
