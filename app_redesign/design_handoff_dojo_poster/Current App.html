@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+@font-face { font-family: 'EdoSZ'; src: url('./assets/edosz.ttf') format('truetype'); }
+body { margin: 0; background: #e9edf2; font-family: 'Inter', sans-serif; }
+a { color: #dc2626; text-decoration: none; }
+a:hover { color: #b91c1c; }
+ion-icon { flex-shrink: 0; }
+</style>
+<script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@7.4.0/dist/ionicons/ionicons.esm.js"></script>
+</helmet>
+
+<section id="turn-1" style="padding:48px 56px 96px;">
+  <div style="max-width:900px;margin-bottom:36px;">
+    <div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#dc2626;margin-bottom:8px;">Turn 1 · Baseline</div>
+    <div style="font-size:28px;font-weight:800;color:#0f172a;letter-spacing:-0.02em;">Hokage Coaching — current app, recreated</div>
+    <div style="font-size:14px;color:#64748b;margin-top:6px;line-height:1.5;">Faithful copy of the 5 tabs from the codebase (light scheme) plus one dark-scheme sample. Redesign directions come next and will be measured against this baseline.</div>
+  </div>
+
+  <div style="display:flex;gap:48px;align-items:flex-start;flex-wrap:wrap;">
+
+    <!-- ══════════ 1a · HOME (light) ══════════ -->
+    <div id="1a">
+      <div style="display:flex;align-items:center;gap:8px;margin:0 0 12px 4px;">
+        <a href="#1a" style="display:inline-block;background:#0f172a;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;">1a</a>
+        <span style="font-size:13px;font-weight:600;color:#334155;">Home — light</span>
+      </div>
+      <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402,874">
+        <div style="height:100%;display:flex;flex-direction:column;background:#f8fafc;font-family:'Inter',sans-serif;position:relative;overflow:hidden;">
+          <div style="flex:1;overflow:hidden;">
+            <div style="padding:70px 24px 24px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <div style="display:flex;align-items:center;gap:12px;flex:1;margin-right:8px;">
+                  <img src="./assets/icon.png" alt="Hokage" style="width:84px;height:84px;border-radius:20px;border:1px solid #e2e8f0;display:block;">
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-family:'EdoSZ','Inter',sans-serif;font-size:30px;line-height:1.15;color:#dc2626;margin-bottom:2px;">Hokage<br>Coaching App</div>
+                    <div style="font-size:24px;font-weight:700;color:#0f172a;white-space:nowrap;">Hey, Alex! 👋</div>
+                  </div>
+                </div>
+                <div style="width:40px;height:40px;border-radius:9999px;background:#ffffff;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;">
+                  <ion-icon name="ellipsis-vertical" style="font-size:18px;color:#334155;"></ion-icon>
+                </div>
+              </div>
+              <div style="font-size:14px;color:#64748b;">Thursday, July 16</div>
+            </div>
+
+            <div style="padding:0 24px;display:flex;flex-direction:column;gap:12px;margin-bottom:32px;">
+              <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;">
+                <div style="width:36px;height:36px;border-radius:9999px;background:rgba(37,99,235,0.1);display:flex;align-items:center;justify-content:center;">
+                  <ion-icon name="flag-outline" style="font-size:18px;color:#dc2626;"></ion-icon>
+                </div>
+                <div style="flex:1;font-size:14px;font-weight:500;color:#334155;">Calorie goal</div>
+                <div style="display:flex;align-items:baseline;gap:4px;">
+                  <span style="font-size:24px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;">2,200</span>
+                  <span style="font-size:12px;color:#64748b;">kcal</span>
+                </div>
+                <ion-icon name="chevron-forward" style="font-size:16px;color:#94a3b8;"></ion-icon>
+              </div>
+              <div style="display:flex;gap:12px;">
+                <div style="flex:1;background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:6px;">
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <ion-icon name="restaurant-outline" style="font-size:14px;color:#d97706;"></ion-icon>
+                    <span style="font-size:12px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Consumed</span>
+                  </div>
+                  <div style="display:flex;align-items:baseline;gap:4px;">
+                    <span style="font-size:20px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;">1,470</span>
+                    <span style="font-size:10px;color:#64748b;">kcal</span>
+                  </div>
+                </div>
+                <div style="flex:1;background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:6px;">
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <ion-icon name="flame-outline" style="font-size:14px;color:#2563eb;"></ion-icon>
+                    <span style="font-size:12px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Burned</span>
+                  </div>
+                  <div style="display:flex;align-items:baseline;gap:4px;">
+                    <span style="font-size:20px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;">320</span>
+                    <span style="font-size:10px;color:#64748b;">kcal</span>
+                  </div>
+                </div>
+                <div style="flex:1;background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:6px;">
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <ion-icon name="speedometer-outline" style="font-size:14px;color:#16a34a;"></ion-icon>
+                    <span style="font-size:12px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Remaining</span>
+                  </div>
+                  <div style="display:flex;align-items:baseline;gap:4px;">
+                    <span style="font-size:20px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;">1,050</span>
+                    <span style="font-size:10px;color:#64748b;">kcal</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-bottom:32px;">
+              <div style="padding:0 24px;margin-bottom:8px;font-size:18px;font-weight:600;color:#0f172a;">Your Routines</div>
+              <div style="padding:16px 0;overflow:hidden;">
+                <div style="display:flex;padding-left:50px;">
+                  <div style="width:301px;flex-shrink:0;">
+                    <div style="margin:0 8px;border-radius:16px;overflow:hidden;position:relative;height:200px;background:#ffffff;">
+                      <img src="./assets/strength_card.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+                      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.3);"></div>
+                      <div style="position:absolute;inset:0;padding:20px;display:flex;flex-direction:column;justify-content:flex-end;">
+                        <div style="align-self:flex-start;padding:4px 8px;border-radius:9999px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);margin-bottom:8px;">
+                          <span style="color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Ready to start</span>
+                        </div>
+                        <div style="color:#fff;font-size:24px;font-weight:700;">Upper Body Strength</div>
+                        <div style="color:rgba(255,255,255,0.8);font-size:14px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Push day — chest, shoulders &amp; triceps</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="width:301px;flex-shrink:0;transform:scale(0.9);opacity:0.6;">
+                    <div style="margin:0 8px;border-radius:16px;overflow:hidden;position:relative;height:200px;background:#ffffff;">
+                      <img src="./assets/cardio_card.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+                      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.3);"></div>
+                      <div style="position:absolute;inset:0;padding:20px;display:flex;flex-direction:column;justify-content:flex-end;">
+                        <div style="align-self:flex-start;padding:4px 8px;border-radius:9999px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);margin-bottom:8px;">
+                          <span style="color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Ready to start</span>
+                        </div>
+                        <div style="color:#fff;font-size:24px;font-weight:700;">HIIT Cardio Blast</div>
+                        <div style="color:rgba(255,255,255,0.8);font-size:14px;margin-top:4px;">30-minute conditioning circuit</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div style="padding:0 24px;margin-top:16px;">
+                <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;">
+                  <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:40px;height:40px;border-radius:9999px;background:rgba(161,98,7,0.12);display:flex;align-items:center;justify-content:center;">
+                      <ion-icon name="sparkles" style="font-size:20px;color:#a16207;"></ion-icon>
+                    </div>
+                    <div style="flex:1;">
+                      <div style="font-size:16px;font-weight:600;color:#0f172a;">AI Training Plan</div>
+                      <div style="font-size:14px;color:#64748b;">Generate a personalized weekly routine plan from your profile data</div>
+                    </div>
+                  </div>
+                  <div style="background:#dc2626;border-radius:16px;padding:14px 20px;display:flex;align-items:center;justify-content:center;gap:8px;">
+                    <ion-icon name="sparkles" style="font-size:18px;color:#ffffff;"></ion-icon>
+                    <span style="font-size:16px;font-weight:600;color:#ffffff;">Generate with AI</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="padding:0 24px;display:flex;flex-direction:column;gap:16px;margin-bottom:32px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:18px;font-weight:600;color:#0f172a;">Today's Nutrition</span>
+                <span style="font-size:14px;font-weight:500;color:#dc2626;">See all</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;">
+                  <div style="display:flex;align-items:center;gap:16px;">
+                    <div style="width:40px;height:40px;background:rgba(37,99,235,0.1);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                      <ion-icon name="restaurant-outline" style="font-size:18px;color:#dc2626;"></ion-icon>
+                    </div>
+                    <div>
+                      <div style="font-size:16px;font-weight:600;color:#0f172a;text-transform:capitalize;">breakfast</div>
+                      <div style="font-size:12px;color:#94a3b8;">2 items · 520 kcal</div>
+                    </div>
+                  </div>
+                  <ion-icon name="chevron-forward" style="font-size:18px;color:#94a3b8;"></ion-icon>
+                </div>
+                <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;">
+                  <div style="display:flex;align-items:center;gap:16px;">
+                    <div style="width:40px;height:40px;background:rgba(37,99,235,0.1);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                      <ion-icon name="restaurant-outline" style="font-size:18px;color:#dc2626;"></ion-icon>
+                    </div>
+                    <div>
+                      <div style="font-size:16px;font-weight:600;color:#0f172a;text-transform:capitalize;">lunch</div>
+                      <div style="font-size:12px;color:#94a3b8;">1 item · 640 kcal</div>
+                    </div>
+                  </div>
+                  <ion-icon name="chevron-forward" style="font-size:18px;color:#94a3b8;"></ion-icon>
+                </div>
+              </div>
+            </div>
+
+            <div style="padding:0 24px;display:flex;flex-direction:column;gap:16px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:18px;font-weight:600;color:#0f172a;">Recent Activity</span>
+                <span style="font-size:14px;font-weight:500;color:#dc2626;">See all</span>
+              </div>
+              <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;">
+                <div style="display:flex;align-items:center;gap:16px;">
+                  <div style="width:40px;height:40px;background:rgba(22,163,74,0.12);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                    <ion-icon name="checkmark-circle" style="font-size:22px;color:#16a34a;"></ion-icon>
+                  </div>
+                  <div>
+                    <div style="font-size:16px;font-weight:600;color:#0f172a;">Upper Body Strength</div>
+                    <div style="font-size:12px;color:#94a3b8;">45 Minutes</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:#ffffff;border-top:1px solid #e2e8f0;display:flex;padding:8px 0 24px;">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="home" style="font-size:24px;color:#dc2626;"></ion-icon><span style="font-size:10px;font-weight:500;color:#dc2626;">Home</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="barbell" style="font-size:24px;color:#94a3b8;"></ion-icon><span style="font-size:10px;font-weight:500;color:#94a3b8;">Routines</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="restaurant" style="font-size:24px;color:#94a3b8;"></ion-icon><span style="font-size:10px;font-weight:500;color:#94a3b8;">Meals</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="bar-chart" style="font-size:24px;color:#94a3b8;"></ion-icon><span style="font-size:10px;font-weight:500;color:#94a3b8;">Progress</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="person" style="font-size:24px;color:#94a3b8;"></ion-icon><span style="font-size:10px;font-weight:500;color:#94a3b8;">Profile</span></div>
+          </div>
+        </div>
+      </x-import>
+    </div>
+
+    <!-- ══════════ 1b · ROUTINES ══════════ -->
+    <div id="1b">
+      <div style="display:flex;align-items:center;gap:8px;margin:0 0 12px 4px;">
+        <a href="#1b" style="display:inline-block;background:#0f172a;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;">1b</a>
+        <span style="font-size:13px;font-weight:600;color:#334155;">Routines</span>
+      </div>
+      <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402,874">
+        <div style="height:100%;display:flex;flex-direction:column;background:#f8fafc;font-family:'Inter',sans-serif;position:relative;overflow:hidden;">
+          <div style="flex:1;overflow:hidden;">
+            <div style="padding:70px 16px 4px;">
+              <div style="display:flex;background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:4px;">
+                <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;border-radius:12px;padding:10px 0;">
+                  <span style="font-size:14px;font-weight:600;color:#64748b;">Coach plans</span>
+                  <span style="min-width:20px;text-align:center;border-radius:9999px;padding:2px 6px;background:#f1f5f9;font-size:12px;font-weight:600;color:#64748b;">2</span>
+                </div>
+                <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;border-radius:12px;padding:10px 0;background:#dc2626;">
+                  <span style="font-size:14px;font-weight:600;color:#ffffff;">My Routines</span>
+                  <span style="min-width:20px;text-align:center;border-radius:9999px;padding:2px 6px;background:rgba(255,255,255,0.25);font-size:12px;font-weight:600;color:#ffffff;">3</span>
+                </div>
+              </div>
+            </div>
+            <div style="padding:16px;display:flex;flex-direction:column;gap:12px;">
+              <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;margin-bottom:4px;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                  <div style="width:40px;height:40px;border-radius:9999px;background:rgba(161,98,7,0.12);display:flex;align-items:center;justify-content:center;">
+                    <ion-icon name="sparkles" style="font-size:20px;color:#a16207;"></ion-icon>
+                  </div>
+                  <div style="flex:1;">
+                    <div style="font-size:16px;font-weight:600;color:#0f172a;">AI Training Plan</div>
+                    <div style="font-size:14px;color:#64748b;">Generate a personalized weekly routine plan from your profile data</div>
+                  </div>
+                </div>
+                <div style="background:#dc2626;border-radius:16px;padding:14px 20px;display:flex;align-items:center;justify-content:center;gap:8px;">
+                  <ion-icon name="sparkles" style="font-size:18px;color:#ffffff;"></ion-icon>
+                  <span style="font-size:16px;font-weight:600;color:#ffffff;">Generate with AI</span>
+                </div>
+              </div>
+
+              <div style="position:relative;">
+                <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:12px;display:flex;align-items:flex-start;gap:12px;">
+                  <img src="./assets/strength_card.jpg" alt="" style="width:72px;height:72px;border-radius:12px;object-fit:cover;display:block;">
+                  <div style="flex:1;padding:2px 32px 2px 0;display:flex;flex-direction:column;gap:4px;">
+                    <div style="font-size:16px;font-weight:600;color:#0f172a;">Upper Body Strength</div>
+                    <div style="font-size:14px;color:#64748b;">Push day — chest, shoulders &amp; triceps</div>
+                    <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+                      <div style="display:flex;align-items:center;gap:4px;background:rgba(161,98,7,0.12);border-radius:9999px;padding:4px 10px;">
+                        <ion-icon name="sparkles-outline" style="font-size:12px;color:#a16207;"></ion-icon>
+                        <span style="font-size:12px;font-weight:600;color:#a16207;">AI</span>
+                      </div>
+                      <div style="background:rgba(37,99,235,0.1);border-radius:9999px;padding:4px 12px;">
+                        <span style="font-size:12px;font-weight:500;color:#dc2626;">Every Monday</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div style="position:absolute;right:8px;top:8px;padding:8px;"><ion-icon name="trash-outline" style="font-size:18px;color:#dc2626;"></ion-icon></div>
+              </div>
+
+              <div style="position:relative;">
+                <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:12px;display:flex;align-items:flex-start;gap:12px;">
+                  <img src="./assets/strength_card.jpg" alt="" style="width:72px;height:72px;border-radius:12px;object-fit:cover;display:block;">
+                  <div style="flex:1;padding:2px 32px 2px 0;display:flex;flex-direction:column;gap:4px;">
+                    <div style="font-size:16px;font-weight:600;color:#0f172a;">Lower Body Power</div>
+                    <div style="font-size:14px;color:#64748b;">Squat-focused legs &amp; glutes</div>
+                    <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+                      <div style="display:flex;align-items:center;gap:4px;background:rgba(161,98,7,0.12);border-radius:9999px;padding:4px 10px;">
+                        <ion-icon name="sparkles-outline" style="font-size:12px;color:#a16207;"></ion-icon>
+                        <span style="font-size:12px;font-weight:600;color:#a16207;">AI</span>
+                      </div>
+                      <div style="background:rgba(37,99,235,0.1);border-radius:9999px;padding:4px 12px;">
+                        <span style="font-size:12px;font-weight:500;color:#dc2626;">Every Thursday</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div style="position:absolute;right:8px;top:8px;padding:8px;"><ion-icon name="trash-outline" style="font-size:18px;color:#dc2626;"></ion-icon></div>
+              </div>
+
+              <div style="position:relative;">
+                <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:12px;display:flex;align-items:flex-start;gap:12px;">
+                  <img src="./assets/cardio_card.jpg" alt="" style="width:72px;height:72px;border-radius:12px;object-fit:cover;display:block;">
+                  <div style="flex:1;padding:2px 32px 2px 0;display:flex;flex-direction:column;gap:4px;">
+                    <div style="font-size:16px;font-weight:600;color:#0f172a;">HIIT Cardio Blast</div>
+                    <div style="font-size:14px;color:#64748b;">30-minute conditioning circuit</div>
+                  </div>
+                </div>
+                <div style="position:absolute;right:8px;top:8px;padding:8px;"><ion-icon name="trash-outline" style="font-size:18px;color:#dc2626;"></ion-icon></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="position:absolute;right:20px;bottom:104px;width:56px;height:56px;border-radius:9999px;background:#dc2626;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 15px -3px rgba(0,0,0,0.1),0 4px 6px -4px rgba(0,0,0,0.1);">
+            <ion-icon name="add" style="font-size:28px;color:#ffffff;"></ion-icon>
+          </div>
+
+          <div style="background:#ffffff;border-top:1px solid #e2e8f0;display:flex;padding:8px 0 24px;">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="home" style="font-size:24px;color:#94a3b8;"></ion-icon><span style="font-size:10px;font-weight:500;color:#94a3b8;">Home</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="barbell" style="font-size:24px;color:#dc2626;"></ion-icon><span style="font-size:10px;font-weight:500;color:#dc2626;">Routines</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="restaurant" style="font-size:24px;color:#94a3b8;"></ion-icon><span style="font-size:10px;font-weight:500;color:#94a3b8;">Meals</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="bar-chart" style="font-size:24px;color:#94a3b8;"></ion-icon><span style="font-size:10px;font-weight:500;color:#94a3b8;">Progress</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="person" style="font-size:24px;color:#94a3b8;"></ion-icon><span style="font-size:10px;font-weight:500;color:#94a3b8;">Profile</span></div>
+          </div>
+        </div>
+      </x-import>
+    </div>
+
+    <!-- ══════════ 1c · MEALS ══════════ -->
+    <div id="1c">
+      <div style="display:flex;align-items:center;gap:8px;margin:0 0 12px 4px;">
+        <a href="#1c" style="display:inline-block;background:#0f172a;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;">1c</a>
+        <span style="font-size:13px;font-weight:600;color:#334155;">Meals — diary</span>
+      </div>
+      <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402,874">
+        <div style="height:100%;display:flex;flex-direction:column;background:#f8fafc;font-family:'Inter',sans-serif;position:relative;overflow:hidden;">
+          <div style="flex:1;overflow:hidden;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:70px 16px 4px;">
+              <div style="width:40px;height:40px;border-radius:9999px;background:#ffffff;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;">
+                <ion-icon name="chevron-back" style="font-size:20px;color:#334155;"></ion-icon>
+              </div>
+              <span style="font-size:16px;font-weight:600;color:#0f172a;">Today</span>
+              <div style="width:40px;height:40px;border-radius:9999px;background:#ffffff;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;opacity:0.3;">
+                <ion-icon name="chevron-forward" style="font-size:20px;color:#334155;"></ion-icon>
+              </div>
+            </div>
+
+            <div style="padding:12px 16px;display:flex;flex-direction:column;gap:16px;">
+              <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;">
+                <div style="display:flex;align-items:flex-end;justify-content:space-between;">
+                  <div>
+                    <div style="font-size:12px;color:#64748b;">Day total</div>
+                    <div style="font-size:24px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;">1,470 / 2,200 <span style="font-size:14px;font-weight:400;color:#64748b;">kcal</span></div>
+                  </div>
+                  <span style="font-size:14px;font-weight:500;color:#16a34a;">730 kcal left</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;border-top:1px solid #e2e8f0;padding-top:12px;">
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+                    <span style="font-size:18px;font-weight:700;color:#2563eb;font-variant-numeric:tabular-nums;">98.5g</span>
+                    <span style="font-size:14px;color:#64748b;">Protein</span>
+                  </div>
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+                    <span style="font-size:18px;font-weight:700;color:#d97706;font-variant-numeric:tabular-nums;">142.0g</span>
+                    <span style="font-size:14px;color:#64748b;">Carbs</span>
+                  </div>
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+                    <span style="font-size:18px;font-weight:700;color:#e11d48;font-variant-numeric:tabular-nums;">48.2g</span>
+                    <span style="font-size:14px;color:#64748b;">Fat</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <ion-icon name="cafe-outline" style="font-size:16px;color:#64748b;"></ion-icon>
+                  <span style="font-size:16px;font-weight:600;color:#0f172a;text-transform:capitalize;">breakfast</span>
+                  <span style="font-size:14px;color:#64748b;font-variant-numeric:tabular-nums;">520 kcal</span>
+                </div>
+                <div style="position:relative;">
+                  <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;">
+                    <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+                      <span style="font-size:14px;font-weight:600;color:#0f172a;">Oatmeal &amp; Berries</span>
+                      <span style="font-size:12px;color:#64748b;">1 bowl</span>
+                      <div style="display:flex;align-items:center;flex-wrap:wrap;column-gap:12px;row-gap:4px;">
+                        <span style="font-size:14px;font-weight:600;color:#2563eb;">Protein 12g</span>
+                        <span style="font-size:14px;font-weight:600;color:#d97706;">Carbs 58g</span>
+                        <span style="font-size:14px;font-weight:600;color:#e11d48;">Fat 9g</span>
+                      </div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;align-items:flex-end;margin-left:8px;padding-right:24px;">
+                      <span style="font-size:18px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;">320</span>
+                      <span style="font-size:12px;color:#64748b;">kcal</span>
+                    </div>
+                  </div>
+                  <div style="position:absolute;right:4px;top:0;bottom:0;display:flex;align-items:center;padding:0 8px;"><ion-icon name="trash-outline" style="font-size:18px;color:#dc2626;"></ion-icon></div>
+                </div>
+                <div style="position:relative;">
+                  <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;">
+                    <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+                      <span style="font-size:14px;font-weight:600;color:#0f172a;">Protein Shake</span>
+                      <span style="font-size:12px;color:#64748b;">1 scoop</span>
+                      <div style="display:flex;align-items:center;flex-wrap:wrap;column-gap:12px;row-gap:4px;">
+                        <span style="font-size:14px;font-weight:600;color:#2563eb;">Protein 24g</span>
+                        <span style="font-size:14px;font-weight:600;color:#d97706;">Carbs 8g</span>
+                        <span style="font-size:14px;font-weight:600;color:#e11d48;">Fat 3g</span>
+                      </div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;align-items:flex-end;margin-left:8px;padding-right:24px;">
+                      <span style="font-size:18px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;">200</span>
+                      <span style="font-size:12px;color:#64748b;">kcal</span>
+                    </div>
+                  </div>
+                  <div style="position:absolute;right:4px;top:0;bottom:0;display:flex;align-items:center;padding:0 8px;"><ion-icon name="trash-outline" style="font-size:18px;color:#dc2626;"></ion-icon></div>
+                </div>
+                <div style="border:2px dashed #cbd5e1;border-radius:16px;padding:8px 0;display:flex;justify-content:center;">
+                  <div style="background:rgba(37,99,235,0.1);border-radius:9999px;padding:6px 24px;display:flex;align-items:center;justify-content:center;">
+                    <ion-icon name="add" style="font-size:18px;color:#dc2626;"></ion-icon>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <ion-icon name="restaurant-outline" style="font-size:16px;color:#64748b;"></ion-icon>
+                  <span style="font-size:16px;font-weight:600;color:#0f172a;text-transform:capitalize;">lunch</span>
+                  <span style="font-size:14px;color:#64748b;font-variant-numeric:tabular-nums;">640 kcal</span>
+                </div>
+                <div style="position:relative;">
+                  <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;">
+                    <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+                      <span style="font-size:14px;font-weight:600;color:#0f172a;">Chicken &amp; Rice Bowl</span>
+                      <span style="font-size:12px;color:#64748b;">1 plate</span>
+                      <div style="display:flex;align-items:center;flex-wrap:wrap;column-gap:12px;row-gap:4px;">
+                        <span style="font-size:14px;font-weight:600;color:#2563eb;">Protein 42g</span>
+                        <span style="font-size:14px;font-weight:600;color:#d97706;">Carbs 68g</span>
+                        <span style="font-size:14px;font-weight:600;color:#e11d48;">Fat 18g</span>
+                      </div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;align-items:flex-end;margin-left:8px;padding-right:24px;">
+                      <span style="font-size:18px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;">640</span>
+                      <span style="font-size:12px;color:#64748b;">kcal</span>
+                    </div>
+                  </div>
+                  <div style="position:absolute;right:4px;top:0;bottom:0;display:flex;align-items:center;padding:0 8px;"><ion-icon name="trash-outline" style="font-size:18px;color:#dc2626;"></ion-icon></div>
+                </div>
+                <div style="border:2px dashed #cbd5e1;border-radius:16px;padding:8px 0;display:flex;justify-content:center;">
+                  <div style="background:rgba(37,99,235,0.1);border-radius:9999px;padding:6px 24px;display:flex;align-items:center;justify-content:center;">
+                    <ion-icon name="add" style="font-size:18px;color:#dc2626;"></ion-icon>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <ion-icon name="moon-outline" style="font-size:16px;color:#64748b;"></ion-icon>
+                  <span style="font-size:16px;font-weight:600;color:#0f172a;text-transform:capitalize;">dinner</span>
+                </div>
+                <div style="border:2px dashed #cbd5e1;border-radius:16px;padding:20px 0;display:flex;flex-direction:column;align-items:center;gap:10px;">
+                  <div style="background:rgba(37,99,235,0.1);border-radius:9999px;padding:8px 28px;display:flex;align-items:center;justify-content:center;">
+                    <ion-icon name="add" style="font-size:22px;color:#dc2626;"></ion-icon>
+                  </div>
+                  <span style="font-size:14px;color:#94a3b8;">Nothing logged — tap to add</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="position:absolute;right:20px;bottom:104px;width:56px;height:56px;border-radius:9999px;background:#dc2626;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 15px -3px rgba(0,0,0,0.1),0 4px 6px -4px rgba(0,0,0,0.1);">
+            <ion-icon name="add" style="font-size:28px;color:#ffffff;"></ion-icon>
+          </div>
+
+          <div style="background:#ffffff;border-top:1px solid #e2e8f0;display:flex;padding:8px 0 24px;">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="home" style="font-size:24px;color:#94a3b8;"></ion-icon><span style="font-size:10px;font-weight:500;color:#94a3b8;">Home</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="barbell" style="font-size:24px;color:#94a3b8;"></ion-icon><span style="font-size:10px;font-weight:500;color:#94a3b8;">Routines</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="restaurant" style="font-size:24px;color:#dc2626;"></ion-icon><span style="font-size:10px;font-weight:500;color:#dc2626;">Meals</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="bar-chart" style="font-size:24px;color:#94a3b8;"></ion-icon><span style="font-size:10px;font-weight:500;color:#94a3b8;">Progress</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="person" style="font-size:24px;color:#94a3b8;"></ion-icon><span style="font-size:10px;font-weight:500;color:#94a3b8;">Profile</span></div>
+          </div>
+        </div>
+      </x-import>
+    </div>
+
+    <!-- ══════════ 1d · PROGRESS ══════════ -->
+    <div id="1d">
+      <div style="display:flex;align-items:center;gap:8px;margin:0 0 12px 4px;">
+        <a href="#1d" style="display:inline-block;background:#0f172a;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;">1d</a>
+        <span style="font-size:13px;font-weight:600;color:#334155;">Progress</span>
+      </div>
+      <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402,874">
+        <div style="height:100%;display:flex;flex-direction:column;background:#f8fafc;font-family:'Inter',sans-serif;position:relative;overflow:hidden;">
+          <div style="flex:1;overflow:hidden;">
+            <div style="padding:70px 16px 16px;display:flex;flex-direction:column;gap:12px;">
+              <div style="display:flex;background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:4px;">
+                <div style="flex:1;display:flex;align-items:center;justify-content:center;border-radius:12px;padding:10px 0;background:#dc2626;">
+                  <span style="font-size:14px;font-weight:600;color:#ffffff;">Week</span>
+                </div>
+                <div style="flex:1;display:flex;align-items:center;justify-content:center;border-radius:12px;padding:10px 0;">
+                  <span style="font-size:14px;font-weight:600;color:#64748b;">Month</span>
+                </div>
+              </div>
+
+              <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:16px;">
+                <div style="display:flex;align-items:center;gap:16px;">
+                  <div style="position:relative;width:88px;height:88px;flex-shrink:0;">
+                    <svg width="88" height="88" viewBox="0 0 88 88">
+                      <circle cx="44" cy="44" r="40" stroke="#e2e8f0" stroke-width="8" fill="none"></circle>
+                      <circle cx="44" cy="44" r="40" stroke="#dc2626" stroke-width="8" stroke-linecap="round" fill="none" stroke-dasharray="188.5 251.3" transform="rotate(-90 44 44)"></circle>
+                    </svg>
+                    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                      <span style="font-size:20px;font-weight:800;color:#0f172a;font-variant-numeric:tabular-nums;">3/4</span>
+                      <span style="font-size:9px;font-weight:500;color:#64748b;text-transform:uppercase;letter-spacing:0.4px;">sessions</span>
+                    </div>
+                  </div>
+                  <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+                    <span style="font-size:15px;font-weight:700;color:#0f172a;">This week</span>
+                    <span style="font-size:13px;line-height:20px;color:#64748b;">1 session left to hit your plan — scheduled for friday.</span>
+                    <div style="display:flex;">
+                      <div style="display:flex;align-items:center;gap:4px;border-radius:9999px;background:rgba(217,119,6,0.12);padding:4px 10px;">
+                        <ion-icon name="flame" style="font-size:13px;color:#d97706;"></ion-icon>
+                        <span style="font-size:12px;font-weight:600;color:#d97706;font-variant-numeric:tabular-nums;">Streak: 5 weeks</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div style="display:flex;justify-content:space-between;">
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><span style="font-size:10px;font-weight:600;color:#94a3b8;">M</span><div style="height:32px;width:32px;border-radius:9999px;background:#dc2626;display:flex;align-items:center;justify-content:center;"><ion-icon name="checkmark" style="font-size:14px;color:#ffffff;"></ion-icon></div></div>
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><span style="font-size:10px;font-weight:600;color:#94a3b8;">T</span><div style="height:32px;width:32px;border-radius:9999px;background:#dc2626;display:flex;align-items:center;justify-content:center;"><ion-icon name="checkmark" style="font-size:14px;color:#ffffff;"></ion-icon></div></div>
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><span style="font-size:10px;font-weight:600;color:#94a3b8;">W</span><div style="height:32px;width:32px;border-radius:9999px;background:#dc2626;display:flex;align-items:center;justify-content:center;"><ion-icon name="checkmark" style="font-size:14px;color:#ffffff;"></ion-icon></div></div>
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><span style="font-size:10px;font-weight:600;color:#0f172a;">T</span><div style="height:32px;width:32px;border-radius:9999px;border:2px solid #dc2626;box-sizing:border-box;"></div></div>
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><span style="font-size:10px;font-weight:600;color:#94a3b8;">F</span><div style="height:32px;width:32px;border-radius:9999px;border:1px dashed #94a3b8;box-sizing:border-box;"></div></div>
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><span style="font-size:10px;font-weight:600;color:#94a3b8;">S</span><div style="height:32px;width:32px;border-radius:9999px;border:1px solid #e2e8f0;box-sizing:border-box;"></div></div>
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><span style="font-size:10px;font-weight:600;color:#94a3b8;">S</span><div style="height:32px;width:32px;border-radius:9999px;border:1px solid #e2e8f0;box-sizing:border-box;"></div></div>
+                </div>
+                <div style="display:flex;border-top:1px solid #e2e8f0;padding-top:12px;">
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
+                    <ion-icon name="time-outline" style="font-size:13px;color:#2563eb;"></ion-icon>
+                    <span style="font-size:16px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;">4h 05m</span>
+                    <span style="font-size:11px;color:#94a3b8;">trained</span>
+                  </div>
+                  <div style="width:1px;background:#e2e8f0;"></div>
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
+                    <ion-icon name="flame-outline" style="font-size:13px;color:#2563eb;"></ion-icon>
+                    <span style="font-size:16px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;">1,240</span>
+                    <span style="font-size:11px;color:#94a3b8;">kcal burned</span>
+                  </div>
+                  <div style="width:1px;background:#e2e8f0;"></div>
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
+                    <ion-icon name="barbell-outline" style="font-size:13px;color:#2563eb;"></ion-icon>
+                    <span style="font-size:16px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;">12,400</span>
+                    <span style="font-size:11px;color:#94a3b8;">kg of volume</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <span style="font-size:15px;font-weight:700;color:#0f172a;">Body weight</span>
+                  <div style="display:flex;align-items:center;gap:4px;border-radius:9999px;background:rgba(22,163,74,0.12);padding:2px 8px;">
+                    <ion-icon name="trending-down" style="font-size:12px;color:#16a34a;"></ion-icon>
+                    <span style="font-size:12px;font-weight:600;color:#16a34a;font-variant-numeric:tabular-nums;">−0.8 kg / 30 days</span>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:flex-end;justify-content:space-between;">
+                  <div style="display:flex;align-items:baseline;gap:4px;">
+                    <span style="font-size:28px;font-weight:800;color:#0f172a;font-variant-numeric:tabular-nums;">72.4</span>
+                    <span style="font-size:14px;color:#64748b;">kg</span>
+                  </div>
+                  <span style="font-size:12px;color:#94a3b8;font-variant-numeric:tabular-nums;">BMI 22.9 · Goal: lose weight</span>
+                </div>
+                <svg width="100%" height="96" viewBox="0 0 336 96" preserveAspectRatio="none">
+                  <line x1="0" y1="24" x2="336" y2="24" stroke="#e2e8f0" stroke-width="1"></line>
+                  <line x1="0" y1="48" x2="336" y2="48" stroke="#e2e8f0" stroke-width="1"></line>
+                  <line x1="0" y1="72" x2="336" y2="72" stroke="#e2e8f0" stroke-width="1"></line>
+                  <path d="M8 28 L55 34 L102 30 L149 42 L196 50 L243 47 L290 58 L328 63 L328 96 L8 96 Z" fill="rgba(37,99,235,0.1)"></path>
+                  <path d="M8 28 L55 34 L102 30 L149 42 L196 50 L243 47 L290 58 L328 63" stroke="#2563eb" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round"></path>
+                  <circle cx="328" cy="63" r="4" fill="#2563eb" stroke="#ffffff" stroke-width="2"></circle>
+                </svg>
+                <div style="display:flex;justify-content:space-between;">
+                  <span style="font-size:10px;color:#94a3b8;">28 May</span>
+                  <span style="font-size:10px;color:#94a3b8;">8 weeks</span>
+                  <span style="font-size:10px;font-weight:500;color:#64748b;">today</span>
+                </div>
+                <div style="border-top:1px solid #e2e8f0;padding-top:12px;display:flex;align-items:center;justify-content:center;gap:4px;">
+                  <ion-icon name="add" style="font-size:15px;color:#dc2626;"></ion-icon>
+                  <span style="font-size:13px;font-weight:600;color:#dc2626;">Log weight</span>
+                </div>
+              </div>
+
+              <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <span style="font-size:15px;font-weight:700;color:#0f172a;">Strength &amp; volume</span>
+                  <span style="font-size:11px;color:#94a3b8;">8 weeks</span>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <div style="display:flex;align-items:baseline;gap:6px;">
+                    <span style="font-size:22px;font-weight:800;color:#0f172a;font-variant-numeric:tabular-nums;">12,400</span>
+                    <span style="font-size:13px;color:#64748b;">kg this week</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:4px;">
+                    <ion-icon name="trending-up" style="font-size:12px;color:#16a34a;"></ion-icon>
+                    <span style="font-size:12px;font-weight:600;color:#16a34a;font-variant-numeric:tabular-nums;">+8%</span>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:flex-end;gap:8px;height:72px;">
+                  <div style="flex:1;border-radius:5px 5px 2px 2px;background:#2563eb;opacity:0.5;height:29px;"></div>
+                  <div style="flex:1;border-radius:5px 5px 2px 2px;background:#2563eb;opacity:0.5;height:40px;"></div>
+                  <div style="flex:1;border-radius:5px 5px 2px 2px;background:#2563eb;opacity:0.5;height:32px;"></div>
+                  <div style="flex:1;border-radius:5px 5px 2px 2px;background:#2563eb;opacity:0.5;height:43px;"></div>
+                  <div style="flex:1;border-radius:5px 5px 2px 2px;background:#2563eb;opacity:0.5;height:50px;"></div>
+                  <div style="flex:1;border-radius:5px 5px 2px 2px;background:#2563eb;opacity:0.5;height:47px;"></div>
+                  <div style="flex:1;border-radius:5px 5px 2px 2px;background:#2563eb;opacity:0.5;height:58px;"></div>
+                  <div style="flex:1;border-radius:5px 5px 2px 2px;background:#2563eb;height:72px;"></div>
+                </div>
+                <span style="font-size:10px;color:#94a3b8;">estimated from your plan</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="position:absolute;right:20px;bottom:104px;width:56px;height:56px;border-radius:9999px;background:#dc2626;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 15px -3px rgba(0,0,0,0.1),0 4px 6px -4px rgba(0,0,0,0.1);">
+            <ion-icon name="add" style="font-size:28px;color:#ffffff;"></ion-icon>
+          </div>
+
+          <div style="background:#ffffff;border-top:1px solid #e2e8f0;display:flex;padding:8px 0 24px;">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="home" style="font-size:24px;color:#94a3b8;"></ion-icon><span style="font-size:10px;font-weight:500;color:#94a3b8;">Home</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="barbell" style="font-size:24px;color:#94a3b8;"></ion-icon><span style="font-size:10px;font-weight:500;color:#94a3b8;">Routines</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="restaurant" style="font-size:24px;color:#94a3b8;"></ion-icon><span style="font-size:10px;font-weight:500;color:#94a3b8;">Meals</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="bar-chart" style="font-size:24px;color:#dc2626;"></ion-icon><span style="font-size:10px;font-weight:500;color:#dc2626;">Progress</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="person" style="font-size:24px;color:#94a3b8;"></ion-icon><span style="font-size:10px;font-weight:500;color:#94a3b8;">Profile</span></div>
+          </div>
+        </div>
+      </x-import>
+    </div>
+
+    <!-- ══════════ 1e · PROFILE ══════════ -->
+    <div id="1e">
+      <div style="display:flex;align-items:center;gap:8px;margin:0 0 12px 4px;">
+        <a href="#1e" style="display:inline-block;background:#0f172a;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;">1e</a>
+        <span style="font-size:13px;font-weight:600;color:#334155;">Profile</span>
+      </div>
+      <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402,874">
+        <div style="height:100%;display:flex;flex-direction:column;background:#f8fafc;font-family:'Inter',sans-serif;position:relative;overflow:hidden;">
+          <div style="padding:58px 16px 10px;display:flex;align-items:center;justify-content:center;">
+            <span style="font-size:17px;font-weight:600;color:#0f172a;">Profile</span>
+          </div>
+          <div style="flex:1;overflow:hidden;">
+            <div style="padding:12px 16px 16px;display:flex;flex-direction:column;gap:16px;">
+              <div style="font-size:13px;color:#64748b;margin-top:-4px;">Your data and training preferences</div>
+
+              <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:14px;">
+                <span style="font-size:15px;font-weight:700;color:#0f172a;">Personal Data</span>
+                <div style="display:flex;gap:10px;">
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;border:1px solid #e2e8f0;background:#ffffff;border-radius:16px;padding:12px 0;">
+                    <span style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#94a3b8;">Age</span>
+                    <span style="font-size:22px;font-weight:800;color:#0f172a;">28</span>
+                    <span style="font-size:11.5px;color:#94a3b8;">years</span>
+                  </div>
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;border:1px solid #e2e8f0;background:#ffffff;border-radius:16px;padding:12px 0;">
+                    <span style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#94a3b8;">Height</span>
+                    <span style="font-size:22px;font-weight:800;color:#0f172a;">178</span>
+                    <span style="font-size:11.5px;color:#94a3b8;">cm</span>
+                  </div>
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;border:1px solid #e2e8f0;background:#ffffff;border-radius:16px;padding:12px 0;">
+                    <span style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#94a3b8;">Weight</span>
+                    <span style="font-size:22px;font-weight:800;color:#0f172a;">72.4</span>
+                    <span style="font-size:11.5px;color:#94a3b8;">kg</span>
+                  </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                  <span style="font-size:12.5px;font-weight:600;color:#334155;">Sex</span>
+                  <div style="display:flex;gap:4px;border-radius:12px;background:#f1f5f9;padding:4px;">
+                    <div style="flex:1;display:flex;align-items:center;justify-content:center;border-radius:8px;padding:10px 0;background:#dc2626;">
+                      <span style="font-size:14px;font-weight:600;color:#ffffff;">Male</span>
+                    </div>
+                    <div style="flex:1;display:flex;align-items:center;justify-content:center;border-radius:8px;padding:10px 0;">
+                      <span style="font-size:14px;font-weight:600;color:#334155;">Female</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:14px;">
+                <span style="font-size:15px;font-weight:700;color:#0f172a;">Daily activity</span>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  <div style="display:flex;align-items:flex-start;gap:10px;border-radius:12px;border:1px solid #e2e8f0;background:#ffffff;padding:12px;">
+                    <div style="margin-top:2px;height:18px;width:18px;border-radius:9999px;border:2px solid #cbd5e1;box-sizing:border-box;"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:2px;">
+                      <span style="font-size:14px;font-weight:600;color:#0f172a;">Sedentary</span>
+                      <span style="font-size:12px;color:#94a3b8;">Little movement during the day</span>
+                    </div>
+                  </div>
+                  <div style="display:flex;align-items:flex-start;gap:10px;border-radius:12px;border:1px solid #dc2626;background:rgba(37,99,235,0.1);padding:12px;">
+                    <div style="margin-top:2px;height:18px;width:18px;border-radius:9999px;border:2px solid #dc2626;box-sizing:border-box;display:flex;align-items:center;justify-content:center;">
+                      <div style="height:8px;width:8px;border-radius:9999px;background:#dc2626;"></div>
+                    </div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:2px;">
+                      <span style="font-size:14px;font-weight:600;color:#0f172a;">Active</span>
+                      <span style="font-size:12px;color:#94a3b8;">You're on your feet often or exercise 3-5 days a week</span>
+                    </div>
+                  </div>
+                  <div style="display:flex;align-items:flex-start;gap:10px;border-radius:12px;border:1px solid #e2e8f0;background:#ffffff;padding:12px;">
+                    <div style="margin-top:2px;height:18px;width:18px;border-radius:9999px;border:2px solid #cbd5e1;box-sizing:border-box;"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:2px;">
+                      <span style="font-size:14px;font-weight:600;color:#0f172a;">Very active</span>
+                      <span style="font-size:12px;color:#94a3b8;">Intense training or physically demanding work</span>
+                    </div>
+                  </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  <span style="font-size:12.5px;font-weight:600;color:#334155;">Profession type</span>
+                  <div style="display:flex;gap:8px;">
+                    <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;border:1px solid #dc2626;background:rgba(37,99,235,0.1);padding:12px 0;">
+                      <ion-icon name="desktop-outline" style="font-size:18px;color:#b91c1c;"></ion-icon>
+                      <span style="font-size:14px;font-weight:600;color:#b91c1c;">Desk</span>
+                    </div>
+                    <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;border:1px solid #e2e8f0;background:#ffffff;padding:12px 0;">
+                      <ion-icon name="barbell-outline" style="font-size:18px;color:#64748b;"></ion-icon>
+                      <span style="font-size:14px;font-weight:600;color:#334155;">Physical</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;">
+                <div style="display:flex;flex-direction:column;gap:2px;">
+                  <span style="font-size:15px;font-weight:700;color:#0f172a;">Nutrition goal</span>
+                  <span style="font-size:12px;color:#94a3b8;">Your daily calorie target, used by the dashboard</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;border-radius:16px;background:rgba(37,99,235,0.1);padding:14px;">
+                  <ion-icon name="flash" style="font-size:20px;color:#dc2626;"></ion-icon>
+                  <div style="flex:1;display:flex;flex-direction:column;gap:2px;">
+                    <span style="font-size:12px;font-weight:600;color:#b91c1c;">Recommended for you</span>
+                    <span style="font-size:20px;font-weight:800;color:#b91c1c;">2,200 kcal</span>
+                  </div>
+                  <div style="border-radius:8px;background:#dc2626;padding:10px 16px;">
+                    <span style="font-size:14px;font-weight:700;color:#ffffff;">Use it</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="border-top:1px solid #e2e8f0;background:#ffffff;padding:12px 16px;display:flex;flex-direction:column;gap:8px;">
+            <div style="background:#dc2626;border-radius:16px;padding:16px 20px;display:flex;align-items:center;justify-content:center;opacity:0.5;">
+              <span style="font-size:16px;font-weight:700;color:#ffffff;">Save changes</span>
+            </div>
+          </div>
+
+          <div style="background:#ffffff;border-top:1px solid #e2e8f0;display:flex;padding:8px 0 24px;">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="home" style="font-size:24px;color:#94a3b8;"></ion-icon><span style="font-size:10px;font-weight:500;color:#94a3b8;">Home</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="barbell" style="font-size:24px;color:#94a3b8;"></ion-icon><span style="font-size:10px;font-weight:500;color:#94a3b8;">Routines</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="restaurant" style="font-size:24px;color:#94a3b8;"></ion-icon><span style="font-size:10px;font-weight:500;color:#94a3b8;">Meals</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="bar-chart" style="font-size:24px;color:#94a3b8;"></ion-icon><span style="font-size:10px;font-weight:500;color:#94a3b8;">Progress</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="person" style="font-size:24px;color:#dc2626;"></ion-icon><span style="font-size:10px;font-weight:500;color:#dc2626;">Profile</span></div>
+          </div>
+        </div>
+      </x-import>
+    </div>
+
+    <!-- ══════════ 1f · HOME (dark) ══════════ -->
+    <div id="1f">
+      <div style="display:flex;align-items:center;gap:8px;margin:0 0 12px 4px;">
+        <a href="#1f" style="display:inline-block;background:#0f172a;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;">1f</a>
+        <span style="font-size:13px;font-weight:600;color:#334155;">Home — dark</span>
+      </div>
+      <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402,874">
+        <div style="height:100%;display:flex;flex-direction:column;background:#0f172a;font-family:'Inter',sans-serif;position:relative;overflow:hidden;">
+          <div style="flex:1;overflow:hidden;">
+            <div style="padding:70px 24px 24px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <div style="display:flex;align-items:center;gap:12px;flex:1;margin-right:8px;">
+                  <img src="./assets/icon.png" alt="Hokage" style="width:84px;height:84px;border-radius:20px;border:1px solid #334155;display:block;">
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-family:'EdoSZ','Inter',sans-serif;font-size:30px;line-height:1.15;color:#ef4444;margin-bottom:2px;">Hokage<br>Coaching App</div>
+                    <div style="font-size:24px;font-weight:700;color:#f8fafc;white-space:nowrap;">Hey, Alex! 👋</div>
+                  </div>
+                </div>
+                <div style="width:40px;height:40px;border-radius:9999px;background:#1e293b;border:1px solid #334155;display:flex;align-items:center;justify-content:center;">
+                  <ion-icon name="ellipsis-vertical" style="font-size:18px;color:#cbd5e1;"></ion-icon>
+                </div>
+              </div>
+              <div style="font-size:14px;color:#94a3b8;">Thursday, July 16</div>
+            </div>
+
+            <div style="padding:0 24px;display:flex;flex-direction:column;gap:12px;margin-bottom:32px;">
+              <div style="background:#1e293b;border:1px solid #334155;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;">
+                <div style="width:36px;height:36px;border-radius:9999px;background:rgba(59,130,246,0.16);display:flex;align-items:center;justify-content:center;">
+                  <ion-icon name="flag-outline" style="font-size:18px;color:#ef4444;"></ion-icon>
+                </div>
+                <div style="flex:1;font-size:14px;font-weight:500;color:#cbd5e1;">Calorie goal</div>
+                <div style="display:flex;align-items:baseline;gap:4px;">
+                  <span style="font-size:24px;font-weight:700;color:#f8fafc;font-variant-numeric:tabular-nums;">2,200</span>
+                  <span style="font-size:12px;color:#94a3b8;">kcal</span>
+                </div>
+                <ion-icon name="chevron-forward" style="font-size:16px;color:#64748b;"></ion-icon>
+              </div>
+              <div style="display:flex;gap:12px;">
+                <div style="flex:1;background:#1e293b;border:1px solid #334155;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:6px;">
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <ion-icon name="restaurant-outline" style="font-size:14px;color:#f59e0b;"></ion-icon>
+                    <span style="font-size:12px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Consumed</span>
+                  </div>
+                  <div style="display:flex;align-items:baseline;gap:4px;">
+                    <span style="font-size:20px;font-weight:700;color:#f8fafc;font-variant-numeric:tabular-nums;">1,470</span>
+                    <span style="font-size:10px;color:#94a3b8;">kcal</span>
+                  </div>
+                </div>
+                <div style="flex:1;background:#1e293b;border:1px solid #334155;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:6px;">
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <ion-icon name="flame-outline" style="font-size:14px;color:#3b82f6;"></ion-icon>
+                    <span style="font-size:12px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Burned</span>
+                  </div>
+                  <div style="display:flex;align-items:baseline;gap:4px;">
+                    <span style="font-size:20px;font-weight:700;color:#f8fafc;font-variant-numeric:tabular-nums;">320</span>
+                    <span style="font-size:10px;color:#94a3b8;">kcal</span>
+                  </div>
+                </div>
+                <div style="flex:1;background:#1e293b;border:1px solid #334155;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:6px;">
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <ion-icon name="speedometer-outline" style="font-size:14px;color:#22c55e;"></ion-icon>
+                    <span style="font-size:12px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Remaining</span>
+                  </div>
+                  <div style="display:flex;align-items:baseline;gap:4px;">
+                    <span style="font-size:20px;font-weight:700;color:#f8fafc;font-variant-numeric:tabular-nums;">1,050</span>
+                    <span style="font-size:10px;color:#94a3b8;">kcal</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-bottom:32px;">
+              <div style="padding:0 24px;margin-bottom:8px;font-size:18px;font-weight:600;color:#f8fafc;">Your Routines</div>
+              <div style="padding:16px 0;overflow:hidden;">
+                <div style="display:flex;padding-left:50px;">
+                  <div style="width:301px;flex-shrink:0;">
+                    <div style="margin:0 8px;border-radius:16px;overflow:hidden;position:relative;height:200px;background:#1e293b;">
+                      <img src="./assets/strength_card.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+                      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.3);"></div>
+                      <div style="position:absolute;inset:0;padding:20px;display:flex;flex-direction:column;justify-content:flex-end;">
+                        <div style="align-self:flex-start;padding:4px 8px;border-radius:9999px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);margin-bottom:8px;">
+                          <span style="color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Ready to start</span>
+                        </div>
+                        <div style="color:#fff;font-size:24px;font-weight:700;">Upper Body Strength</div>
+                        <div style="color:rgba(255,255,255,0.8);font-size:14px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Push day — chest, shoulders &amp; triceps</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="width:301px;flex-shrink:0;transform:scale(0.9);opacity:0.6;">
+                    <div style="margin:0 8px;border-radius:16px;overflow:hidden;position:relative;height:200px;background:#1e293b;">
+                      <img src="./assets/cardio_card.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+                      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.3);"></div>
+                      <div style="position:absolute;inset:0;padding:20px;display:flex;flex-direction:column;justify-content:flex-end;">
+                        <div style="align-self:flex-start;padding:4px 8px;border-radius:9999px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);margin-bottom:8px;">
+                          <span style="color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Ready to start</span>
+                        </div>
+                        <div style="color:#fff;font-size:24px;font-weight:700;">HIIT Cardio Blast</div>
+                        <div style="color:rgba(255,255,255,0.8);font-size:14px;margin-top:4px;">30-minute conditioning circuit</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div style="padding:0 24px;margin-top:16px;">
+                <div style="background:#1e293b;border:1px solid #334155;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;">
+                  <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:40px;height:40px;border-radius:9999px;background:rgba(251,191,36,0.16);display:flex;align-items:center;justify-content:center;">
+                      <ion-icon name="sparkles" style="font-size:20px;color:#fbbf24;"></ion-icon>
+                    </div>
+                    <div style="flex:1;">
+                      <div style="font-size:16px;font-weight:600;color:#f8fafc;">AI Training Plan</div>
+                      <div style="font-size:14px;color:#94a3b8;">Generate a personalized weekly routine plan from your profile data</div>
+                    </div>
+                  </div>
+                  <div style="background:#ef4444;border-radius:16px;padding:14px 20px;display:flex;align-items:center;justify-content:center;gap:8px;">
+                    <ion-icon name="sparkles" style="font-size:18px;color:#ffffff;"></ion-icon>
+                    <span style="font-size:16px;font-weight:600;color:#ffffff;">Generate with AI</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="padding:0 24px;display:flex;flex-direction:column;gap:16px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:18px;font-weight:600;color:#f8fafc;">Today's Nutrition</span>
+                <span style="font-size:14px;font-weight:500;color:#ef4444;">See all</span>
+              </div>
+              <div style="background:#1e293b;border:1px solid #334155;border-radius:16px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;">
+                <div style="display:flex;align-items:center;gap:16px;">
+                  <div style="width:40px;height:40px;background:rgba(59,130,246,0.16);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                    <ion-icon name="restaurant-outline" style="font-size:18px;color:#ef4444;"></ion-icon>
+                  </div>
+                  <div>
+                    <div style="font-size:16px;font-weight:600;color:#f8fafc;text-transform:capitalize;">breakfast</div>
+                    <div style="font-size:12px;color:#64748b;">2 items · 520 kcal</div>
+                  </div>
+                </div>
+                <ion-icon name="chevron-forward" style="font-size:18px;color:#64748b;"></ion-icon>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:#1e293b;border-top:1px solid #334155;display:flex;padding:8px 0 24px;">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="home" style="font-size:24px;color:#ef4444;"></ion-icon><span style="font-size:10px;font-weight:500;color:#ef4444;">Home</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="barbell" style="font-size:24px;color:#64748b;"></ion-icon><span style="font-size:10px;font-weight:500;color:#64748b;">Routines</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="restaurant" style="font-size:24px;color:#64748b;"></ion-icon><span style="font-size:10px;font-weight:500;color:#64748b;">Meals</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="bar-chart" style="font-size:24px;color:#64748b;"></ion-icon><span style="font-size:10px;font-weight:500;color:#64748b;">Progress</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;"><ion-icon name="person" style="font-size:24px;color:#64748b;"></ion-icon><span style="font-size:10px;font-weight:500;color:#64748b;">Profile</span></div>
+          </div>
+        </div>
+      </x-import>
+    </div>
+
+  </div>
+</section>
+
+</x-dc>
+</body>
+</html>

@@ -301,6 +301,11 @@ const BODY_PART_TO_GROUP: Record<string, MuscleGroup> = {
   cardio: "other",
 };
 
+/** Display group for a raw bodyparts name (any casing); "other" if unknown. */
+export function muscleGroupForBodyPart(name: string | null | undefined): MuscleGroup {
+  return (name != null ? BODY_PART_TO_GROUP[name.toLowerCase()] : undefined) ?? "other";
+}
+
 function groupOf(
   name: string,
   catalogByName: Map<string, Exercise>,
@@ -309,9 +314,8 @@ function groupOf(
 ): { group: MuscleGroup; sets: number } {
   const re = planFor(plan, routineId, name);
   const ex = catalogByName.get(norm(name)) ?? re?.exercise;
-  const bodyPart = ex?.body_part?.name?.toLowerCase();
   return {
-    group: (bodyPart != null ? BODY_PART_TO_GROUP[bodyPart] : undefined) ?? "other",
+    group: muscleGroupForBodyPart(ex?.body_part?.name),
     sets: re?.sets ?? 3,
   };
 }

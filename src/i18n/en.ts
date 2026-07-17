@@ -311,6 +311,8 @@ export default {
     exercises: "Exercises ({{count}})",
     addExercise: "Add Exercise",
     pickExercise: "Pick an exercise",
+    searchExercise: "Search exercises…",
+    noExerciseResults: "No exercises match your search",
     noExercisesInCatalog: "Your coach hasn't added any exercises to the catalog yet",
     sets: "Sets",
     reps: "Reps",

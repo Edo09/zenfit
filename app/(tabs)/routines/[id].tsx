@@ -6,27 +6,25 @@ import type { ScrollView as RNScrollView } from "react-native";
 
 import {
   Button,
-  Card,
   ConfirmDialog,
   Input,
   LoadingBlock,
   Screen,
-  SelectField,
   useToast,
 } from "@/src/components/ui";
 import { useAuth } from "@/src/hooks/use-auth";
-import { useExercises } from "@/src/hooks/use-exercises";
 import { useProfile } from "@/src/hooks/use-profile";
 import { useProgress } from "@/src/hooks/use-progress";
 import { useRoutineDetail, useRoutines } from "@/src/hooks/use-routines";
 import { useIsOnline } from "@/src/lib/online";
 import { enter, exit, pop, staggered } from "@/src/lib/motion";
-import { kgToUnit1, unitToKg, useWeightUnit } from "@/src/lib/weight-unit";
+import { kgToUnit1, useWeightUnit } from "@/src/lib/weight-unit";
 import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
 import type { RoutineExercise } from "@/src/types/database";
 import { dayLabel } from "@/src/utils/day-label";
+import { AddExerciseForm } from "@/src/components/add-exercise-form";
 import { ExerciseVideoModal } from "@/src/components/exercise-video-modal";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -58,7 +56,6 @@ export default function RoutineDetailScreen() {
   const weightUnit = useWeightUnit();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { addExercise, removeExercise } = useRoutines();
-  const { exercises } = useExercises();
   const { createLog, todaysLogs } = useProgress();
   const { user } = useAuth();
   const { profile } = useProfile(user?.id);
@@ -87,13 +84,6 @@ export default function RoutineDetailScreen() {
   const [rest, setRest] = useState<{ exId: string; remaining: number } | null>(null);
   const [showInfo, setShowInfo] = useState(false);
   const [videoUri, setVideoUri] = useState<string | null>(null);
-
-  // New exercise form state
-  const [exExerciseId, setExExerciseId] = useState<string | null>(null);
-  const [exExerciseError, setExExerciseError] = useState<string | undefined>();
-  const [exSets, setExSets] = useState("3");
-  const [exReps, setExReps] = useState("10");
-  const [exWeight, setExWeight] = useState("");
 
   useEffect(() => {
     if (isError) {
@@ -125,36 +115,6 @@ export default function RoutineDetailScreen() {
     setRest((prev) =>
       prev?.exId === ex.id ? null : { exId: ex.id, remaining: ex.rest_seconds || 60 },
     );
-  };
-
-  const handleAddExercise = async () => {
-    if (!routine) return;
-    const selected = exercises.find((e) => e.id === exExerciseId);
-    if (!selected) {
-      setExExerciseError(t("common.fieldRequired"));
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
-      return;
-    }
-    try {
-      await addExercise({
-        routine_id: routine.id,
-        exercise_id: selected.id,
-        exercise: selected,
-        sets: parseInt(exSets, 10) || 3,
-        reps: parseInt(exReps, 10) || 10,
-        // Typed in the display unit; stored in kg.
-        weight_kg: exWeight
-          ? Math.round(unitToKg(parseFloat(exWeight), weightUnit) * 10) / 10
-          : undefined,
-      });
-      setExExerciseId(null);
-      setExSets("3");
-      setExReps("10");
-      setExWeight("");
-      setShowAddExercise(false);
-    } catch {
-      toast.show({ type: "error", message: t("common.somethingWentWrong") });
-    }
   };
 
   const handleConfirmRemove = async () => {
@@ -468,69 +428,20 @@ export default function RoutineDetailScreen() {
           {/* Add exercise form — hidden for coach-assigned routines */}
           {isAssigned ? null : showAddExercise ? (
             <AnimatedView entering={enter()} exiting={exit()}>
-            <Card className="gap-3">
-              <Text className="font-semibold text-content-primary">
-                {t("routines.addExercise")}
-              </Text>
-              <SelectField
-                placeholder={t("routines.pickExercise")}
-                value={exExerciseId}
-                options={exercises.map((e) => ({
-                  label: e.body_part?.name ? `${e.name} (${e.body_part.name})` : e.name,
-                  value: e.id,
-                }))}
-                onChange={(value) => {
-                  setExExerciseId(value);
-                  if (exExerciseError != null) setExExerciseError(undefined);
+              <AddExerciseForm
+                onAdd={async (entry) => {
+                  await addExercise({
+                    routine_id: routine.id,
+                    exercise_id: entry.exercise.id,
+                    exercise: entry.exercise,
+                    sets: entry.sets,
+                    reps: entry.reps,
+                    weight_kg: entry.weight_kg,
+                  });
+                  setShowAddExercise(false);
                 }}
-                helper={
-                  exExerciseError ??
-                  (exercises.length === 0 ? t("routines.noExercisesInCatalog") : undefined)
-                }
+                onCancel={() => setShowAddExercise(false)}
               />
-              <View className="flex-row gap-2">
-                <Input
-                  label={t("routines.sets")}
-                  keyboardType="number-pad"
-                  value={exSets}
-                  onChangeText={setExSets}
-                  containerClassName="flex-1"
-                  textAlign="center"
-                  className="bg-brand-dark"
-                />
-                <Input
-                  label={t("routines.reps")}
-                  keyboardType="number-pad"
-                  value={exReps}
-                  onChangeText={setExReps}
-                  containerClassName="flex-1"
-                  textAlign="center"
-                  className="bg-brand-dark"
-                />
-                <Input
-                  label={t("routines.weightOpt", { unit: weightUnit })}
-                  keyboardType="decimal-pad"
-                  placeholder="—"
-                  value={exWeight}
-                  onChangeText={setExWeight}
-                  containerClassName="flex-1"
-                  textAlign="center"
-                  className="bg-brand-dark"
-                />
-              </View>
-              <View className="flex-row gap-2">
-                <View className="flex-1">
-                  <Button variant="secondary" onPress={() => setShowAddExercise(false)} className="w-full">
-                    {t("common.cancel")}
-                  </Button>
-                </View>
-                <View className="flex-1">
-                  <Button onPress={handleAddExercise} className="w-full">
-                    {t("common.add")}
-                  </Button>
-                </View>
-              </View>
-            </Card>
             </AnimatedView>
           ) : (
             <Pressable
