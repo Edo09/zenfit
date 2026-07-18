@@ -2,15 +2,30 @@ import { Ionicons } from "@expo/vector-icons";
 import { router, Tabs } from "expo-router";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import type { ColorValue } from "react-native";
+import { View } from "react-native";
 
 import { useColors } from "@/src/theme/colors";
 import { Pressable } from "@/src/tw";
 
 type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
 
-function TabIcon({ name, color }: { name: IoniconName; color: ColorValue }) {
-  return <Ionicons name={name} size={24} color={color} />;
+// Dojo Poster tab item: 3×20px red tick above the active icon (the tick,
+// not color alone, signals the active tab), icon 23px.
+function TabIcon({ name, focused }: { name: IoniconName; focused: boolean }) {
+  const colors = useColors();
+  return (
+    <View style={{ alignItems: "center", gap: 3 }}>
+      <View
+        style={{
+          width: 20,
+          height: 3,
+          borderRadius: 2,
+          backgroundColor: focused ? colors.brandPrimary : "transparent",
+        }}
+      />
+      <Ionicons name={name} size={23} color={focused ? colors.brandPrimary : colors.contentMuted} />
+    </View>
+  );
 }
 
 export default function TabsLayout() {
@@ -26,8 +41,17 @@ export default function TabsLayout() {
         tabBarActiveTintColor: colors.brandPrimary,
         tabBarInactiveTintColor: colors.contentMuted,
         tabBarStyle: {
-          backgroundColor: colors.surface,
+          backgroundColor: colors.brandDark,
           borderTopColor: colors.border,
+          borderTopWidth: 1,
+          height: 74,
+        },
+        tabBarItemStyle: { paddingTop: 6 },
+        tabBarLabelStyle: {
+          fontSize: 9,
+          fontFamily: "Inter_700Bold",
+          letterSpacing: 0.72,
+          textTransform: "uppercase",
         },
         headerStyle: { backgroundColor: colors.brandDark },
         headerTintColor: colors.contentPrimary,
@@ -39,7 +63,7 @@ export default function TabsLayout() {
         options={{
           title: t("tabs.home"),
           headerShown: false,
-          tabBarIcon: ({ color }) => <TabIcon name="home" color={color} />,
+          tabBarIcon: ({ focused }) => <TabIcon name="home" focused={focused} />,
         }}
       />
       <Tabs.Screen
@@ -47,7 +71,7 @@ export default function TabsLayout() {
         options={{
           title: t("tabs.routines"),
           headerShown: false,
-          tabBarIcon: ({ color }) => <TabIcon name="barbell" color={color} />,
+          tabBarIcon: ({ focused }) => <TabIcon name="barbell" focused={focused} />,
         }}
       />
       <Tabs.Screen
@@ -55,7 +79,7 @@ export default function TabsLayout() {
         options={{
           title: t("tabs.meals"),
           headerShown: false,
-          tabBarIcon: ({ color }) => <TabIcon name="restaurant" color={color} />,
+          tabBarIcon: ({ focused }) => <TabIcon name="restaurant" focused={focused} />,
         }}
       />
       <Tabs.Screen
@@ -63,14 +87,14 @@ export default function TabsLayout() {
         options={{
           title: t("tabs.progress"),
           headerShown: false,
-          tabBarIcon: ({ color }) => <TabIcon name="bar-chart" color={color} />,
+          tabBarIcon: ({ focused }) => <TabIcon name="bar-chart" focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: t("tabs.profile"),
-          tabBarIcon: ({ color }) => <TabIcon name="person" color={color} />,
+          tabBarIcon: ({ focused }) => <TabIcon name="person" focused={focused} />,
         }}
       />
       {/* Reached from the home menu, not the tab bar (href: null hides it).

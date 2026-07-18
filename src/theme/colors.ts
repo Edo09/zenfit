@@ -39,6 +39,14 @@ const lightPalette = {
     macroProtein: "#2563eb",
     macroCarbs: "#d97706",
     macroFat: "#e11d48",
+    // Dojo Poster tokens (mirror global.css)
+    brandPrimarySoft: "rgba(220, 38, 38, 0.08)",
+    brandAccentSoft: "rgba(161, 98, 7, 0.12)",
+    brandAccentBorder: "rgba(161, 98, 7, 0.35)",
+    successSoft: "rgba(22, 163, 74, 0.12)",
+    skewGhost: "rgba(220, 38, 38, 0.05)",
+    headerGradFrom: "#ffffff",
+    headerGradTo: "#f8fafc",
 };
 
 export type Palette = { [K in keyof typeof lightPalette]: string };
@@ -68,6 +76,13 @@ const darkPalette: Palette = {
     macroProtein: "#3b82f6",
     macroCarbs: "#f59e0b",
     macroFat: "#fb7185",
+    brandPrimarySoft: "rgba(239, 68, 68, 0.1)",
+    brandAccentSoft: "rgba(251, 191, 36, 0.16)",
+    brandAccentBorder: "rgba(251, 191, 36, 0.35)",
+    successSoft: "rgba(34, 197, 94, 0.15)",
+    skewGhost: "rgba(220, 38, 38, 0.08)",
+    headerGradFrom: "#1e293b",
+    headerGradTo: "#0f172a",
 };
 
 export const palettes: { light: Palette; dark: Palette } = {

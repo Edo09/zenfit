@@ -171,6 +171,7 @@ export default {
     aiSubtitle:
       "Genera un plan semanal de rutinas personalizado con los datos de tu perfil",
     aiGenerate: "Generar con IA",
+    aiGenerateShort: "Generar",
     aiSuccess: "¡{{count}} rutinas creadas!",
     aiFailed: "No se pudieron generar las rutinas",
     completeProfileFirst: "Completa y guarda los datos de tu perfil primero",
@@ -209,8 +210,9 @@ export default {
 
   // Home
   home: {
-    hey: "Hola, {{name}}! 👋",
+    hey: "Hola, {{name}}.",
     calorieGoal: "Meta de calorías",
+    goalShort: "Meta",
     caloriesConsumed: "Consumidas",
     caloriesBurned: "Quemadas",
     caloriesRemaining: "Restantes",
@@ -219,9 +221,9 @@ export default {
     yourRoutines: "Tus Rutinas",
     dark: "Oscuro",
     light: "Claro",
-    todaysNutrition: "Nutrición de Hoy",
+    todaysNutrition: "Combustible de Hoy",
     fuelYourBody: "Alimenta tu cuerpo",
-    logMeal: "+ Registrar comida",
+    logMeal: "Registrar comida",
     recentActivity: "Actividad Reciente",
     noActivityToday: "Sin actividad registrada hoy",
     startRoutine: "Iniciar una rutina →",

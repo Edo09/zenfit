@@ -4,7 +4,7 @@ import { router, usePathname } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Button, Card, ConfirmDialog, useToast } from "@/src/components/ui";
+import { Card, ConfirmDialog, PosterText, SkewButton, useToast } from "@/src/components/ui";
 import { useAuth } from "@/src/hooks/use-auth";
 import { useExercises } from "@/src/hooks/use-exercises";
 import { useProfile } from "@/src/hooks/use-profile";
@@ -15,6 +15,10 @@ import { useColors } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
 import type { Profile } from "@/src/types/database";
 import { cn } from "@/src/utils/cn";
+
+// Generate action temporarily hidden (2026-07-17) — flip back on when the
+// AI feature is ready to expose (LLM-key Edge Function proxy still pending).
+const SHOW_GENERATE = false;
 
 function isProfileComplete(profile: Profile | null): profile is Profile {
   return (
@@ -32,7 +36,14 @@ function isProfileComplete(profile: Profile | null): profile is Profile {
   );
 }
 
-export function AIPlanCard({ className }: { className?: string }) {
+export function AIPlanCard({
+  className,
+  compact = false,
+}: {
+  className?: string;
+  /** Routines list variant: trailing "Generate" button instead of full-width CTA. */
+  compact?: boolean;
+}) {
   const colors = useColors();
   const { t, i18n } = useTranslation();
   const toast = useToast();
@@ -118,29 +129,60 @@ export function AIPlanCard({ className }: { className?: string }) {
 
   return (
     <>
-      <Card className={cn("gap-3", className)}>
-        <View className="flex-row items-center gap-3">
-          <View className="h-10 w-10 items-center justify-center rounded-full bg-brand-accent-soft">
-            <Ionicons name="sparkles" size={20} color={colors.brandAccent} />
+      {/* AI card — the only gold family in the app (README: AI features only) */}
+      <Card
+        className={cn("gap-2.5 p-3 rounded-2xl border-brand-accent-border overflow-hidden", className)}
+      >
+        {/* Decorative gold-tinted circle off the top-right corner */}
+        <View
+          pointerEvents="none"
+          className="absolute rounded-full"
+          style={{
+            top: -18,
+            right: -18,
+            width: 70,
+            height: 70,
+            backgroundColor: colors.brandAccentSoft,
+            opacity: 0.5,
+          }}
+        />
+        <View className="flex-row items-center gap-2.5">
+          <View
+            className="h-9 w-9 items-center justify-center rounded-lg"
+            style={{ backgroundColor: colors.brandAccentSoft }}
+          >
+            <Ionicons name="sparkles" size={17} color={colors.brandAccent} />
           </View>
           <View className="flex-1">
-            <Text className="text-base font-semibold text-content-primary">
-              {t("profile.aiTitle")}
-            </Text>
-            <Text className={online ? "text-sm text-content-tertiary" : "text-sm text-content-muted"}>
+            <PosterText size={15}>{t("profile.aiTitle")}</PosterText>
+            <Text
+              className={cn("text-[11px] mt-0.5", online ? "text-content-tertiary" : "text-content-muted")}
+            >
               {online ? t("profile.aiSubtitle") : t("common.requiresInternet")}
             </Text>
           </View>
+          {SHOW_GENERATE && compact && (
+            <SkewButton
+              size="compact"
+              onPress={handlePress}
+              loading={generating}
+              disabled={!online}
+            >
+              {t("profile.aiGenerateShort")}
+            </SkewButton>
+          )}
         </View>
-        <Button
-          icon="sparkles"
-          onPress={handlePress}
-          loading={generating}
-          disabled={!online}
-          className="w-full"
-        >
-          {t("profile.aiGenerate")}
-        </Button>
+        {SHOW_GENERATE && !compact && (
+          <SkewButton
+            icon="sparkles"
+            onPress={handlePress}
+            loading={generating}
+            disabled={!online}
+            className="mx-1"
+          >
+            {t("profile.aiGenerate")}
+          </SkewButton>
+        )}
       </Card>
 
       <ConfirmDialog

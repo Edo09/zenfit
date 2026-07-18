@@ -14,11 +14,15 @@ import {
   ActionsheetItemText,
 } from "@/components/ui/actionsheet";
 import { AIPlanCard } from "@/src/components/ai-plan-card";
-import { StatCard } from "@/src/components/stat-card";
+import { Ring } from "@/src/components/progress/ring";
 import {
+  CapsLabel,
   Card,
+  DashLabel,
   ErrorState,
+  HeaderPanel,
   LoadingBlock,
+  PosterText,
   Screen,
   SectionHeader,
 } from "@/src/components/ui";
@@ -29,7 +33,7 @@ import { useProfile } from "@/src/hooks/use-profile";
 import { useProgress } from "@/src/hooks/use-progress";
 import { useRefreshOnFocus } from "@/src/hooks/use-refresh-on-focus";
 import { useRoutines } from "@/src/hooks/use-routines";
-import { enterFade, exit, PressableScale, staggered } from "@/src/lib/motion";
+import { enterFade, exit, staggered } from "@/src/lib/motion";
 import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
@@ -40,19 +44,11 @@ import {
 } from "@/src/utils/calories";
 import { toDateKey } from "@/src/utils/dates";
 import { MEAL_SLOTS, suggestedSlot } from "@/src/utils/meal-slots";
-import { Platform, useWindowDimensions } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   const colors = useColors();
-  const { width } = useWindowDimensions();
-  // Stack the wordmark where one line can't render at a readable size:
-  // web (react-native-web ignores adjustsFontSizeToFit, so it truncates)
-  // and narrow phones (auto-shrink fits but gets too small).
-  const stackedWordmark = Platform.OS === "web" || width < 380;
   const [menuOpen, setMenuOpen] = useState(false);
   const { t, i18n } = useTranslation();
-  const insets = useSafeAreaInsets();
   const { user, signOut } = useAuth();
   const meals = useMeals();
   const progress = useProgress();
@@ -72,6 +68,7 @@ export default function HomeScreen() {
     0,
   );
   const remaining = calorieGoal != null ? calorieGoal - consumed + burned : null;
+  const fuelFrac = calorieGoal != null && calorieGoal > 0 ? consumed / calorieGoal : 0;
 
   const numberLocale = i18n.language === "es" ? "es-ES" : "en-US";
   const kcal = (value: number | null) =>
@@ -120,62 +117,68 @@ export default function HomeScreen() {
     day: "numeric",
   });
 
+  // Fuel-card breakdown rows: caps label left, Anton numeral right
+  const fuelRows = [
+    { key: "goal", label: t("home.goalShort"), value: kcal(calorieGoal), color: colors.contentPrimary },
+    { key: "burned", label: t("home.caloriesBurned"), value: kcal(burned), color: colors.info },
+    {
+      key: "left",
+      label: t("home.caloriesRemaining"),
+      value: kcal(remaining),
+      color: remaining != null && remaining < 0 ? colors.error : colors.success,
+    },
+  ];
+
   return (
     <Screen
       refreshing={refreshing}
       onRefresh={refreshAll}
       contentContainerClassName="px-0 py-0 pb-12 gap-0"
     >
-      {/* Header */}
-      <View className="px-6 pb-6" style={{ paddingTop: insets.top + 16 }}>
-        <View className="flex-row items-center justify-between mb-2">
+      {/* Poster header: brand row → greeting → red dash + date */}
+      <HeaderPanel>
+        <View className="flex-row items-center justify-between">
           <Pressable
             onPress={() => router.push("/(tabs)/profile")}
             accessibilityRole="button"
             accessibilityLabel={t("tabs.profile")}
-            className="flex-row items-center gap-3 flex-1 mr-2"
+            className="flex-row items-center gap-2.5 flex-1 mr-2"
           >
             <Image
               source={require("@/assets/images/app-icon/icon.png")}
               style={{
-                width: 84,
-                height: 84,
-                borderRadius: 20,
+                width: 44,
+                height: 44,
+                borderRadius: 12,
                 borderWidth: 1,
                 borderColor: colors.border,
               }}
               accessibilityIgnoresInvertColors
             />
-            <View className="flex-1">
-              {stackedWordmark ? (
-                <Text className="text-brand-primary font-display text-3xl leading-tight mb-0.5">
-                  Hokage{"\n"}Coaching App
-                </Text>
-              ) : (
-                <Text
-                  className="text-brand-primary font-display text-3xl mb-0.5"
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                >
-                  Hokage Coaching App
-                </Text>
-              )}
-              <Text className="text-2xl font-bold text-content-primary" numberOfLines={1}>
-                {t("home.hey", { name: displayName })}
-              </Text>
-            </View>
+            <Text
+              className="text-brand-primary font-display text-[19px] flex-1"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+            >
+              Hokage Coaching
+            </Text>
           </Pressable>
           <Pressable
             onPress={() => setMenuOpen(true)}
             accessibilityRole="button"
             accessibilityLabel={t("common.menu")}
-            className="w-10 h-10 rounded-full bg-surface items-center justify-center border border-border"
+            className="w-11 h-11 rounded-xl bg-surface items-center justify-center border border-border"
           >
             <Ionicons name="ellipsis-vertical" size={18} color={colors.contentSecondary} />
           </Pressable>
         </View>
-        <Text className="text-content-tertiary">{today}</Text>
-      </View>
+        <View className="mt-5">
+          <PosterText size={27} numberOfLines={1} adjustsFontSizeToFit>
+            {t("home.hey", { name: displayName })}
+          </PosterText>
+          <DashLabel className="mt-2.5">{today}</DashLabel>
+        </View>
+      </HeaderPanel>
 
       <Actionsheet isOpen={menuOpen} onClose={() => setMenuOpen(false)}>
         <ActionsheetBackdrop />
@@ -222,68 +225,55 @@ export default function HomeScreen() {
         <ErrorState onRetry={refreshAll} />
       ) : (
         <AnimatedView entering={enterFade()}>
-          {/* Daily calorie KPIs. The goal is a static target (set by the
-              user/coach in the profile) so it gets its own banner; the three
-              cards below are live counters that move as the day progresses. */}
-          <View className="px-6 gap-3 mb-8">
-            <PressableScale
+          {/* Fuel summary: ring + goal/burned/left breakdown. Tapping opens
+              the profile's calorie-goal section (unchanged behavior). */}
+          <View className="px-5 pt-2">
+            <Card
+              topAccent={fuelFrac}
+              className="rounded-[20px] p-[18px]"
               onPress={() =>
                 router.push({
                   pathname: "/(tabs)/profile",
                   params: { highlight: "calorie-goal", ts: String(Date.now()) },
                 })
               }
-              accessibilityRole="button"
-              accessibilityLabel={t("home.calorieGoal")}
             >
-              <Card className="flex-row items-center gap-3 py-3.5">
-                <View className="h-9 w-9 items-center justify-center rounded-full bg-info-soft">
-                  <Ionicons name="flag-outline" size={18} color={colors.brandPrimary} />
+              <View className="flex-row items-center gap-[18px]">
+                <Ring
+                  size={104}
+                  strokeWidth={9}
+                  frac={fuelFrac}
+                  color={colors.brandPrimary}
+                  trackColor={colors.border}
+                >
+                  <PosterText size={23} tabular>
+                    {kcal(consumed)}
+                  </PosterText>
+                  <CapsLabel size={8.5} em={0.14}>
+                    {t("home.caloriesConsumed")}
+                  </CapsLabel>
+                </Ring>
+                <View className="flex-1">
+                  {fuelRows.map((row, i) => (
+                    <View
+                      key={row.key}
+                      className={
+                        i < fuelRows.length - 1
+                          ? "flex-row items-center justify-between py-[7px] border-b border-border"
+                          : "flex-row items-center justify-between py-[7px]"
+                      }
+                    >
+                      <CapsLabel size={9.5} em={0.14}>
+                        {row.label}
+                      </CapsLabel>
+                      <PosterText size={17} tabular style={{ color: row.color }}>
+                        {row.value}
+                      </PosterText>
+                    </View>
+                  ))}
                 </View>
-                <Text className="flex-1 text-sm font-medium text-content-secondary">
-                  {t("home.calorieGoal")}
-                </Text>
-                <View className="flex-row items-baseline gap-1">
-                  <Text
-                    className="text-2xl font-bold text-content-primary"
-                    style={{ fontVariant: ["tabular-nums"] }}
-                  >
-                    {kcal(calorieGoal)}
-                  </Text>
-                  <Text className="text-xs text-content-tertiary">{t("home.kcal")}</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={16} color={colors.contentMuted} />
-              </Card>
-            </PressableScale>
-
-            <View className="flex-row gap-3">
-              <StatCard
-                compact
-                label={t("home.caloriesConsumed")}
-                value={kcal(consumed)}
-                unit={t("home.kcal")}
-                color={colors.warning}
-                icon="restaurant-outline"
-                onPress={() => router.push("/(tabs)/meals")}
-              />
-              <StatCard
-                compact
-                label={t("home.caloriesBurned")}
-                value={kcal(burned)}
-                unit={t("home.kcal")}
-                color={colors.brandSecondary}
-                icon="flame-outline"
-                onPress={() => router.push("/(tabs)/routines")}
-              />
-              <StatCard
-                compact
-                label={t("home.caloriesRemaining")}
-                value={kcal(remaining)}
-                unit={t("home.kcal")}
-                color={remaining != null && remaining < 0 ? colors.error : colors.success}
-                icon="speedometer-outline"
-              />
-            </View>
+              </View>
+            </Card>
             {calorieGoal == null && (
               <Pressable
                 onPress={() =>
@@ -293,9 +283,9 @@ export default function HomeScreen() {
                   })
                 }
                 accessibilityRole="button"
-                className="bg-info-soft rounded-xl px-4 py-3"
+                className="bg-brand-primary-soft px-4 py-3 mt-3"
               >
-                <Text className="text-brand-primary text-sm font-medium text-center">
+                <Text className="text-brand-primary text-sm font-semibold text-center">
                   {t("home.setCalorieGoalHint")}
                 </Text>
               </Pressable>
@@ -303,16 +293,21 @@ export default function HomeScreen() {
           </View>
 
           {/* Routines — with the AI plan generator as the section's primary action */}
-          <View className="mb-8">
-            <SectionHeader title={t("home.yourRoutines")} className="px-6 mb-2" />
+          <View className="pt-7">
+            <SectionHeader
+              title={t("home.yourRoutines")}
+              actionLabel={t("common.seeAll")}
+              onAction={() => router.push("/(tabs)/routines")}
+              className="px-5 mb-3"
+            />
             <WorkoutCarousel routines={routines} />
-            <View className="px-6 mt-4">
+            <View className="px-5 pt-4">
               <AIPlanCard />
             </View>
           </View>
 
           {/* Today's meals */}
-          <View className="px-6 gap-4 mb-8">
+          <View className="px-5 pt-7 gap-3">
             <SectionHeader
               title={t("home.todaysNutrition")}
               actionLabel={t("common.seeAll")}
@@ -337,40 +332,46 @@ export default function HomeScreen() {
                     0
                   );
                 }}
-                className="bg-surface rounded-2xl p-8 items-center border border-dashed border-border-strong"
+                className="bg-surface rounded-2xl p-7 items-center border-2 border-dashed border-border-strong"
               >
-                <View className="w-12 h-12 bg-info-soft rounded-2xl items-center justify-center mb-3">
-                  <Ionicons name="restaurant-outline" size={24} color={colors.brandPrimary} />
-                </View>
-                <Text className="text-content-tertiary font-medium mb-1">
+                <Text className="text-content-tertiary font-medium mb-2">
                   {t("home.fuelYourBody")}
                 </Text>
-                <Text className="text-brand-primary font-semibold">{t("home.logMeal")}</Text>
+                <View className="flex-row items-center gap-1.5">
+                  <Ionicons name="add" size={16} color={colors.brandPrimary} />
+                  <CapsLabel size={11} className="text-brand-primary font-extrabold">
+                    {t("home.logMeal")}
+                  </CapsLabel>
+                </View>
               </Pressable>
             ) : (
-              <View key="meals-list" className="gap-3">
+              <View key="meals-list" className="gap-2.5">
                 {slotSummaries.map((summary, index) => (
                   <AnimatedView key={summary.slot} entering={staggered(index)} exiting={exit()}>
-                  <Pressable
-                    onPress={() => router.push("/(tabs)/meals")}
-                    className="bg-surface rounded-2xl px-5 py-4 flex-row items-center justify-between border border-border"
-                  >
-                    <View className="flex-row items-center gap-4">
-                      <View className="w-10 h-10 bg-info-soft rounded-xl items-center justify-center">
-                        <Ionicons name="restaurant-outline" size={18} color={colors.brandPrimary} />
-                      </View>
-                      <View>
-                        <Text className="font-semibold text-content-primary capitalize">
+                    <Pressable
+                      onPress={() => router.push("/(tabs)/meals")}
+                      className="bg-surface rounded-2xl px-4 py-3.5 flex-row items-center gap-3.5 border border-border"
+                    >
+                      <Ionicons
+                        name={summary.slot === "breakfast" ? "cafe-outline" : "restaurant-outline"}
+                        size={20}
+                        color={colors.brandPrimary}
+                      />
+                      <View className="flex-1">
+                        <Text className="text-sm font-bold text-content-primary capitalize">
                           {t(`meals.${summary.slot}`, { defaultValue: summary.slot })}
                         </Text>
-                        <Text className="text-content-muted text-xs">
+                        <Text className="text-content-muted text-[11px]">
                           {t("meals.itemCount", { count: summary.count })}
-                          {` · ${kcal(summary.kcal)} ${t("home.kcal")}`}
                         </Text>
                       </View>
-                    </View>
-                    <Ionicons name="chevron-forward" size={18} color={colors.contentMuted} />
-                  </Pressable>
+                      <View className="flex-row items-baseline gap-1">
+                        <PosterText size={17} tabular>
+                          {kcal(summary.kcal)}
+                        </PosterText>
+                        <Text className="text-[10px] text-content-muted">{t("home.kcal")}</Text>
+                      </View>
+                    </Pressable>
                   </AnimatedView>
                 ))}
               </View>
@@ -378,7 +379,7 @@ export default function HomeScreen() {
           </View>
 
           {/* Recent activity */}
-          <View className="px-6 gap-4">
+          <View className="px-5 pt-7 gap-3">
             <SectionHeader
               title={t("home.recentActivity")}
               actionLabel={t("common.seeAll")}
@@ -403,39 +404,34 @@ export default function HomeScreen() {
                     }
                   }, 0);
                 }}
-                className="bg-surface rounded-2xl p-8 items-center border border-dashed border-border-strong"
+                className="bg-surface rounded-2xl p-7 items-center border-2 border-dashed border-border-strong"
               >
-                <View className="w-12 h-12 bg-success-soft rounded-2xl items-center justify-center mb-3">
-                  <Ionicons name="fitness-outline" size={24} color={colors.success} />
-                </View>
-                <Text className="text-content-tertiary font-medium mb-1">
+                <Text className="text-content-tertiary font-medium mb-2">
                   {t("home.noActivityToday")}
                 </Text>
-                <Text className="text-brand-secondary font-semibold">{t("home.startRoutine")}</Text>
+                <CapsLabel size={11} className="text-brand-primary font-extrabold">
+                  {t("home.startRoutine")}
+                </CapsLabel>
               </Pressable>
             ) : (
-              <View key="logs-list" className="gap-3">
+              <View key="logs-list" className="gap-2.5">
                 {todaysLogs.slice(0, 3).map((log, index) => (
                   <AnimatedView
                     key={log.id}
                     entering={staggered(index)}
                     exiting={exit()}
-                    className="bg-surface rounded-2xl px-5 py-4 flex-row items-center justify-between border border-border"
+                    className="bg-surface rounded-2xl px-4 py-3.5 flex-row items-center gap-3.5 border border-border"
                   >
-                    <View className="flex-row items-center gap-4">
-                      <View className="w-10 h-10 bg-success-soft rounded-xl items-center justify-center">
-                        <Ionicons name="checkmark-circle" size={22} color={colors.success} />
-                      </View>
-                      <View>
-                        <Text className="font-semibold text-content-primary">
-                          {log.routine_name}
+                    <Ionicons name="checkmark-circle" size={22} color={colors.success} />
+                    <View className="flex-1">
+                      <Text className="text-sm font-bold text-content-primary">
+                        {log.routine_name}
+                      </Text>
+                      {log.duration_minutes != null && (
+                        <Text className="text-content-muted text-[11px]">
+                          {log.duration_minutes} {t("home.minutes")}
                         </Text>
-                        {log.duration_minutes != null && (
-                          <Text className="text-content-muted text-xs">
-                            {log.duration_minutes} {t("home.minutes")}
-                          </Text>
-                        )}
-                      </View>
+                      )}
                     </View>
                   </AnimatedView>
                 ))}

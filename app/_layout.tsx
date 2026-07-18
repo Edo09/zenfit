@@ -12,6 +12,7 @@ import { useColors } from "@/src/theme/colors";
 import { applyThemeMode, getStoredThemeMode } from "@/src/theme/theme-mode";
 import { useThemeMode } from "@/src/theme/theme-store";
 import { supabase } from "@/src/utils/supabase";
+import { Anton_400Regular } from "@expo-google-fonts/anton";
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -78,6 +79,7 @@ function AuthGate() {
 export default function RootLayout() {
   const colors = useColors();
   const [fontsLoaded] = useFonts({
+    Anton_400Regular,
     Inter_400Regular,
     Inter_500Medium,
     Inter_600SemiBold,

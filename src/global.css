@@ -21,10 +21,16 @@
        brand-light the INK color, in both schemes. */
     --hb-brand-primary: #dc2626;
     --hb-brand-secondary: #2563eb;
-    /* Warm gold — echoes the HOKAGE wordmark's gold outline. Brand accent
-       for premium moments (AI, wordmark tagline), not a semantic feedback hue. */
+    /* Warm gold — echoes the HOKAGE wordmark's gold outline. Dojo Poster
+       reserves it exclusively for AI features. */
     --hb-brand-accent: #a16207;
     --hb-brand-accent-soft: rgba(161, 98, 7, 0.12);
+    /* Gold hairline for AI cards (README: ai-gold border) */
+    --hb-brand-accent-border: rgba(161, 98, 7, 0.35);
+    /* Dojo Poster: red selected-state fills ("accent-dim") */
+    --hb-brand-primary-soft: rgba(220, 38, 38, 0.08);
+    /* Decorative skewed rectangle in page headers */
+    --hb-skew-ghost: rgba(220, 38, 38, 0.05);
     --hb-brand-dark: #f8fafc;
     --hb-brand-light: #0f172a;
     --hb-brand-primary-light: #ef4444;
@@ -96,6 +102,9 @@
     --hb-brand-secondary: #3b82f6;
     --hb-brand-accent: #fbbf24;
     --hb-brand-accent-soft: rgba(251, 191, 36, 0.16);
+    --hb-brand-accent-border: rgba(251, 191, 36, 0.35);
+    --hb-brand-primary-soft: rgba(239, 68, 68, 0.1);
+    --hb-skew-ghost: rgba(220, 38, 38, 0.08);
     --hb-brand-dark: #0f172a;
     --hb-brand-light: #f8fafc;
     --hb-brand-primary-light: #f87171;
@@ -157,6 +166,9 @@
   --color-brand-secondary: var(--hb-brand-secondary);
   --color-brand-accent: var(--hb-brand-accent);
   --color-brand-accent-soft: var(--hb-brand-accent-soft);
+  --color-brand-accent-border: var(--hb-brand-accent-border);
+  --color-brand-primary-soft: var(--hb-brand-primary-soft);
+  --color-skew-ghost: var(--hb-skew-ghost);
   --color-brand-dark: var(--hb-brand-dark);
   --color-brand-light: var(--hb-brand-light);
   --color-brand-primary-light: var(--hb-brand-primary-light);
@@ -203,6 +215,19 @@
   --color-ring: rgb(var(--ring));
   --color-accent: rgb(var(--accent));
   --color-accent-foreground: rgb(var(--accent-foreground));
+}
+
+/* Web fallback: the android/ios media blocks below never match in the
+   browser, so without a root definition var(--font-display) resolves to
+   nothing and the wordmark loses EdoSZ. Native overrides via the platform
+   blocks that follow. */
+:root {
+  --font-mono: monospace;
+  --font-rounded: normal;
+  --font-serif: serif;
+  --font-sans: Inter_400Regular;
+  /* Brush/graffiti display face — brand wordmark only (font-display) */
+  --font-display: EdoSZ;
 }
 
 /* Platform-specific font families - Inter */
@@ -261,4 +286,18 @@
 }
 .font-black {
   font-family: Inter_900Black;
+}
+
+/* Dojo Poster display face — screen titles, section headers, card titles,
+   large numerals. Single weight; always pair with `uppercase` in markup.
+   Unlayered so it beats .font-app like the weight classes above. */
+.font-anton {
+  font-family: Anton_400Regular;
+}
+
+/* Brush wordmark face. Literal + unlayered like .font-anton: the var-based
+   `font-display` utility never materializes as a CSS rule on web, so the
+   wordmark silently fell back to the system stack there. */
+.font-display {
+  font-family: EdoSZ;
 }
