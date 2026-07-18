@@ -1,15 +1,17 @@
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { CoachSection } from "@/src/components/coach-section";
-import { Card, Screen } from "@/src/components/ui";
+import { Button, Card, Input, Screen, useToast } from "@/src/components/ui";
 import { setLanguage } from "@/src/i18n";
+import { useIsOnline } from "@/src/lib/online";
 import { setWeightUnit, useWeightUnit } from "@/src/lib/weight-unit";
 import { useColors } from "@/src/theme/colors";
 import { setThemeMode } from "@/src/theme/theme-mode";
 import { useThemeScheme } from "@/src/theme/theme-store";
 import { Pressable, Text, View } from "@/src/tw";
+import { supabase } from "@/src/utils/supabase";
 
 type RowProps = {
   icon: React.ComponentProps<typeof Ionicons>["name"];
@@ -37,6 +39,92 @@ function SettingsRow({ icon, label, value, onPress, last = false }: RowProps) {
       <Text className="text-sm text-content-tertiary">{value}</Text>
       <Ionicons name="chevron-forward" size={16} color={colors.contentMuted} />
     </Pressable>
+  );
+}
+
+// Lets a client rotate the temporary password the coach created their
+// account with (panel "Añadir cliente" flow) — or change it any time.
+function ChangePasswordCard() {
+  const { t } = useTranslation();
+  const toast = useToast();
+  const online = useIsOnline();
+  const [open, setOpen] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [error, setError] = useState<string | undefined>();
+  const [saving, setSaving] = useState(false);
+
+  const submit = async () => {
+    if (password.length < 8) {
+      setError(t("auth.passwordLength"));
+      return;
+    }
+    if (password !== confirm) {
+      setError(t("settings.passwordsDontMatch"));
+      return;
+    }
+    if (!online) {
+      toast.show({ type: "info", message: t("common.requiresInternet") });
+      return;
+    }
+    setSaving(true);
+    try {
+      const { error: updateError } = await supabase.auth.updateUser({ password });
+      if (updateError) throw updateError;
+      toast.show({ type: "success", message: t("settings.passwordChanged") });
+      setPassword("");
+      setConfirm("");
+      setOpen(false);
+    } catch {
+      toast.show({ type: "error", message: t("common.somethingWentWrong") });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Card className="py-0">
+      <SettingsRow
+        icon="key-outline"
+        label={t("settings.changePassword")}
+        value=""
+        onPress={() => setOpen((v) => !v)}
+        last={!open}
+      />
+      {open && (
+        <View className="gap-3 py-4">
+          <Input
+            label={t("settings.newPassword")}
+            placeholder={t("auth.passwordPlaceholder")}
+            helper={error == null ? t("auth.passwordMin") : undefined}
+            error={error}
+            secureTextEntry
+            autoCapitalize="none"
+            value={password}
+            onChangeText={(text) => {
+              setPassword(text);
+              if (error != null) setError(undefined);
+            }}
+            className="bg-brand-dark"
+          />
+          <Input
+            label={t("settings.confirmPassword")}
+            placeholder={t("auth.passwordPlaceholder")}
+            secureTextEntry
+            autoCapitalize="none"
+            value={confirm}
+            onChangeText={(text) => {
+              setConfirm(text);
+              if (error != null) setError(undefined);
+            }}
+            className="bg-brand-dark"
+          />
+          <Button onPress={submit} loading={saving} className="w-full">
+            {t("settings.changePassword")}
+          </Button>
+        </View>
+      )}
+    </Card>
   );
 }
 
@@ -69,6 +157,8 @@ export default function SettingsScreen() {
           last
         />
       </Card>
+
+      <ChangePasswordCard />
 
       {/* Coach + membership (moved from Profile — read-only, coach manages on web) */}
       <CoachSection />

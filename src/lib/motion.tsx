@@ -93,11 +93,13 @@ export function PressableScale({
       {...rest}
       style={[style, pressStyle]}
       onPressIn={(e) => {
-        scale.value = withTiming(scaleTo, { duration: 100, easing: EASE_OUT });
+        // .set(), not .value=: React Compiler flags the assignment as an
+        // illegal mutation (Reanimated added get/set for compiler compat)
+        scale.set(withTiming(scaleTo, { duration: 100, easing: EASE_OUT }));
         onPressIn?.(e);
       }}
       onPressOut={(e) => {
-        scale.value = withTiming(1, { duration: DUR.fast, easing: EASE_OUT });
+        scale.set(withTiming(1, { duration: DUR.fast, easing: EASE_OUT }));
         onPressOut?.(e);
       }}
       onPress={(e) => {

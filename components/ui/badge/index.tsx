@@ -97,7 +97,7 @@ type IBadgeIconProps = React.ComponentPropsWithoutRef<typeof PrimitiveIcon> &
 };
   
 // nativewind 5.0.0-preview.3 types can't resolve this mapping; runtime supports it
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const StyledUIIcon = styled(UIIcon, {
   className: {
     target: 'style',
@@ -109,7 +109,7 @@ const StyledUIIcon = styled(UIIcon, {
       stroke: true,
     },
   },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
 } as any) as unknown as React.ComponentType<any>;
 
 

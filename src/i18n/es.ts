@@ -238,6 +238,12 @@ export default {
     weightUnit: "Unidad de peso",
     unitKgLabel: "Kilogramos (kg)",
     unitLbLabel: "Libras (lb)",
+    security: "Seguridad",
+    changePassword: "Cambiar contraseña",
+    newPassword: "Nueva contraseña",
+    confirmPassword: "Confirmar contraseña",
+    passwordsDontMatch: "Las contraseñas no coinciden",
+    passwordChanged: "Contraseña actualizada",
   },
 
   // Programa multi-semana del coach

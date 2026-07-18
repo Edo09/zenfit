@@ -6,7 +6,7 @@ import { styled } from 'nativewind';
 
 
 // nativewind 5.0.0-preview.3 types can't resolve this mapping; runtime supports it
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const StyledActivityIndicator = styled(ActivityIndicator, {
   className: { target: 'style', nativeStyleToProp: { color: true } },
 } as any) as unknown as React.ComponentType<

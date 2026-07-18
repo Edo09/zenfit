@@ -52,11 +52,21 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
 
+    // Temporary password, returned ONCE to the coach who shares it with the
+    // client out-of-band (WhatsApp). The client signs in with it and changes
+    // it in the app's Ajustes screen. (The previous generateLink approach
+    // produced a link but never delivered it anywhere — no email is sent by
+    // generateLink, and the app has no web recovery flow.)
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    const bytes = new Uint8Array(10);
+    crypto.getRandomValues(bytes);
+    const temp_password = 'Hkg-' + Array.from(bytes, (b) => alphabet[b % alphabet.length]).join('');
+
     const { data: created, error } = await admin.auth.admin.createUser({
       email,
+      password: temp_password,
       email_confirm: true,
       user_metadata: { display_name },
-      // No password set — the client chooses their own via the recovery link below.
     });
     if (error) return json({ error: error.message }, 400);
 
@@ -67,10 +77,7 @@ Deno.serve(async (req) => {
       await admin.from('profiles').update({ display_name }).eq('id', created.user.id);
     }
 
-    // Let the client set their own password instead of handling one in the UI.
-    await admin.auth.admin.generateLink({ type: 'recovery', email });
-
-    return json({ user_id: created.user?.id }, 200);
+    return json({ user_id: created.user?.id, temp_password }, 200);
   } catch (e) {
     return json({ error: String(e) }, 500);
   }

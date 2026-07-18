@@ -115,10 +115,12 @@ export function Button({
       onPress={handlePress}
       onPressIn={() => {
         // Large surfaces need less travel than the standard 0.97
-        scale.value = withTiming(0.98, { duration: 100, easing: EASE_OUT });
+        // (.set(), not .value=: React Compiler treats the assignment as an
+        // illegal mutation — Reanimated added get/set for compiler compat)
+        scale.set(withTiming(0.98, { duration: 100, easing: EASE_OUT }));
       }}
       onPressOut={() => {
-        scale.value = withTiming(1, { duration: DUR.fast, easing: EASE_OUT });
+        scale.set(withTiming(1, { duration: DUR.fast, easing: EASE_OUT }));
       }}
       isDisabled={inactive}
       accessibilityState={{ disabled: inactive, busy: loading }}

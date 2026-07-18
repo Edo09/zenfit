@@ -1,7 +1,7 @@
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Button, Card, Chip, Input, Screen, useToast } from "@/src/components/ui";
@@ -19,13 +19,17 @@ export default function EditFoodScreen() {
   const { itemId } = useLocalSearchParams<{ itemId?: string }>();
   const { meals, updateDiaryItem } = useMeals();
 
-  const entry = useMemo(() => {
+  // No useMemo: the React Compiler refuses to compile the component when it
+  // can't preserve the manual memoization ("Compilation Skipped") — and it
+  // auto-memoizes this anyway. The scan is cheap regardless.
+  const findEntry = () => {
     for (const meal of meals) {
       const item = meal.meal_items.find((i) => i.id === itemId);
       if (item != null) return { item, meal };
     }
     return null;
-  }, [meals, itemId]);
+  };
+  const entry = findEntry();
 
   // Prefilled once on mount; the entry exists because we navigated from its row
   const [name, setName] = useState(entry?.item.name ?? "");

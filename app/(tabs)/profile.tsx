@@ -192,8 +192,14 @@ export default function ProfileScreen() {
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (profile == null) return;
+  // Hydrate the form whenever a new profile object arrives (initial load and
+  // background refetches — the same trigger the old effect keyed on). Done as
+  // a render-phase state adjustment instead of a sync-setState effect: React
+  // re-renders immediately before committing, and the hooks lint forbids the
+  // effect version for its cascading-render cost.
+  const [seededProfile, setSeededProfile] = useState<Profile | null>(null);
+  if (profile != null && profile !== seededProfile) {
+    setSeededProfile(profile);
     setAge(profile.age != null ? String(profile.age) : "");
     setSex(profile.sex);
     setHeightCm(profile.height_cm != null ? String(profile.height_cm) : "");
@@ -207,11 +213,13 @@ export default function ProfileScreen() {
     setAvailableDays(profile.available_days ?? []);
     setCalorieGoal(profile.calorie_goal != null ? String(profile.calorie_goal) : "");
     setGoal(profile.goal);
-  }, [profile, weightSeed]);
+  }
 
   useEffect(() => {
     if (highlight !== "calorie-goal" || loading) return;
-    setHighlightGoal(true);
+    // Next tick, not synchronously — sync setState in an effect cascades
+    // renders (same pattern as the rest-timer effect in routines/[id])
+    const onTimer = setTimeout(() => setHighlightGoal(true), 0);
     // Small delay so the section's onLayout has reported its position
     const scrollTimer = setTimeout(() => {
       scrollRef.current?.scrollTo({
@@ -221,6 +229,7 @@ export default function ProfileScreen() {
     }, 300);
     const clearTimer = setTimeout(() => setHighlightGoal(false), 2500);
     return () => {
+      clearTimeout(onTimer);
       clearTimeout(scrollTimer);
       clearTimeout(clearTimer);
     };
