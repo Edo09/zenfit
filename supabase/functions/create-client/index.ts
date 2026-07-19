@@ -11,7 +11,9 @@ import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 const cors = {
   'Access-Control-Allow-Origin': '*', // tighten to the panel's real origin before launch
-  'Access-Control-Allow-Headers': 'authorization, content-type',
+  // supabase-js invoke() sends apikey + x-client-info too — omitting them
+  // from the preflight allowlist makes the browser block the POST entirely.
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 

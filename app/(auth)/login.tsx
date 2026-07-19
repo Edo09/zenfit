@@ -76,7 +76,7 @@ export default function Login() {
           className="font-display text-content-primary text-6xl text-center mt-5"
           style={{ lineHeight: 64 }}
         >
-          Hokage
+          The Hokage
         </Text>
         <Text className="text-brand-accent text-sm font-bold uppercase tracking-[4px] mt-1">
           Coaching App

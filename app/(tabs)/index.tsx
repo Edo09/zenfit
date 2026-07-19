@@ -160,7 +160,7 @@ export default function HomeScreen() {
               numberOfLines={1}
               adjustsFontSizeToFit
             >
-              Hokage Coaching
+              The Hokage Coaching
             </Text>
           </Pressable>
           <Pressable
