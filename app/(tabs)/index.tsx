@@ -147,9 +147,9 @@ export default function HomeScreen() {
             <Image
               source={require("@/assets/images/app-icon/icon.png")}
               style={{
-                width: 44,
-                height: 44,
-                borderRadius: 12,
+                width: 56,
+                height: 56,
+                borderRadius: 14,
                 borderWidth: 1,
                 borderColor: colors.border,
               }}
