@@ -3,7 +3,7 @@ import { Image } from "expo-image";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Dimensions, FlatList } from "react-native";
+import { Dimensions, FlatList, Platform } from "react-native";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -16,6 +16,7 @@ import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 
 import { CapsLabel, PosterText } from "@/src/components/ui/poster";
 import { useColors } from "@/src/theme/colors";
+import { WEB_MAX_WIDTH } from "@/src/theme/layout";
 import { useThemeScheme } from "@/src/theme/theme-store";
 import { Pressable, Text, View } from "@/src/tw";
 import { Routine } from "@/src/types/database";
@@ -24,7 +25,11 @@ import { getRoutineImage } from "@/src/utils/routine-image";
 // Dojo Poster hero carousel: full-width image pages (README: h216 r20,
 // bottom fade, red skew badge, Anton title, 44px play button) with the
 // bar-style page dots (active 18×4 red bar, inactive 4×4 squares).
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const { width: WINDOW_WIDTH } = Dimensions.get("window");
+// On web the app renders in a centered column (see app/_layout.tsx) — size
+// pages from the column, not the browser window, or cards overflow it.
+const SCREEN_WIDTH =
+  Platform.OS === "web" ? Math.min(WINDOW_WIDTH, WEB_MAX_WIDTH) : WINDOW_WIDTH;
 const H_PADDING = 20;
 const ITEM_GAP = 12;
 const ITEM_WIDTH = SCREEN_WIDTH - H_PADDING * 2;

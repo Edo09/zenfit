@@ -19,6 +19,7 @@ import {
 import { useAuth } from "@/src/hooks/use-auth";
 import { useProfile } from "@/src/hooks/use-profile";
 import { useColors } from "@/src/theme/colors";
+import { useThemeScheme } from "@/src/theme/theme-store";
 import { Pressable, Text, TextInput, View } from "@/src/tw";
 import type { Profile } from "@/src/types/database";
 import { recommendedCalorieGoal } from "@/src/utils/calories";
@@ -157,6 +158,10 @@ function ProfessionCard({
 
 export default function ProfileScreen() {
   const colors = useColors();
+  // Chip text color must follow the app theme (store), not the `dark:`
+  // variant — on web that variant tracks the OS media query, which diverges
+  // from the class-driven theme when an explicit mode is set.
+  const scheme = useThemeScheme();
   const { t } = useTranslation();
   const toast = useToast();
   const { user } = useAuth();
@@ -614,10 +619,16 @@ export default function ProfileScreen() {
             <View className="flex-row items-center gap-3 rounded-2xl bg-info-soft p-3.5">
               <Ionicons name="flash" size={20} color={colors.brandPrimary} />
               <View className="flex-1 gap-0.5">
-                <Text className="text-xs font-semibold text-brand-primary-dark dark:text-white">
+                <Text
+                  className="text-xs font-semibold"
+                  style={{ color: scheme === "dark" ? colors.white : colors.brandPrimaryDark }}
+                >
                   {t("profile.recommendedCaption")}
                 </Text>
-                <Text className="text-xl font-extrabold text-brand-primary-dark dark:text-white">
+                <Text
+                  className="text-xl font-extrabold"
+                  style={{ color: scheme === "dark" ? colors.white : colors.brandPrimaryDark }}
+                >
                   {t("profile.recommendedValue", { kcal: recommendedGoal })}
                 </Text>
               </View>

@@ -9,6 +9,7 @@ import { flushOutbox } from "@/src/lib/outbox";
 import { persister, PERSIST_MAX_AGE, queryClient } from "@/src/lib/query-client";
 import { AuthProvider } from "@/src/providers/auth-provider";
 import { useColors } from "@/src/theme/colors";
+import { WEB_MAX_WIDTH } from "@/src/theme/layout";
 import { applyThemeMode, getStoredThemeMode } from "@/src/theme/theme-mode";
 import { useThemeMode } from "@/src/theme/theme-store";
 import { supabase } from "@/src/utils/supabase";
@@ -149,7 +150,28 @@ export default function RootLayout() {
           <ToastProvider>
             {/* "auto" tracks the active scheme: light icons on dark, dark on light */}
             <StatusBar style="auto" />
-            <View style={{ flex: 1 }}>
+            <View
+              style={{
+                flex: 1,
+                backgroundColor:
+                  Platform.OS === "web" ? colors.webGutter : colors.brandDark,
+              }}
+            >
+            <View
+              style={[
+                { flex: 1 },
+                // Phone-first screens: on web render the whole app (tab bar
+                // included) as a centered column instead of full-bleed.
+                Platform.OS === "web" && {
+                  width: "100%" as const,
+                  maxWidth: WEB_MAX_WIDTH,
+                  marginHorizontal: "auto" as const,
+                  borderLeftWidth: 1,
+                  borderRightWidth: 1,
+                  borderColor: colors.border,
+                },
+              ]}
+            >
               <OfflineBanner />
               {/* Group switches are router.replace calls — fade reads right */}
               <Stack
@@ -167,6 +189,7 @@ export default function RootLayout() {
                 <Stack.Screen name="(onboarding)" />
                 <Stack.Screen name="(tabs)" />
               </Stack>
+            </View>
             </View>
             <AuthGate />
             </ToastProvider>

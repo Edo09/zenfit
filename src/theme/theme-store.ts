@@ -32,16 +32,42 @@ export function useThemeMode(): ThemeMode | null {
   return useSyncExternalStore(subscribe, getThemeMode, getThemeMode);
 }
 
+/* Web: react-native-web's useColorScheme doesn't re-render on live OS
+   scheme changes (the CSS media/class blocks switch but JS consumers kept
+   the stale palette), so system mode tracks prefers-color-scheme directly. */
+const darkQuery =
+  Platform.OS === "web" &&
+  typeof window !== "undefined" &&
+  typeof window.matchMedia === "function"
+    ? window.matchMedia("(prefers-color-scheme: dark)")
+    : null;
+
+function getWebSystemScheme(): "light" | "dark" {
+  return darkQuery?.matches ? "dark" : "light";
+}
+
+function subscribeWebSystemScheme(listener: () => void): () => void {
+  darkQuery?.addEventListener("change", listener);
+  return () => darkQuery?.removeEventListener("change", listener);
+}
+
 /** Effective scheme for JS consumers (useColors, icon colors, isDark).
     Native: Appearance already reflects explicit modes (applyThemeMode calls
     Appearance.setColorScheme), so the RN hook is enough. Web: react-native-web
     cannot override Appearance — it always follows prefers-color-scheme — so
-    an explicit mode from the store wins there. */
+    an explicit mode from the store wins there, and "system" follows the
+    matchMedia subscription above. */
 export function useThemeScheme(): "light" | "dark" {
-  const system = useColorScheme();
+  const native = useColorScheme();
   const current = useThemeMode();
-  if (Platform.OS === "web" && (current === "light" || current === "dark")) {
-    return current;
+  const webSystem = useSyncExternalStore(
+    subscribeWebSystemScheme,
+    getWebSystemScheme,
+    getWebSystemScheme,
+  );
+  if (Platform.OS === "web") {
+    if (current === "light" || current === "dark") return current;
+    return webSystem;
   }
-  return system === "dark" ? "dark" : "light";
+  return native === "dark" ? "dark" : "light";
 }

@@ -1,7 +1,7 @@
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Button, Input, Screen } from "@/src/components/ui";
@@ -81,9 +81,9 @@ export default function Login() {
         <Text className="text-brand-accent text-sm font-bold uppercase tracking-[4px] mt-1">
           Coaching App
         </Text>
-        <Text className="text-content-tertiary mt-3 text-base">
+        {/* <Text className="text-content-tertiary mt-3 text-base">
           {t("auth.fitnessCompanion")}
-        </Text>
+        </Text> */}
       </View>
 
       <View className="gap-4">

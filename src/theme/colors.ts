@@ -31,6 +31,9 @@ const lightPalette = {
     contentMuted: "#94a3b8",
     border: "#e2e8f0",
     borderStrong: "#cbd5e1",
+    // Web-only: page background behind the centered app column
+    // (app/_layout.tsx). TS-only token — no className counterpart needed.
+    webGutter: "#e2e8f0",
     success: "#16a34a",
     error: "#dc2626",
     warning: "#d97706",
@@ -68,6 +71,8 @@ const darkPalette: Palette = {
     contentMuted: "#64748b",
     border: "#334155",
     borderStrong: "#475569",
+    // Darker than the canvas so the app column pops on dark web
+    webGutter: "#020617",
     success: "#22c55e",
     error: "#ef4444",
     warning: "#f59e0b",
