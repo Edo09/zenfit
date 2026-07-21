@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import React from "react";
 import { useTranslation } from "react-i18next";
 
@@ -61,9 +62,17 @@ export function ProgramExerciseRow({
       ? t(`program.load_${p.loadQualitative}`)
       : null;
 
-  // Quick play only when a handler is passed AND a video exists; otherwise the
-  // demo opens from the detail sheet. `videoUrl` guards the callback below.
-  const showPlay = onPlay != null && videoUrl != null && videoUrl !== "";
+  const hasVideo = videoUrl != null && videoUrl !== "";
+  // GIF/WebP demos auto-loop inline as the row thumbnail (expo-image animates
+  // them). Real videos (later) don't autoplay in a list — keep the play button.
+  const isInlineGif = hasVideo && /\.(gif|apng|webp|png|jpe?g)$/i.test(videoUrl.split("?")[0]);
+  const showPlay = onPlay != null && hasVideo && !isInlineGif;
+  // Tapping the thumbnail opens the fullscreen player if available, else the
+  // detail sheet — never a dead tap.
+  const onThumbPress = () => {
+    if (onPlay != null && videoUrl != null) onPlay(videoUrl);
+    else onOpen?.();
+  };
 
   const icon = (
     <>
@@ -87,10 +96,25 @@ export function ProgramExerciseRow({
 
   return (
     <View className="flex-row items-start gap-3 py-2.5">
-      {showPlay ? (
+      {isInlineGif ? (
+        <Pressable
+          onPress={onThumbPress}
+          accessibilityRole="button"
+          accessibilityLabel={t("program.watchDemo", { name: p.name })}
+          className="mt-0.5 h-12 w-12 overflow-hidden rounded-lg bg-brand-dark"
+        >
+          <Image
+            source={{ uri: videoUrl! }}
+            style={{ width: "100%", height: "100%" }}
+            contentFit="cover"
+            cachePolicy="memory-disk"
+            transition={150}
+          />
+        </Pressable>
+      ) : showPlay ? (
         <Pressable
           onPress={() => {
-            if (videoUrl != null) onPlay(videoUrl);
+            if (videoUrl != null) onPlay?.(videoUrl);
           }}
           accessibilityRole="button"
           accessibilityLabel={t("program.watchDemo", { name: p.name })}
