@@ -101,7 +101,7 @@ export function ProgramExerciseRow({
           onPress={onThumbPress}
           accessibilityRole="button"
           accessibilityLabel={t("program.watchDemo", { name: p.name })}
-          className="mt-0.5 h-12 w-12 overflow-hidden rounded-lg bg-brand-dark"
+          className="h-20 w-20 overflow-hidden rounded-xl bg-brand-dark"
         >
           <Image
             source={{ uri: videoUrl! }}

@@ -149,6 +149,7 @@ export function ProgramView({
           week={week}
           selectedWeek={selectedWeek}
           onOpenExercise={setOpenExercise}
+          onPlayVideo={setVideoUri}
           logging={logging}
         />
       ))}
@@ -189,12 +190,14 @@ function DayCard({
   week,
   selectedWeek,
   onOpenExercise,
+  onPlayVideo,
   logging,
 }: {
   day: ProgramDayWithExercises;
   week: ProgramWeek | null;
   selectedWeek: number;
   onOpenExercise: (exercise: ProgramExercise) => void;
+  onPlayVideo: (uri: string) => void;
   logging: ReturnType<typeof useProgramLogging>;
 }) {
   const { t } = useTranslation();
@@ -258,6 +261,7 @@ function DayCard({
                 logging.setCompletion(ex.id, selectedWeek, !logging.isDone(ex.id, selectedWeek))
               }
               onOpen={() => onOpenExercise(ex)}
+              onPlay={onPlayVideo}
               loggedCount={logging.setsFor(ex.id, selectedWeek).length}
             />
           </View>
