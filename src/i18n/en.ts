@@ -288,6 +288,8 @@ export default {
     markUndone: "Mark {{name}} not done",
     markDayDone: "Mark whole day done",
     markDayUndone: "Mark whole day not done",
+    expandDay: "Expand day",
+    collapseDay: "Collapse day",
     logSets: "Log sets",
     setsLogged: "{{count}}/{{total}}",
     setCol: "Set",

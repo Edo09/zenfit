@@ -288,6 +288,8 @@ export default {
     markUndone: "Marcar {{name}} como no hecho",
     markDayDone: "Marcar todo el día como hecho",
     markDayUndone: "Marcar todo el día como no hecho",
+    expandDay: "Mostrar día",
+    collapseDay: "Ocultar día",
     logSets: "Registrar series",
     setsLogged: "{{count}}/{{total}}",
     setCol: "Serie",

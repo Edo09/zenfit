@@ -206,10 +206,21 @@ function DayCard({
   const progress = logging.dayProgress(day, selectedWeek);
   const allDone = progress.total > 0 && progress.done === progress.total;
 
+  // A finished day collapses itself so the next day is one scroll away; tapping
+  // the header (or the chevron) reopens it. A manual toggle pins the choice.
+  const [manualCollapsed, setManualCollapsed] = useState<boolean | null>(null);
+  const collapsed = manualCollapsed ?? allDone;
+  const toggleCollapsed = () => setManualCollapsed(!collapsed);
+
   return (
     <Card className="gap-0 py-3">
       <View className="flex-row items-start gap-2 pb-1">
-        <View className="flex-1">
+        <Pressable
+          className="flex-1"
+          onPress={toggleCollapsed}
+          accessibilityRole="button"
+          accessibilityLabel={t(collapsed ? "program.expandDay" : "program.collapseDay")}
+        >
           <View className="flex-row items-center gap-2">
             <Text className="text-[10px] font-bold text-brand-primary" style={TABULAR}>
               {t("program.dayN", { n: day.day_index })}
@@ -223,7 +234,7 @@ function DayCard({
           {day.label != null && day.label !== "" && (
             <Text className="pt-0.5 text-[15px] font-bold text-content-primary">{day.label}</Text>
           )}
-        </View>
+        </Pressable>
 
         {/* Day completion: progress + one-tap mark-all toggle. */}
         <Pressable
@@ -248,25 +259,37 @@ function DayCard({
             {progress.done}/{progress.total}
           </Text>
         </Pressable>
+
+        <Pressable
+          onPress={toggleCollapsed}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={t(collapsed ? "program.expandDay" : "program.collapseDay")}
+          className="pt-0.5"
+        >
+          <Ionicons name={collapsed ? "chevron-down" : "chevron-up"} size={18} color={colors.contentMuted} />
+        </Pressable>
       </View>
 
-      <View>
-        {day.program_exercises.map((ex, i) => (
-          <View key={ex.id} className={i === 0 ? "" : "border-t border-border"}>
-            <ProgramExerciseRow
-              exercise={ex}
-              week={week}
-              done={logging.isDone(ex.id, selectedWeek)}
-              onToggleDone={() =>
-                logging.setCompletion(ex.id, selectedWeek, !logging.isDone(ex.id, selectedWeek))
-              }
-              onOpen={() => onOpenExercise(ex)}
-              onPlay={onPlayVideo}
-              loggedCount={logging.setsFor(ex.id, selectedWeek).length}
-            />
-          </View>
-        ))}
-      </View>
+      {collapsed ? null : (
+        <View>
+          {day.program_exercises.map((ex, i) => (
+            <View key={ex.id} className={i === 0 ? "" : "border-t border-border"}>
+              <ProgramExerciseRow
+                exercise={ex}
+                week={week}
+                done={logging.isDone(ex.id, selectedWeek)}
+                onToggleDone={() =>
+                  logging.setCompletion(ex.id, selectedWeek, !logging.isDone(ex.id, selectedWeek))
+                }
+                onOpen={() => onOpenExercise(ex)}
+                onPlay={onPlayVideo}
+                loggedCount={logging.setsFor(ex.id, selectedWeek).length}
+              />
+            </View>
+          ))}
+        </View>
+      )}
     </Card>
   );
 }
