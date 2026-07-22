@@ -214,6 +214,7 @@ export function useProgramLogging(program: ProgramWithDetails | null) {
   );
 
   return {
+    completions: data.completions,
     isDone,
     setCompletion,
     dayProgress,

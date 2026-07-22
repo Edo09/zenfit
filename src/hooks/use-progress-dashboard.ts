@@ -10,7 +10,7 @@ import { useMeals } from "@/src/hooks/use-meals";
 import { useProfile } from "@/src/hooks/use-profile";
 import { useProgress } from "@/src/hooks/use-progress";
 import { useRoutines } from "@/src/hooks/use-routines";
-import type { BodyMeasurement } from "@/src/types/database";
+import type { BodyMeasurement, WorkoutLog } from "@/src/types/database";
 import { recommendedCalorieGoal } from "@/src/utils/calories";
 import { addDays, toDateKey } from "@/src/utils/dates";
 import {
@@ -98,6 +98,23 @@ async function fetchSetLogs(userId: string): Promise<SetLogEntry[]> {
   });
 }
 
+const completionDatesKey = (userId: string | undefined) =>
+  ["program-completion-dates", userId] as const;
+
+// Local dates (last 60d) the client checked off any program exercise. A coach
+// program records completions, not workout_logs, so these are what make a
+// program day count as a session in the dashboard. Degrades to [] if absent.
+async function fetchCompletionDates(userId: string): Promise<string[]> {
+  const cutoff = addDays(toDateKey(), -60);
+  const { data, error } = await supabase
+    .from("program_exercise_completions")
+    .select("completed_at")
+    .eq("user_id", userId)
+    .gte("completed_at", cutoff);
+  if (error || data == null) return [];
+  return (data as { completed_at: string }[]).map((r) => toDateKey(new Date(r.completed_at)));
+}
+
 export function useProgressDashboard(periodo: Periodo) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -119,6 +136,12 @@ export function useProgressDashboard(periodo: Periodo) {
     enabled: !!user,
   });
 
+  const { data: completionDates = [] } = useQuery({
+    queryKey: completionDatesKey(user?.id),
+    queryFn: () => fetchCompletionDates(user!.id),
+    enabled: !!user,
+  });
+
   const { logs } = progress;
   const { routines } = routinesData;
   const { meals } = mealsData;
@@ -136,6 +159,7 @@ export function useProgressDashboard(periodo: Periodo) {
     routinesRefresh();
     queryClient.invalidateQueries({ queryKey: ["body-measurements"] });
     queryClient.invalidateQueries({ queryKey: ["set-logs"] });
+    queryClient.invalidateQueries({ queryKey: ["program-completion-dates"] });
   }, [progressRefresh, mealsRefresh, routinesRefresh, queryClient]);
 
   /** Quick weight log. Writes profiles.weight_kg through the offline-first
@@ -184,16 +208,40 @@ export function useProgressDashboard(periodo: Periodo) {
     const plan = buildPlanIndex(routines);
     const today = toDateKey(now);
 
+    // A program day counts as a session: one synthetic session per date the
+    // client did program work (checked an exercise or logged a set). Session
+    // math uses distinctDays(), which dedups against real logs on shared dates,
+    // so merging can't double-count. Only session metrics (ring/dots/streak)
+    // read this — muscles, volume, minutes and kcal keep their own sources.
+    const programDates = new Set<string>([...completionDates, ...setLogs.map((s) => s.date)]);
+    const sessionLogs: WorkoutLog[] =
+      programDates.size === 0
+        ? logs
+        : [
+            ...logs,
+            ...[...programDates].map((date) => ({
+              id: `prog-${date}`,
+              user_id: user?.id ?? "",
+              routine_id: null,
+              routine_name: "",
+              date,
+              duration_minutes: null,
+              notes: null,
+              completed_exercises: null,
+              created_at: date,
+            })),
+          ];
+
     const periodFrom =
       periodo === "week"
         ? addDays(today, -((now.getDay() + 6) % 7))
         : toDateKey(new Date(now.getFullYear(), now.getMonth(), 1, 12));
     const periodLogs = logs.filter((l) => l.date >= periodFrom && l.date <= today);
 
-    const { done, plan: planCount } = compliance(logs, daysPerWeek, periodo, now);
-    const streak = weeklyStreak(logs, daysPerWeek, now);
-    const dots = weekDayDots(logs, daysPerWeek, profile?.available_days ?? null, now);
-    const pills = monthWeekPills(logs, daysPerWeek, now);
+    const { done, plan: planCount } = compliance(sessionLogs, daysPerWeek, periodo, now);
+    const streak = weeklyStreak(sessionLogs, daysPerWeek, now);
+    const dots = weekDayDots(sessionLogs, daysPerWeek, profile?.available_days ?? null, now);
+    const pills = monthWeekPills(sessionLogs, daysPerWeek, now);
 
     const goalKcal = profile?.calorie_goal ?? recommendedCalorieGoal(profile);
     const nutrition = nutritionStats(meals, goalKcal, periodo === "week" ? 7 : 30, now);
@@ -207,14 +255,14 @@ export function useProgressDashboard(periodo: Periodo) {
         ? periodLogs
         : logs.filter((l) => l.date >= addDays(today, -((now.getDay() + 6) % 7)));
     const series8w = volumeSeries8w(logs, plan, now);
-    const lastWeek = lastWeekCompliance(logs, daysPerWeek, now);
-    const weekCompliance = compliance(logs, daysPerWeek, "week", now);
+    const lastWeek = lastWeekCompliance(sessionLogs, daysPerWeek, now);
+    const weekCompliance = compliance(sessionLogs, daysPerWeek, "week", now);
 
     const lifetimeVolume = estimatedVolume(logs, plan);
-    const totalWorkouts = logs.length;
+    const totalWorkouts = sessionLogs.length;
 
     const hasMeals = meals.some((m) => m.meal_items.length > 0);
-    const isEmpty = logs.length === 0 && !hasMeals;
+    const isEmpty = sessionLogs.length === 0 && !hasMeals;
 
     const weight = weightStats(
       measurements.filter(
@@ -282,7 +330,7 @@ export function useProgressDashboard(periodo: Periodo) {
         streak,
         dots,
         pills,
-        best: bestMonth(logs, now),
+        best: bestMonth(sessionLogs, now),
         minutes: trainedMinutes(periodLogs, profile),
         kcal: burnedKcal(periodLogs, profile),
         volumeKg: periodVolume,
@@ -303,7 +351,7 @@ export function useProgressDashboard(periodo: Periodo) {
       }),
       logros: achievements(totalWorkouts, streak, lifetimeVolume),
     };
-  }, [logs, routines, exercises, meals, profile, measurements, setLogs, periodo]);
+  }, [logs, routines, exercises, meals, profile, measurements, setLogs, completionDates, user?.id, periodo]);
 
   // AI weekly analysis (P3). Keyed per user+week+language: generated once
   // per Monday-based week, regenerated on language switch, served from the
