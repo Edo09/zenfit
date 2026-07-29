@@ -25,6 +25,8 @@ import { AnimatedView } from "@/src/tw/animated";
 import type { RoutineExercise } from "@/src/types/database";
 import { dayLabel } from "@/src/utils/day-label";
 import { AddExerciseForm } from "@/src/components/add-exercise-form";
+import { Image } from "expo-image";
+
 import { ExerciseVideoModal } from "@/src/components/exercise-video-modal";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -35,6 +37,12 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
 } from "@/components/ui/alert-dialog";
+
+// GIF/WebP demos auto-loop inline as the row thumbnail (expo-image animates
+// them); real videos keep the play button — same rule as the program rows.
+const IS_IMG = /\.(gif|apng|webp|png|jpe?g)$/i;
+const isInlineGif = (url: string | null | undefined): boolean =>
+  url != null && url !== "" && IS_IMG.test(url.split("?")[0]);
 
 // Numbered-badge colors, cycled per exercise (mirrors the reference's
 // multi-color exercise thumbnails).
@@ -50,7 +58,7 @@ function formatRest(seconds: number): string {
 
 export default function RoutineDetailScreen() {
   const colors = useColors();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const toast = useToast();
   const online = useIsOnline();
   const weightUnit = useWeightUnit();
@@ -84,6 +92,19 @@ export default function RoutineDetailScreen() {
   const [rest, setRest] = useState<{ exId: string; remaining: number } | null>(null);
   const [showInfo, setShowInfo] = useState(false);
   const [videoUri, setVideoUri] = useState<string | null>(null);
+  // How-to steps expanded, per exercise row (collapsed by default).
+  const [openSteps, setOpenSteps] = useState<Record<string, boolean>>({});
+
+  // The exercise's step-by-step in the app language, falling back to the other.
+  const stepsFor = (ex: RoutineExercise): string[] | null => {
+    const c = ex.exercise;
+    return (
+      (i18n.language === "es" ? c?.instructions_es : c?.instructions_en) ??
+      c?.instructions_en ??
+      c?.instructions_es ??
+      null
+    );
+  };
 
   useEffect(() => {
     if (isError) {
@@ -304,6 +325,8 @@ export default function RoutineDetailScreen() {
               const restLabel = formatRest(
                 isResting ? rest!.remaining : ex.rest_seconds || 60,
               );
+              const steps = stepsFor(ex);
+              const stepsOpen = !!openSteps[ex.id];
               return (
                 <AnimatedView key={ex.id} entering={staggered(index)} exiting={exit()}>
                   {/* Exercise row */}
@@ -333,17 +356,29 @@ export default function RoutineDetailScreen() {
                       accessibilityRole="button"
                       accessibilityLabel={t("routines.watchDemo")}
                     >
-                      <Ionicons name="barbell-outline" size={26} color={colors.contentMuted} />
-                      {ex.exercise?.video_url ? (
-                        // Inline rgba: bg-black/30 (opacity modifier) doesn't
-                        // compile under react-native-css
-                        <View
-                          className="absolute inset-0 items-center justify-center"
-                          style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}
-                        >
-                          <Ionicons name="play-circle" size={30} color="#fff" />
-                        </View>
-                      ) : null}
+                      {isInlineGif(ex.exercise?.video_url) ? (
+                        <Image
+                          source={{ uri: ex.exercise!.video_url! }}
+                          style={{ width: "100%", height: "100%" }}
+                          contentFit="cover"
+                          cachePolicy="memory-disk"
+                          transition={150}
+                        />
+                      ) : (
+                        <>
+                          <Ionicons name="barbell-outline" size={26} color={colors.contentMuted} />
+                          {ex.exercise?.video_url ? (
+                            // Inline rgba: bg-black/30 (opacity modifier) doesn't
+                            // compile under react-native-css
+                            <View
+                              className="absolute inset-0 items-center justify-center"
+                              style={{ backgroundColor: "rgba(0, 0, 0, 0.3)" }}
+                            >
+                              <Ionicons name="play-circle" size={30} color="#fff" />
+                            </View>
+                          ) : null}
+                        </>
+                      )}
                       <View
                         className="absolute top-0 left-0 px-1.5 py-0.5 rounded-br-lg"
                         style={{ backgroundColor: badge }}
@@ -417,6 +452,58 @@ export default function RoutineDetailScreen() {
                       color={isResting ? colors.brandAccent : colors.contentSecondary}
                     />
                   </Pressable>
+
+                  {/* How to do it — collapsed by default */}
+                  {steps != null && steps.length > 0 && (
+                    <View className="bg-surface border-t border-border">
+                      <Pressable
+                        onPress={() => setOpenSteps((prev) => ({ ...prev, [ex.id]: !prev[ex.id] }))}
+                        className="flex-row items-center justify-between px-4 py-2.5"
+                        accessibilityRole="button"
+                        accessibilityState={{ expanded: stepsOpen }}
+                        accessibilityLabel={t("routines.howTo")}
+                      >
+                        <Text
+                          className="text-content-tertiary text-xs font-bold uppercase"
+                          style={{ letterSpacing: 0.5 }}
+                        >
+                          {t("routines.howTo")}
+                        </Text>
+                        <View className="flex-row items-center gap-1.5">
+                          <Text
+                            className="text-content-muted text-xs"
+                            style={{ fontVariant: ["tabular-nums"] }}
+                          >
+                            {steps.length}
+                          </Text>
+                          <Ionicons
+                            name={stepsOpen ? "chevron-up" : "chevron-down"}
+                            size={16}
+                            color={colors.contentMuted}
+                          />
+                        </View>
+                      </Pressable>
+                      {stepsOpen && (
+                        <View className="px-4 pb-3 gap-2">
+                          {steps.map((step, i) => (
+                            <View key={i} className="flex-row gap-2.5">
+                              <View className="w-5 h-5 rounded-full bg-brand-primary-soft items-center justify-center mt-0.5">
+                                <Text
+                                  className="text-brand-primary text-[11px] font-bold"
+                                  style={{ fontVariant: ["tabular-nums"] }}
+                                >
+                                  {i + 1}
+                                </Text>
+                              </View>
+                              <Text className="flex-1 text-content-secondary text-[13px] leading-[19px]">
+                                {step}
+                              </Text>
+                            </View>
+                          ))}
+                        </View>
+                      )}
+                    </View>
+                  )}
 
                   {/* Gap between exercise blocks */}
                   <View className="h-2 bg-brand-dark" />

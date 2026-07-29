@@ -14,7 +14,6 @@ import {
   ActionsheetItemText,
 } from "@/components/ui/actionsheet";
 import { AIPlanCard } from "@/src/components/ai-plan-card";
-import { ProgramHomeCard } from "@/src/components/program/program-home-card";
 import { Ring } from "@/src/components/progress/ring";
 import {
   CapsLabel,
@@ -31,8 +30,6 @@ import { WorkoutCarousel } from "@/src/components/workout-carousel";
 import { useAuth } from "@/src/hooks/use-auth";
 import { useMeals } from "@/src/hooks/use-meals";
 import { useProfile } from "@/src/hooks/use-profile";
-import { useProgram } from "@/src/hooks/use-program";
-import { useProgramLogging } from "@/src/hooks/use-program-logging";
 import { useProgress } from "@/src/hooks/use-progress";
 import { useRefreshOnFocus } from "@/src/hooks/use-refresh-on-focus";
 import { useRoutines } from "@/src/hooks/use-routines";
@@ -57,13 +54,6 @@ export default function HomeScreen() {
   const progress = useProgress();
   const routinesData = useRoutines();
   const { profile } = useProfile(user?.id);
-  const {
-    program,
-    notStarted: programNotStarted,
-    loading: programLoading,
-    refresh: refreshProgram,
-  } = useProgram();
-  const programLogging = useProgramLogging(program);
 
   const { todaysMeals } = meals;
   const { todaysLogs } = progress;
@@ -109,8 +99,7 @@ export default function HomeScreen() {
     mealsRefresh();
     progressRefresh();
     routinesRefresh();
-    refreshProgram();
-  }, [mealsRefresh, progressRefresh, routinesRefresh, refreshProgram]);
+  }, [mealsRefresh, progressRefresh, routinesRefresh]);
 
   // Tab switches don't trigger react-query refetches in RN — refetch
   // whenever the dashboard regains focus so it reflects changes made
@@ -128,32 +117,13 @@ export default function HomeScreen() {
     day: "numeric",
   });
 
-  // Program exercises the client checked off TODAY, newest first, resolved to
-  // names — legacy workout_logs (todaysLogs) don't cover coach programs, so
-  // these are merged into Recent Activity below.
-  const programActivityToday = React.useMemo(() => {
-    if (program == null) return [];
-    const names = new Map<string, string>();
-    for (const d of program.program_days) {
-      for (const e of d.program_exercises) {
-        names.set(e.id, e.exercise?.name ?? e.custom_name ?? "");
-      }
-    }
-    const todayKey = toDateKey();
-    return programLogging.completions
-      .filter((c) => toDateKey(new Date(c.completed_at)) === todayKey)
-      .sort((a, b) => b.completed_at.localeCompare(a.completed_at))
-      .map((c) => ({ id: c.id, name: names.get(c.program_exercise_id) ?? "" }));
-  }, [program, programLogging.completions]);
-
-  const activityRows = [
-    ...programActivityToday.map((a) => ({ key: a.id, title: a.name, sub: program?.name ?? null })),
-    ...todaysLogs.map((l) => ({
+  const activityRows = todaysLogs
+    .map((l) => ({
       key: l.id,
       title: l.routine_name,
       sub: l.duration_minutes != null ? `${l.duration_minutes} ${t("home.minutes")}` : null,
-    })),
-  ].slice(0, 3);
+    }))
+    .slice(0, 3);
 
   // Fuel-card breakdown rows: caps label left, Anton numeral right
   const fuelRows = [
@@ -330,37 +300,18 @@ export default function HomeScreen() {
             )}
           </View>
 
-          {/* Coach program leads when assigned (one active per client); otherwise
-              the client's routines carousel + AI plan generator. */}
+          {/* The user's routines + AI plan generator. */}
           <View className="pt-7">
             <SectionHeader
-              title={t(program != null ? "home.yourProgram" : "home.yourRoutines")}
+              title={t("home.yourRoutines")}
               actionLabel={t("common.seeAll")}
               onAction={() => router.push("/(tabs)/routines")}
               className="px-5 mb-3"
             />
-            {program != null ? (
-              <View className="px-5">
-                <ProgramHomeCard
-                  program={program}
-                  notStarted={programNotStarted}
-                  onPress={() => router.push("/(tabs)/routines")}
-                />
-              </View>
-            ) : programLoading ? (
-              // Reserve the space while the program query resolves so the routines
-              // carousel doesn't flash in and get replaced.
-              <View className="px-5">
-                <View className="h-[168px] rounded-[20px] border border-border bg-surface" />
-              </View>
-            ) : (
-              <>
-                <WorkoutCarousel routines={routines} />
-                <View className="px-5 pt-4">
-                  <AIPlanCard />
-                </View>
-              </>
-            )}
+            <WorkoutCarousel routines={routines} />
+            <View className="px-5 pt-4">
+              <AIPlanCard />
+            </View>
           </View>
 
           {/* Today's meals */}

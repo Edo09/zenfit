@@ -384,6 +384,7 @@ export default {
     removeConfirm: '¿Quitar "{{name}}" de esta rutina?',
     addExerciseButton: "+ Agregar Ejercicio",
     watchDemo: "Ver demostración del ejercicio",
+    howTo: "Cómo hacerlo",
     exerciseList: "Lista de ejercicios",
     restBetweenSets: "Descanso entre series",
     finishWorkout: "Finalizar entrenamiento",
