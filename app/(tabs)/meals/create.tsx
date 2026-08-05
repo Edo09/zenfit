@@ -1,12 +1,22 @@
-import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { Button, Chip, Input, Screen, useToast } from "@/src/components/ui";
+import {
+  Button,
+  CapsLabel,
+  Chip,
+  DisplayText,
+  FeatureCard,
+  Input,
+  Screen,
+  useToast,
+} from "@/src/components/ui";
+import { Icon } from "@/src/components/ui/icon";
 import { useAuth } from "@/src/hooks/use-auth";
 import { useMeals } from "@/src/hooks/use-meals";
 import { enter } from "@/src/lib/motion";
@@ -15,8 +25,8 @@ import {
   estimateMealNutrition,
   estimateMealNutritionFromPhoto,
 } from "@/src/services/ai-nutrition";
-import { uploadMealPhoto } from "@/src/services/meal-photos";
 import type { ImageInput } from "@/src/services/llm";
+import { uploadMealPhoto } from "@/src/services/meal-photos";
 import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
@@ -48,6 +58,7 @@ export default function AddFoodScreen() {
   const { t, i18n } = useTranslation();
   const toast = useToast();
   const online = useIsOnline();
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const { getOrCreateSlotMeal, addMealItem } = useMeals();
   const params = useLocalSearchParams<{ mealType?: string; date?: string }>();
@@ -59,8 +70,7 @@ export default function AddFoodScreen() {
       ? (params.mealType as MealType)
       : suggestedSlot(),
   );
-  const date =
-    isDateKey(params.date) && params.date <= todayKey ? params.date : todayKey;
+  const date = isDateKey(params.date) && params.date <= todayKey ? params.date : todayKey;
 
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState<string | undefined>();
@@ -198,194 +208,212 @@ export default function AddFoodScreen() {
   };
 
   return (
-    <Screen keyboard>
-      <View className="gap-4">
-        {/* Where this food is going */}
-        <Text className="text-sm text-content-tertiary">
-          {t("meals.addToSlot", { slot: t(`meals.${mealType}`) })} ·{" "}
+    <Screen
+      keyboard
+      contentContainerClassName="pb-8"
+      footer={
+        <View
+          className="px-5 pt-3 bg-brand-dark border-t border-border"
+          style={{ paddingBottom: 16 + insets.bottom }}
+        >
+          <Button size="lg" icon="plus" onPress={handleAdd} loading={loading}>
+            {t("meals.addToDiary")}
+          </Button>
+        </View>
+      }
+    >
+      <View className="gap-1">
+        <DisplayText size={26}>
+          {t("meals.addToSlot", { slot: t(`meals.${mealType}`) })}
+        </DisplayText>
+        <Text className="text-sm text-content-tertiary capitalize">
           {formatDayLabel(date, i18n.language, t)}
         </Text>
-
-        {/* Meal photo */}
-        <View className="gap-2">
-          <Text className="text-sm font-medium text-content-secondary">
-            {t("meals.mealPhoto")}
-          </Text>
-          {photo == null ? (
-            <>
-              <View className="flex-row gap-2">
-                <Button
-                  variant="secondary"
-                  icon="camera-outline"
-                  onPress={pickFromCamera}
-                  containerClassName="flex-1"
-                  className="w-full"
-                  disabled={loading || !online}
-                >
-                  {t("meals.takePhoto")}
-                </Button>
-                <Button
-                  variant="secondary"
-                  icon="images-outline"
-                  onPress={pickFromGallery}
-                  containerClassName="flex-1"
-                  className="w-full"
-                  disabled={loading || !online}
-                >
-                  {t("meals.fromGallery")}
-                </Button>
-              </View>
-              <Text className="text-xs text-content-muted">
-                {online ? t("meals.mealPhotoNote") : t("meals.photoRequiresInternet")}
-              </Text>
-            </>
-          ) : (
-            <View className="rounded-xl overflow-hidden border border-border">
-              <Image
-                source={{ uri: photo.uri }}
-                style={{ width: "100%", height: 180 }}
-                contentFit="cover"
-              />
-              {/* Inline rgba: bg-black/60 (opacity modifier) doesn't compile
-                  under react-native-css */}
-              <Pressable
-                onPress={() => setPhoto(null)}
-                accessibilityRole="button"
-                accessibilityLabel={t("meals.removePhoto")}
-                className="absolute top-2 right-2 h-8 w-8 items-center justify-center rounded-full"
-                style={{ backgroundColor: "rgba(0, 0, 0, 0.6)" }}
-              >
-                <Ionicons name="close" size={18} color={colors.white} />
-              </Pressable>
-              <View
-                className="absolute bottom-2 left-2 flex-row items-center gap-1.5 rounded-full px-3 py-1"
-                style={{ backgroundColor: "rgba(0, 0, 0, 0.6)" }}
-              >
-                <Ionicons name="sparkles" size={12} color={colors.brandPrimary} />
-                <Text className="text-xs text-white">{t("meals.aiEstimate")}</Text>
-              </View>
-            </View>
-          )}
-        </View>
-
-        <Input
-          label={t("meals.foodName")}
-          placeholder={t("meals.foodNamePlaceholder")}
-          value={name}
-          onChangeText={(text) => {
-            setName(text);
-            if (nameError != null) setNameError(undefined);
-          }}
-          error={nameError}
-        />
-
-        {/* Slot selector (pre-selected from the diary, still changeable) */}
-        <View className="gap-2">
-          <View className="flex-row gap-2 flex-wrap">
-            {MEAL_SLOTS.map((type) => (
-              <Chip
-                key={type}
-                label={t(`meals.${type}`, { defaultValue: type })}
-                selected={mealType === type}
-                onPress={() => setMealType(type)}
-              />
-            ))}
-          </View>
-        </View>
-
-        {/* AI nutrition estimate toggle — photo implies AI, so only shown without one */}
-        {photo == null && (
-          <Pressable
-            onPress={() => {
-              if (!online) return;
-              Haptics.selectionAsync().catch(() => {});
-              setAiEstimate((v) => !v);
-            }}
-            accessibilityRole="checkbox"
-            accessibilityState={{ checked: aiEstimate && online, disabled: !online }}
-            className={`flex-row items-center gap-3 bg-surface border border-border rounded-xl p-4 ${online ? "" : "opacity-50"}`}
-          >
-            <Ionicons
-              name={aiEstimate && online ? "checkbox" : "square-outline"}
-              size={22}
-              color={aiEstimate && online ? colors.brandPrimary : colors.contentMuted}
-            />
-            <View className="flex-1">
-              <View className="flex-row items-center gap-1.5">
-                <Ionicons name="sparkles" size={14} color={colors.brandPrimary} />
-                <Text className="text-sm font-medium text-content-primary">
-                  {t("meals.aiEstimate")}
-                </Text>
-              </View>
-              <Text className="text-xs text-content-muted mt-0.5">
-                {online ? t("meals.aiEstimateNote") : t("common.requiresInternet")}
-              </Text>
-            </View>
-          </Pressable>
-        )}
-
-        {/* Manual nutrition when the AI path is off or unavailable */}
-        {manualVisible && (
-          <AnimatedView entering={enter()} className="gap-3">
-            <Text className="text-sm font-medium text-content-secondary">
-              {t("meals.manualNutrition")}
-            </Text>
-            <View className="flex-row gap-2">
-              <Input
-                label={t("meals.calories")}
-                keyboardType="number-pad"
-                value={manualCalories}
-                onChangeText={setManualCalories}
-                containerClassName="flex-1"
-                textAlign="center"
-                className="bg-brand-dark"
-              />
-              <Input
-                label={t("meals.protein")}
-                keyboardType="decimal-pad"
-                value={manualProtein}
-                onChangeText={setManualProtein}
-                containerClassName="flex-1"
-                textAlign="center"
-                className="bg-brand-dark"
-              />
-            </View>
-            <View className="flex-row gap-2">
-              <Input
-                label={t("meals.carbs")}
-                keyboardType="decimal-pad"
-                value={manualCarbs}
-                onChangeText={setManualCarbs}
-                containerClassName="flex-1"
-                textAlign="center"
-                className="bg-brand-dark"
-              />
-              <Input
-                label={t("meals.fat")}
-                keyboardType="decimal-pad"
-                value={manualFat}
-                onChangeText={setManualFat}
-                containerClassName="flex-1"
-                textAlign="center"
-                className="bg-brand-dark"
-              />
-              <Input
-                label={t("meals.portion")}
-                placeholder={t("meals.portionPlaceholder")}
-                value={manualPortion}
-                onChangeText={setManualPortion}
-                containerClassName="flex-1"
-                textAlign="center"
-                className="bg-brand-dark"
-              />
-            </View>
-          </AnimatedView>
-        )}
       </View>
 
-      <Button size="lg" onPress={handleAdd} loading={loading} className="mt-2">
-        {t("meals.addFood")}
-      </Button>
+      {/* Signature photo logging — the dark card is the primary path */}
+      {photo == null ? (
+        <FeatureCard className="gap-3">
+          <View className="flex-row items-center gap-3">
+            <View
+              className="h-12 w-12 items-center justify-center rounded-2xl"
+              style={{ backgroundColor: colors.brandPrimary }}
+            >
+              <Icon name="camera" size={22} color={colors.onAccent} />
+            </View>
+            <View className="flex-1">
+              <DisplayText size={18} className="text-on-hero">
+                {t("meals.scanYourMeal")}
+              </DisplayText>
+              <Text className="text-xs text-on-hero-dim mt-0.5">
+                {online ? t("meals.scanNote") : t("meals.photoRequiresInternet")}
+              </Text>
+            </View>
+          </View>
+          <View className="flex-row gap-2.5">
+            <Button
+              icon="camera"
+              onPress={pickFromCamera}
+              containerClassName="flex-1"
+              className="w-full"
+              disabled={loading || !online}
+            >
+              {t("meals.takePhoto")}
+            </Button>
+            <Pressable
+              onPress={pickFromGallery}
+              disabled={loading || !online}
+              accessibilityRole="button"
+              className={`flex-1 flex-row items-center justify-center gap-2 rounded-2xl py-3.5 ${loading || !online ? "opacity-45" : ""}`}
+              style={{ backgroundColor: colors.heroTrack }}
+            >
+              <Icon name="image" size={18} color={colors.onHero} />
+              <Text className="font-display text-base text-on-hero">
+                {t("meals.fromGallery")}
+              </Text>
+            </Pressable>
+          </View>
+        </FeatureCard>
+      ) : (
+        <View className="rounded-3xl overflow-hidden border border-border">
+          <Image
+            source={{ uri: photo.uri }}
+            style={{ width: "100%", height: 190 }}
+            contentFit="cover"
+          />
+          {/* Inline rgba: bg-black/60 (opacity modifier) doesn't compile
+              under react-native-css */}
+          <Pressable
+            onPress={() => setPhoto(null)}
+            accessibilityRole="button"
+            accessibilityLabel={t("meals.removePhoto")}
+            className="absolute top-2.5 right-2.5 h-9 w-9 items-center justify-center rounded-full"
+            style={{ backgroundColor: "rgba(11, 14, 18, 0.6)" }}
+          >
+            <Icon name="x" size={18} color={colors.onHero} />
+          </Pressable>
+          <View
+            className="absolute bottom-2.5 left-2.5 flex-row items-center gap-1.5 rounded-full px-3 py-1.5"
+            style={{ backgroundColor: "rgba(11, 14, 18, 0.6)" }}
+          >
+            <Icon name="sparkles" size={12} color={colors.brandAccent} />
+            <Text className="text-xs font-semibold text-on-hero">{t("meals.aiEstimate")}</Text>
+          </View>
+        </View>
+      )}
+
+      <Input
+        label={t("meals.foodName")}
+        leftIcon="search"
+        placeholder={t("meals.foodNamePlaceholder")}
+        value={name}
+        onChangeText={(text) => {
+          setName(text);
+          if (nameError != null) setNameError(undefined);
+        }}
+        error={nameError}
+      />
+
+      {/* Slot selector (pre-selected from the diary, still changeable) */}
+      <View className="gap-2">
+        <CapsLabel size={10}>{t("meals.diary")}</CapsLabel>
+        <View className="flex-row gap-2 flex-wrap">
+          {MEAL_SLOTS.map((type) => (
+            <Chip
+              key={type}
+              label={t(`meals.${type}`, { defaultValue: type })}
+              selected={mealType === type}
+              onPress={() => setMealType(type)}
+            />
+          ))}
+        </View>
+      </View>
+
+      {/* AI nutrition estimate toggle — photo implies AI, so only shown without one */}
+      {photo == null && (
+        <Pressable
+          onPress={() => {
+            if (!online) return;
+            Haptics.selectionAsync().catch(() => {});
+            setAiEstimate((v) => !v);
+          }}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: aiEstimate && online, disabled: !online }}
+          className={`flex-row items-center gap-3 rounded-3xl border p-4 ${
+            aiEstimate && online
+              ? "bg-brand-accent-soft border-brand-accent-border"
+              : "bg-surface border-border"
+          } ${online ? "" : "opacity-50"}`}
+        >
+          <Icon
+            name={aiEstimate && online ? "square-check" : "square"}
+            size={22}
+            color={aiEstimate && online ? colors.brandAccent : colors.contentMuted}
+          />
+          <View className="flex-1">
+            <View className="flex-row items-center gap-1.5">
+              <Icon name="sparkles" size={14} color={colors.brandAccent} />
+              <Text className="text-sm font-bold text-content-primary">
+                {t("meals.aiEstimate")}
+              </Text>
+            </View>
+            <Text className="text-xs text-content-muted mt-0.5">
+              {online ? t("meals.aiEstimateNote") : t("common.requiresInternet")}
+            </Text>
+          </View>
+        </Pressable>
+      )}
+
+      {/* Manual nutrition when the AI path is off or unavailable */}
+      {manualVisible && (
+        <AnimatedView entering={enter()} className="gap-3">
+          <CapsLabel size={10}>{t("meals.manualNutrition")}</CapsLabel>
+          <View className="flex-row gap-2">
+            <Input
+              label={t("meals.calories")}
+              keyboardType="number-pad"
+              value={manualCalories}
+              onChangeText={setManualCalories}
+              containerClassName="flex-1"
+              textAlign="center"
+            />
+            <Input
+              label={t("meals.protein")}
+              keyboardType="decimal-pad"
+              value={manualProtein}
+              onChangeText={setManualProtein}
+              containerClassName="flex-1"
+              textAlign="center"
+            />
+          </View>
+          <View className="flex-row gap-2">
+            <Input
+              label={t("meals.carbs")}
+              keyboardType="decimal-pad"
+              value={manualCarbs}
+              onChangeText={setManualCarbs}
+              containerClassName="flex-1"
+              textAlign="center"
+            />
+            <Input
+              label={t("meals.fat")}
+              keyboardType="decimal-pad"
+              value={manualFat}
+              onChangeText={setManualFat}
+              containerClassName="flex-1"
+              textAlign="center"
+            />
+            <Input
+              label={t("meals.portion")}
+              placeholder={t("meals.portionPlaceholder")}
+              value={manualPortion}
+              onChangeText={setManualPortion}
+              containerClassName="flex-1"
+              textAlign="center"
+            />
+          </View>
+        </AnimatedView>
+      )}
     </Screen>
   );
 }

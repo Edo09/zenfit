@@ -62,6 +62,9 @@ export default {
     confirmEmailTitle: "Revisa tu correo",
     confirmEmailBody:
       "Enviamos un enlace de confirmación a {{email}}. Verifica tu dirección y luego inicia sesión.",
+    tagline: "Construye tu cuerpo, un hábito a la vez.",
+    logIn: "Entrar",
+    createAccountCta: "Crear una cuenta",
   },
 
   // Onboarding
@@ -92,6 +95,8 @@ export default {
     heightInPlaceholder: "Ej: 9",
     weightLbsPlaceholder: "Ej: 160",
     skip: "Saltar",
+    continueCta: "Continuar",
+    startTraining: "Empezar a entrenar",
     skipToast: "Puedes completar tu perfil después para usar las funciones de IA",
     lifestyle: "Tu estilo de vida",
     lifestyleSubtitle: "Esto nos ayuda a ajustar tus recomendaciones",
@@ -160,6 +165,10 @@ export default {
     meals: "Comidas",
     progress: "Progreso",
     profile: "Perfil",
+    // Etiquetas cortas del dock flotante, no títulos de pantalla
+    train: "Entrena",
+    fuel: "Nutrición",
+    you: "Tú",
   },
 
   // Profile
@@ -226,6 +235,15 @@ export default {
     todaysNutrition: "Combustible de Hoy",
     fuelYourBody: "Alimenta tu cuerpo",
     logMeal: "Registrar comida",
+    energyLeft: "Energía restante hoy",
+    onTrack: "Vas bien",
+    overBudget: "Te pasaste",
+    eatenLower: "consumidas",
+    burnedLower: "quemadas",
+    goalLower: "objetivo",
+    upNext: "Siguiente",
+    weekStreak: "Semanas seguidas",
+    workoutsThisWeek: "Entrenos esta semana",
     recentActivity: "Actividad Reciente",
     noActivityToday: "Sin actividad registrada hoy",
     startRoutine: "Iniciar una rutina →",
@@ -246,6 +264,9 @@ export default {
     confirmPassword: "Confirmar contraseña",
     passwordsDontMatch: "Las contraseñas no coinciden",
     passwordChanged: "Contraseña actualizada",
+    preferences: "Preferencias",
+    account: "Cuenta",
+    email: "Correo",
   },
 
   // Programa multi-semana del coach
@@ -356,6 +377,9 @@ export default {
     noFoodDetected: "No se detectó comida en la foto",
     nameOrPhotoRequired: "Agrega un nombre o una foto de la comida",
     itemRemoved: "Alimento eliminado",
+    scanYourMeal: "Escanea tu comida",
+    scanNote: "Haz una foto y la IA calcula las calorías y los macros por ti.",
+    addToDiary: "Añadir al diario",
   },
 
   // Routines
@@ -405,6 +429,21 @@ export default {
     exerciseRemoved: "Ejercicio eliminado",
     routineDeleted: "Rutina eliminada",
     aiBadge: "IA",
+    // Filtros por origen en la pestaña Entrena
+    allFilter: "Todas",
+    mineFilter: "Mías",
+    aiFilter: "IA",
+    routineCount_one: "{{count}} rutina",
+    routineCount_other: "{{count}} rutinas",
+    newShort: "Nueva",
+    noRoutinesForFilter: "Ninguna rutina coincide con este filtro",
+    startWorkout: "Empezar entreno",
+    setOf: "Serie {{current}} de {{total}}",
+    completeSet: "Completar serie",
+    previousExercise: "Ejercicio anterior",
+    nextExercise: "Siguiente ejercicio",
+    exerciseProgress: "{{current}} / {{total}}",
+    restSeconds: "{{seconds}}s descanso",
   },
 
   // Progress
@@ -505,6 +544,10 @@ export default {
 
     historial: "Historial",
     verTodo: "Ver todo el historial",
+    // Agrupación de la pantalla de historial
+    groupThisWeek: "Esta semana",
+    groupLastWeek: "La semana pasada",
+    groupEarlier: "Anterior",
     ejercicios: "{{count}} ejercicios",
   },
 

@@ -1,7 +1,7 @@
 import React from "react";
 
-import { CapsLabel, PosterText } from "@/src/components/ui/poster";
-import { Pressable, View } from "@/src/tw";
+import { DisplayText } from "@/src/components/ui/typography";
+import { Pressable, Text, View } from "@/src/tw";
 import { cn } from "@/src/utils/cn";
 
 type SectionHeaderProps = {
@@ -11,16 +11,14 @@ type SectionHeaderProps = {
   className?: string;
 };
 
-// Dojo Poster section header: Anton 22 title + red caps action label.
+/** Schibsted 19 title + a quiet cyan-deep action link. */
 export function SectionHeader({ title, actionLabel, onAction, className }: SectionHeaderProps) {
   return (
-    <View className={cn("flex-row items-baseline justify-between", className)}>
-      <PosterText size={19}>{title}</PosterText>
+    <View className={cn("flex-row items-center justify-between", className)}>
+      <DisplayText size={19}>{title}</DisplayText>
       {actionLabel != null && onAction != null && (
         <Pressable onPress={onAction} accessibilityRole="button" hitSlop={8}>
-          <CapsLabel size={10} className="text-brand-primary font-bold">
-            {actionLabel}
-          </CapsLabel>
+          <Text className="text-sm font-semibold text-brand-primary-dark">{actionLabel}</Text>
         </Pressable>
       )}
     </View>

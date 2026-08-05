@@ -1,24 +1,25 @@
-import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { Icon, type IconName } from "@/src/components/ui/icon";
 import { exit, pop, PressableScale } from "@/src/lib/motion";
 import { useColors } from "@/src/theme/colors";
-import { View } from "@/src/tw";
-
-type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
+import { Text, View } from "@/src/tw";
 
 type FABProps = {
-  icon?: IoniconName;
+  icon?: IconName;
+  /** Short verb shown beside the icon ("New", "Log food"). */
+  label?: string;
   onPress: () => void;
   accessibilityLabel: string;
 };
 
-// Dojo Poster FAB: 56px red square, skewX(-8°), counter-skewed icon, red
-// glow shadow (README: 0 12px 24px -8px rgba(239,68,68,0.6)).
-// Skew on a nested View — PressableScale's animated press style owns
-// `transform`, so a transform in its style prop would be replaced.
-export function FAB({ icon = "add", onPress, accessibilityLabel }: FABProps) {
+/**
+ * Habbito FAB: cyan pill (icon + short label), full radius, cyan glow.
+ * Sits above the floating dock, so the bottom offset clears both it and the
+ * safe area.
+ */
+export function FAB({ icon = "plus", label, onPress, accessibilityLabel }: FABProps) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
 
@@ -32,22 +33,22 @@ export function FAB({ icon = "add", onPress, accessibilityLabel }: FABProps) {
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       className="absolute"
-      style={{ bottom: 24 + insets.bottom, right: 20 }}
+      style={{ bottom: 96 + insets.bottom, right: 20 }}
     >
       <View
-        className="h-14 w-14 bg-brand-primary items-center justify-center"
+        className="flex-row items-center gap-1.5 rounded-full bg-brand-primary px-5 h-14"
         style={{
-          transform: [{ skewX: "-8deg" }],
           shadowColor: colors.brandPrimary,
-          shadowOffset: { width: 0, height: 12 },
-          shadowOpacity: 0.6,
-          shadowRadius: 24,
-          elevation: 12,
+          shadowOffset: { width: 0, height: 10 },
+          shadowOpacity: 0.5,
+          shadowRadius: 20,
+          elevation: 10,
         }}
       >
-        <View style={{ transform: [{ skewX: "8deg" }] }}>
-          <Ionicons name={icon} size={28} color={colors.white} />
-        </View>
+        <Icon name={icon} size={22} color={colors.onAccent} strokeWidth={2.2} />
+        {label != null && (
+          <Text className="font-display text-base text-on-accent">{label}</Text>
+        )}
       </View>
     </PressableScale>
   );

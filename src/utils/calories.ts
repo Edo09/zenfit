@@ -73,3 +73,36 @@ export function caloriesConsumed(meals: MealWithItems[]): number {
     0,
   );
 }
+
+export type MacroTotals = { protein: number; carbs: number; fat: number };
+
+/** Grams of protein/carbs/fat across the given meals' items. */
+export function macroTotals(meals: MealWithItems[]): MacroTotals {
+  return meals.reduce<MacroTotals>(
+    (totals, meal) =>
+      meal.meal_items.reduce(
+        (acc, item) => ({
+          protein: acc.protein + item.protein_g,
+          carbs: acc.carbs + item.carbs_g,
+          fat: acc.fat + item.fat_g,
+        }),
+        totals,
+      ),
+    { protein: 0, carbs: 0, fat: 0 },
+  );
+}
+
+// A 30/40/30 kcal split — the app has no per-macro goal field, and the mini
+// bars only need a sane reference to read "on track" against.
+const MACRO_KCAL_SHARE = { protein: 0.3, carbs: 0.4, fat: 0.3 };
+const KCAL_PER_GRAM = { protein: 4, carbs: 4, fat: 9 };
+
+/** Reference grams for the macro mini-bars, derived from the calorie goal. */
+export function macroTargets(calorieGoal: number | null): MacroTotals | null {
+  if (calorieGoal == null || calorieGoal <= 0) return null;
+  return {
+    protein: Math.round((calorieGoal * MACRO_KCAL_SHARE.protein) / KCAL_PER_GRAM.protein),
+    carbs: Math.round((calorieGoal * MACRO_KCAL_SHARE.carbs) / KCAL_PER_GRAM.carbs),
+    fat: Math.round((calorieGoal * MACRO_KCAL_SHARE.fat) / KCAL_PER_GRAM.fat),
+  };
+}

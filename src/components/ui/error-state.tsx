@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { useTranslation } from "react-i18next";
 
@@ -8,6 +7,7 @@ import { Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
 
 import { Button } from "./button";
+import { Icon } from "@/src/components/ui/icon";
 
 type ErrorStateProps = {
   message?: string;
@@ -20,7 +20,7 @@ export function ErrorState({ message, onRetry }: ErrorStateProps) {
   return (
     <AnimatedView entering={enter()} className="items-center justify-center gap-3 py-20">
       <View className="h-16 w-16 items-center justify-center rounded-full bg-error-soft">
-        <Ionicons name="cloud-offline-outline" size={30} color={colors.error} />
+        <Icon name="wifi-off" size={30} color={colors.error} />
       </View>
       <Text className="text-lg font-semibold text-content-primary text-center">
         {t("common.somethingWentWrong")}

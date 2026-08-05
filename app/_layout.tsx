@@ -13,15 +13,19 @@ import { WEB_MAX_WIDTH } from "@/src/theme/layout";
 import { applyThemeMode, getStoredThemeMode } from "@/src/theme/theme-mode";
 import { useThemeMode } from "@/src/theme/theme-store";
 import { supabase } from "@/src/utils/supabase";
-import { Anton_400Regular } from "@expo-google-fonts/anton";
 import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-  Inter_800ExtraBold,
-  Inter_900Black,
-} from "@expo-google-fonts/inter";
+  HankenGrotesk_400Regular,
+  HankenGrotesk_500Medium,
+  HankenGrotesk_600SemiBold,
+  HankenGrotesk_700Bold,
+  HankenGrotesk_800ExtraBold,
+  HankenGrotesk_900Black,
+} from "@expo-google-fonts/hanken-grotesk";
+import {
+  SchibstedGrotesk_600SemiBold,
+  SchibstedGrotesk_700Bold,
+  SchibstedGrotesk_800ExtraBold,
+} from "@expo-google-fonts/schibsted-grotesk";
 import { focusManager } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { AppState, Platform, View } from "react-native";
@@ -80,17 +84,17 @@ function AuthGate() {
 export default function RootLayout() {
   const colors = useColors();
   const [fontsLoaded] = useFonts({
-    Anton_400Regular,
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
-    Inter_800ExtraBold,
-    Inter_900Black,
-    // Display face for the brand wordmark only (matches the HOKAGE logo).
-    // Register under the PostScript name so the fontFamily string resolves
-    // on both platforms — see the `font-display` utility in global.css.
-    EdoSZ: require("@/font/edo_sz/edosz.ttf"),
+    // Body/labels/buttons — the `.font-*` weight utilities in global.css
+    HankenGrotesk_400Regular,
+    HankenGrotesk_500Medium,
+    HankenGrotesk_600SemiBold,
+    HankenGrotesk_700Bold,
+    HankenGrotesk_800ExtraBold,
+    HankenGrotesk_900Black,
+    // Display — screen/card titles and ALL numerals (`.font-display*`)
+    SchibstedGrotesk_600SemiBold,
+    SchibstedGrotesk_700Bold,
+    SchibstedGrotesk_800ExtraBold,
   });
 
   // Restore the saved theme before first paint (joins the splash gate with

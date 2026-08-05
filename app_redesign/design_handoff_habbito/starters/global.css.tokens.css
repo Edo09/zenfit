@@ -1,0 +1,134 @@
+/* ============================================================================
+   HABBITO — token values for src/global.css
+   Paste these values over the matching --hb-* declarations in your existing
+   :root (light) block and the @media (prefers-color-scheme: dark) block.
+   Do NOT change the @theme inline var() chains — they already point here.
+   Keep in sync with starters/colors.ts.
+   ============================================================================ */
+
+/* ---- :root  (LIGHT) ---- */
+:root {
+  --hb-brand-primary: #c4ed4b;          /* lime FILL (CTA/FAB/active). Ink text on it. */
+  --hb-brand-secondary: #4e6bf0;        /* periwinkle */
+  --hb-brand-accent: #8e7bf0;           /* VIOLET — AI features (was gold) */
+  --hb-brand-accent-soft: rgba(142, 123, 240, 0.12);
+  --hb-brand-accent-border: rgba(142, 123, 240, 0.35);
+  --hb-brand-primary-soft: rgba(150, 190, 40, 0.14);  /* lime selected tint */
+  --hb-skew-ghost: transparent;         /* skew decor removed */
+  --hb-brand-dark: #f3f1ea;             /* CANVAS */
+  --hb-brand-light: #1a1915;            /* INK */
+  --hb-brand-primary-light: #cbf556;
+  --hb-brand-primary-dark: #5e7a0c;     /* lime-deep — readable lime TEXT on light */
+  --hb-brand-secondary-light: #7a93ff;
+  --hb-brand-secondary-dark: #3350d8;
+
+  --hb-surface: #ffffff;
+  --hb-surface-elevated: #edeae1;
+
+  --hb-content-primary: #1a1915;
+  --hb-content-secondary: #5f5d54;
+  --hb-content-tertiary: #74716a;
+  --hb-content-muted: #9c998e;
+
+  --hb-border: #e7e3d8;
+  --hb-border-strong: #d9d4c7;
+
+  --hb-success: #2e9f66;      --hb-success-soft: rgba(46, 159, 102, 0.12);
+  --hb-error:   #e1553c;      --hb-error-soft:   rgba(225, 85, 60, 0.1);
+  --hb-warning: #d6971f;      --hb-warning-soft: rgba(214, 151, 31, 0.12);
+  --hb-info:    #4e6bf0;      --hb-info-soft:    rgba(78, 107, 240, 0.1);
+
+  /* Meal-type badges — softened, no red */
+  --hb-badge-breakfast: #e39a2e; --hb-badge-breakfast-soft: rgba(227, 154, 46, 0.12);
+  --hb-badge-lunch:     #2e9f66; --hb-badge-lunch-soft:     rgba(46, 159, 102, 0.12);
+  --hb-badge-dinner:    #8e7bf0; --hb-badge-dinner-soft:    rgba(142, 123, 240, 0.12);
+  --hb-badge-snack:     #ec6a88; --hb-badge-snack-soft:     rgba(236, 106, 136, 0.12);
+
+  /* gluestack-ui semantic tokens (RGB triplets) — mirror in provider/config.ts */
+  --primary: 196 237 75;            /* lime */
+  --primary-foreground: 26 25 21;  /* ink on lime (NOT white) */
+  --card: 255 255 255;
+  --secondary: 78 107 240;
+  --secondary-foreground: 255 255 255;
+  --background: 243 241 234;
+  --popover: 255 255 255;
+  --popover-foreground: 26 25 21;
+  --muted: 237 234 225;
+  --muted-foreground: 116 113 106;
+  --destructive: 225 85 60;
+  --foreground: 26 25 21;
+  --input: 237 234 225;
+  --ring: 217 212 199;
+  --accent: 237 234 225;
+  --accent-foreground: 26 25 21;
+}
+
+/* ---- @media (prefers-color-scheme: dark) ---- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --hb-brand-primary: #cbf556;
+    --hb-brand-secondary: #7a93ff;
+    --hb-brand-accent: #a594ff;
+    --hb-brand-accent-soft: rgba(165, 148, 255, 0.18);
+    --hb-brand-accent-border: rgba(165, 148, 255, 0.35);
+    --hb-brand-primary-soft: rgba(203, 245, 86, 0.14);
+    --hb-skew-ghost: transparent;
+    --hb-brand-dark: #151410;
+    --hb-brand-light: #f3f1ea;
+    --hb-brand-primary-light: #d4fa6a;
+    --hb-brand-primary-dark: #cbf556;
+    --hb-brand-secondary-light: #93a8ff;
+    --hb-brand-secondary-dark: #5a76e6;
+
+    --hb-surface: #201e18;
+    --hb-surface-elevated: #2a281f;
+
+    --hb-content-primary: #f3f1ea;
+    --hb-content-secondary: #b3b0a4;
+    --hb-content-tertiary: #93908a;
+    --hb-content-muted: #7c796d;
+
+    --hb-border: #302d24;
+    --hb-border-strong: #3b382e;
+
+    --hb-success: #37c07e;      --hb-success-soft: rgba(55, 192, 126, 0.15);
+    --hb-error:   #f26b52;      --hb-error-soft:   rgba(242, 107, 82, 0.15);
+    --hb-warning: #e7ae3f;      --hb-warning-soft: rgba(231, 174, 63, 0.15);
+    --hb-info:    #7a93ff;      --hb-info-soft:    rgba(122, 147, 255, 0.16);
+
+    --hb-badge-breakfast: #eeaa4a; --hb-badge-breakfast-soft: rgba(238, 170, 74, 0.15);
+    --hb-badge-lunch:     #37c07e; --hb-badge-lunch-soft:     rgba(55, 192, 126, 0.15);
+    --hb-badge-dinner:    #a594ff; --hb-badge-dinner-soft:    rgba(165, 148, 255, 0.15);
+    --hb-badge-snack:     #f284a0; --hb-badge-snack-soft:     rgba(242, 132, 160, 0.15);
+
+    --primary: 203 245 86;
+    --primary-foreground: 22 21 16;
+    --card: 32 30 24;
+    --secondary: 122 147 255;
+    --secondary-foreground: 243 241 234;
+    --background: 21 20 16;
+    --popover: 32 30 24;
+    --popover-foreground: 243 241 234;
+    --muted: 42 40 31;
+    --muted-foreground: 147 144 138;
+    --destructive: 242 107 82;
+    --foreground: 243 241 234;
+    --input: 42 40 31;
+    --ring: 59 56 46;
+    --accent: 42 40 31;
+    --accent-foreground: 243 241 234;
+  }
+}
+
+/* ---- Fonts: replace the EdoSZ/Inter font blocks ----
+   In each of the :root web-fallback, @media android, and @media ios blocks:
+     --font-sans:    HankenGrotesk_400Regular;
+     --font-display: SchibstedGrotesk_700Bold;   (numerals & titles)
+   Then update the weight→face map at the bottom of global.css:
+     .font-normal   { font-family: HankenGrotesk_400Regular; }
+     .font-medium   { font-family: HankenGrotesk_500Medium; }
+     .font-semibold { font-family: HankenGrotesk_600SemiBold; }
+     .font-bold     { font-family: HankenGrotesk_700Bold; }
+     .font-extrabold{ font-family: HankenGrotesk_800ExtraBold; }
+   Replace `.font-anton` usages with a `.font-display` (Schibsted 700/800) for
+   titles & numerals, and delete the EdoSZ `.font-display` brush face. */

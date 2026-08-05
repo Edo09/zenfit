@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Platform, RefreshControl } from "react-native";
 import RAnimated from "react-native-reanimated";
@@ -7,14 +7,27 @@ import RAnimated from "react-native-reanimated";
 import { AIPlanCard } from "@/src/components/ai-plan-card";
 import { EmptyState } from "@/src/components/empty-state";
 import { RoutineCard } from "@/src/components/routine-card";
-import { ConfirmDialog, ErrorState, FAB, LoadingBlock, useToast } from "@/src/components/ui";
+import {
+  Chip,
+  ConfirmDialog,
+  DisplayText,
+  ErrorState,
+  FAB,
+  HeaderPanel,
+  LoadingBlock,
+  useToast,
+} from "@/src/components/ui";
 import { useRefreshOnFocus } from "@/src/hooks/use-refresh-on-focus";
 import { useRoutines } from "@/src/hooks/use-routines";
 import { enterFade, exit, layout, staggered } from "@/src/lib/motion";
 import { useColors } from "@/src/theme/colors";
-import { View } from "@/src/tw";
+import { Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
 import type { Routine } from "@/src/types/database";
+
+// Source, not modality: the data model has no strength/cardio field, so the
+// filter row splits routines by where they came from instead.
+type Filter = "all" | "user" | "ai";
 
 // Solo app: the user's own routines + the AI plan generator. No coach programs
 // or assigned plans (that's the coaching app).
@@ -24,7 +37,13 @@ export default function RoutinesScreen() {
   const toast = useToast();
   const { routines, loading, error, refreshing, refresh, deleteRoutine } = useRoutines();
   const [pendingDelete, setPendingDelete] = useState<Routine | null>(null);
+  const [filter, setFilter] = useState<Filter>("all");
   useRefreshOnFocus(refresh);
+
+  const visible = useMemo(
+    () => (filter === "all" ? routines : routines.filter((r) => r.source === filter)),
+    [routines, filter],
+  );
 
   const handleConfirmDelete = async () => {
     const target = pendingDelete;
@@ -38,9 +57,19 @@ export default function RoutinesScreen() {
     }
   };
 
+  const header = (
+    <HeaderPanel className="px-0">
+      <DisplayText size={27}>{t("routines.myRoutines")}</DisplayText>
+      <Text className="text-sm text-content-tertiary mt-1">
+        {t("routines.routineCount", { count: routines.length })}
+      </Text>
+    </HeaderPanel>
+  );
+
   if (loading && routines.length === 0) {
     return (
-      <View className="flex-1 bg-brand-dark">
+      <View className="flex-1 bg-brand-dark px-5">
+        {header}
         <LoadingBlock />
       </View>
     );
@@ -48,18 +77,25 @@ export default function RoutinesScreen() {
 
   if (error && routines.length === 0) {
     return (
-      <View className="flex-1 bg-brand-dark">
+      <View className="flex-1 bg-brand-dark px-5">
+        {header}
         <ErrorState onRetry={refresh} />
       </View>
     );
   }
 
+  const filters: { key: Filter; label: string }[] = [
+    { key: "all", label: t("routines.allFilter") },
+    { key: "user", label: t("routines.mineFilter") },
+    { key: "ai", label: t("routines.aiFilter") },
+  ];
+
   return (
     <View className="flex-1 bg-brand-dark">
       <RAnimated.FlatList
-        data={routines}
+        data={visible}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 100 }}
+        contentContainerStyle={{ paddingHorizontal: 20, gap: 12, paddingBottom: 160 }}
         itemLayoutAnimation={Platform.OS !== "web" ? layout() : undefined}
         refreshControl={
           <RefreshControl
@@ -71,7 +107,18 @@ export default function RoutinesScreen() {
           />
         }
         ListHeaderComponent={
-          <AnimatedView entering={enterFade()} className="mb-1">
+          <AnimatedView entering={enterFade()} className="gap-4 mb-1">
+            {header}
+            <View className="flex-row gap-2">
+              {filters.map((f) => (
+                <Chip
+                  key={f.key}
+                  label={f.label}
+                  selected={filter === f.key}
+                  onPress={() => setFilter(f.key)}
+                />
+              ))}
+            </View>
             <AIPlanCard />
           </AnimatedView>
         }
@@ -85,17 +132,25 @@ export default function RoutinesScreen() {
           </AnimatedView>
         )}
         ListEmptyComponent={
-          <EmptyState
-            icon="barbell-outline"
-            title={t("routines.noRoutinesYet")}
-            subtitle={t("routines.createFirstRoutine")}
-            actionLabel={t("routines.createRoutine")}
-            onAction={() => router.push("/(tabs)/routines/create")}
-          />
+          routines.length === 0 ? (
+            <EmptyState
+              icon="dumbbell"
+              title={t("routines.noRoutinesYet")}
+              subtitle={t("routines.createFirstRoutine")}
+              actionLabel={t("routines.createRoutine")}
+              onAction={() => router.push("/(tabs)/routines/create")}
+            />
+          ) : (
+            <Text className="text-center text-content-tertiary py-10">
+              {t("routines.noRoutinesForFilter")}
+            </Text>
+          )
         }
       />
 
       <FAB
+        icon="plus"
+        label={t("routines.newShort")}
         onPress={() => router.push("/(tabs)/routines/create")}
         accessibilityLabel={t("routines.createRoutine")}
       />

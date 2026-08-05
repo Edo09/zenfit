@@ -1,12 +1,12 @@
-import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { useTranslation } from "react-i18next";
 
-import { Card } from "@/src/components/ui";
+import { CapsLabel, Card, DisplayText } from "@/src/components/ui";
 import { kgToUnit, kgToUnit1, useWeightUnit } from "@/src/lib/weight-unit";
 import { useColors } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
 import type { PersonalRecord } from "@/src/utils/progress";
+import { Icon } from "@/src/components/ui/icon";
 
 const TABULAR = { fontVariant: ["tabular-nums" as const] };
 const BAR_AREA_HEIGHT = 72;
@@ -44,9 +44,7 @@ export function StrengthCard({
   return (
     <Card className="gap-3">
       <View className="flex-row items-center justify-between">
-        <Text className="text-[15px] font-bold text-content-primary">
-          {t("progress.fuerzaVolumen")}
-        </Text>
+        <DisplayText size={17}>{t("progress.fuerzaVolumen")}</DisplayText>
         <Text className="text-[11px] text-content-muted">
           {t("progress.ochoSemanas")}
         </Text>
@@ -54,16 +52,16 @@ export function StrengthCard({
 
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-baseline gap-1.5">
-          <Text className="text-[22px] font-extrabold text-content-primary" style={TABULAR}>
+          <DisplayText size={24} weight="extrabold" tabular>
             {Math.round(kgToUnit(weekVolume, unit)).toLocaleString(locale)}
-          </Text>
+          </DisplayText>
           <Text className="text-[13px] text-content-tertiary">
             {t("progress.kgEstaSemana", { unit })}
           </Text>
         </View>
         {deltaPct != null && (
           <View className="flex-row items-center gap-1">
-            <Ionicons
+            <Icon
               name={deltaPct >= 0 ? "trending-up" : "trending-down"}
               size={12}
               color={deltaPct >= 0 ? colors.success : colors.contentTertiary}
@@ -82,16 +80,17 @@ export function StrengthCard({
         )}
       </View>
 
+      {/* History bars sit on the sunken surface; the current week is cyan. */}
       <View className="flex-row items-end gap-2" style={{ height: BAR_AREA_HEIGHT }}>
         {series.map((value, i) => (
           <View
             key={i}
             className={
               i === series.length - 1
-                ? "flex-1 rounded-t-[5px] rounded-b-sm bg-brand-secondary"
-                : "flex-1 rounded-t-[5px] rounded-b-sm bg-brand-secondary opacity-50"
+                ? "flex-1 rounded-full bg-brand-primary"
+                : "flex-1 rounded-full bg-surface-elevated"
             }
-            style={{ height: Math.max(3, (value / max) * BAR_AREA_HEIGHT) }}
+            style={{ height: Math.max(6, (value / max) * BAR_AREA_HEIGHT) }}
           />
         ))}
       </View>
@@ -102,12 +101,7 @@ export function StrengthCard({
       )}
 
       <View className="gap-2 border-t border-border pt-3">
-        <Text
-          className="text-xs font-semibold uppercase text-content-tertiary"
-          style={{ letterSpacing: 0.4 }}
-        >
-          {t("progress.records")}
-        </Text>
+        <CapsLabel size={10}>{t("progress.records")}</CapsLabel>
         {prs.length === 0 ? (
           <Text className="text-xs text-content-muted">
             {t("progress.emptyRecords")}
@@ -115,7 +109,7 @@ export function StrengthCard({
         ) : (
           prs.map((pr) => (
             <View key={pr.name} className="flex-row items-center gap-2">
-              <Ionicons name="trophy-outline" size={13} color={colors.brandAccent} />
+              <Icon name="trophy" size={13} color={colors.brandAccent} />
               <Text className="flex-1 text-[13px] text-content-secondary" numberOfLines={1}>
                 {pr.name}
               </Text>

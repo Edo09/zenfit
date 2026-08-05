@@ -1,11 +1,11 @@
-import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { useTranslation } from "react-i18next";
 
-import { Card } from "@/src/components/ui";
+import { Card, DisplayText } from "@/src/components/ui";
 import { useColors } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
 import type { MuscleAlert, MuscleRow, Periodo } from "@/src/utils/progress";
+import { Icon } from "@/src/components/ui/icon";
 
 const TABULAR = { fontVariant: ["tabular-nums" as const] };
 
@@ -30,9 +30,7 @@ export function MusclesCard({ periodo, rows, alert }: MusclesCardProps) {
   return (
     <Card className="gap-3">
       <View className="flex-row items-center justify-between">
-        <Text className="text-[15px] font-bold text-content-primary">
-          {t("progress.gruposMusculares")}
-        </Text>
+        <DisplayText size={17}>{t("progress.gruposMusculares")}</DisplayText>
         <Text className="text-[11px] text-content-muted">
           {periodo === "week" ? t("progress.ultimos14") : t("progress.ultimos30")}
         </Text>
@@ -64,8 +62,8 @@ export function MusclesCard({ periodo, rows, alert }: MusclesCardProps) {
       </View>
 
       {alert != null && (
-        <View className="flex-row items-start gap-2 rounded-xl bg-warning-soft px-3 py-2.5">
-          <Ionicons name="pulse-outline" size={15} color={colors.warning} />
+        <View className="flex-row items-start gap-2 rounded-2xl bg-warning-soft px-3 py-2.5">
+          <Icon name="activity" size={15} color={colors.warning} />
           <Text className="flex-1 text-xs leading-4 text-warning">
             {alert.kind === "recency" ? (
               <>

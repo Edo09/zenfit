@@ -20,13 +20,16 @@ export default function MealsLayout() {
         headerStyle: { backgroundColor: colors.brandDark },
         headerTintColor: colors.contentPrimary,
         headerShadowVisible: false,
+        headerTitleStyle: { fontFamily: "SchibstedGrotesk_700Bold", fontSize: 18 },
         contentStyle: { backgroundColor: colors.brandDark },
         // iOS keeps the native push (parallax + swipe-back); Android's OEM
         // default varies, so pin it
         ...(Platform.OS === "android" && { animation: "slide_from_right" as const }),
       }}
     >
-      <Stack.Screen name="index" options={{ title: t("meals.diary") }} />
+      {/* The tab screens draw their own screen titles (spec: 26–29px in
+          content), so the native header is off for the index routes. */}
+      <Stack.Screen name="index" options={{ title: t("meals.diary"), headerShown: false }} />
       <Stack.Screen
         name="create"
         options={{

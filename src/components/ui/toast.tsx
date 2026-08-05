@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import React, {
   createContext,
@@ -14,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors, type PaletteColor } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
+import { Icon, type IconName } from "@/src/components/ui/icon";
 
 const TOAST_MS = 3000;
 
@@ -22,10 +22,10 @@ export type ToastType = "success" | "error" | "info";
 type ToastOptions = { type: ToastType; message: string };
 type ToastItem = ToastOptions & { id: number };
 
-const ICONS: Record<ToastType, React.ComponentProps<typeof Ionicons>["name"]> = {
-  success: "checkmark-circle",
+const ICONS: Record<ToastType, IconName> = {
+  success: "check-circle",
   error: "alert-circle",
-  info: "information-circle",
+  info: "info",
 };
 
 const ICON_COLORS: Record<ToastType, PaletteColor> = {
@@ -103,7 +103,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                   className={ACCENT_CLASS[toast.type]}
                   style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 4 }}
                 />
-                <Ionicons name={ICONS[toast.type]} size={22} color={colors[ICON_COLORS[toast.type]]} />
+                <Icon name={ICONS[toast.type]} size={22} color={colors[ICON_COLORS[toast.type]]} />
                 <Text className="flex-1 text-sm font-medium text-content-primary">
                   {toast.message}
                 </Text>

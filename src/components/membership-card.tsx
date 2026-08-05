@@ -1,19 +1,13 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 
-import { Card } from "@/src/components/ui";
+import { CapsLabel, DisplayText, FeatureCard } from "@/src/components/ui";
+import { Icon } from "@/src/components/ui/icon";
+import { useColors } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
 import type { Membership, MembershipStatus } from "@/src/types/database";
 
 type Props = { membership: Membership | null };
-
-// Soft badge styles per status, using the theme's semantic tokens.
-const STATUS_STYLE: Record<MembershipStatus, { bg: string; text: string }> = {
-  active: { bg: "bg-success-soft", text: "text-success" },
-  expired: { bg: "bg-error-soft", text: "text-error" },
-  paused: { bg: "bg-warning-soft", text: "text-warning" },
-  cancelled: { bg: "bg-info-soft", text: "text-content-tertiary" },
-};
 
 function daysUntil(dateStr: string): number {
   const today = new Date();
@@ -22,21 +16,34 @@ function daysUntil(dateStr: string): number {
   return Math.round((target.getTime() - today.getTime()) / 86_400_000);
 }
 
+/** The membership panel — a dark feature card, cyan pill for a live plan. */
 export function MembershipCard({ membership }: Props) {
+  const colors = useColors();
   const { t, i18n } = useTranslation();
+
+  // Only an active plan gets the cyan treatment; everything else is a
+  // muted state pill so the card never celebrates a lapsed membership.
+  const statusColor: Record<MembershipStatus, string> = {
+    active: colors.brandPrimary,
+    expired: colors.error,
+    paused: colors.warning,
+    cancelled: colors.heroTrack,
+  };
 
   if (membership == null) {
     return (
-      <Card className="gap-1">
-        <Text className="text-sm font-semibold text-content-primary">
-          {t("coach.membership")}
-        </Text>
-        <Text className="text-sm text-content-tertiary">{t("coach.noMembership")}</Text>
-      </Card>
+      <FeatureCard className="gap-1.5">
+        <View className="flex-row items-center gap-2">
+          <Icon name="sparkles" size={16} color={colors.brandPrimary} />
+          <CapsLabel size={10} className="text-on-hero-dim">
+            {t("coach.membership")}
+          </CapsLabel>
+        </View>
+        <Text className="text-sm text-on-hero-dim">{t("coach.noMembership")}</Text>
+      </FeatureCard>
     );
   }
 
-  const style = STATUS_STYLE[membership.status];
   const locale = i18n.language === "es" ? "es-ES" : "en-US";
   const fmtDate = (s: string) =>
     new Date(`${s}T00:00:00`).toLocaleDateString(locale, {
@@ -60,31 +67,40 @@ export function MembershipCard({ membership }: Props) {
     }
   }
 
+  const pill = statusColor[membership.status];
+  const onPill = membership.status === "cancelled" ? colors.onHero : colors.onAccent;
+
   return (
-    <Card className="gap-2">
+    <FeatureCard className="gap-2">
       <View className="flex-row items-center justify-between">
-        <Text className="text-sm font-semibold text-content-primary">
-          {t("coach.membership")}
-        </Text>
-        <View className={`rounded-full px-2.5 py-1 ${style.bg}`}>
-          <Text className={`text-xs font-semibold ${style.text}`}>
+        <View className="flex-row items-center gap-2">
+          <Icon name="sparkles" size={16} color={colors.brandPrimary} />
+          <CapsLabel size={10} className="text-on-hero-dim">
+            {t("coach.membership")}
+          </CapsLabel>
+        </View>
+        <View className="rounded-full px-2.5 py-1" style={{ backgroundColor: pill }}>
+          <Text className="text-xs font-bold" style={{ color: onPill }}>
             {t(`coach.membershipStatus_${membership.status}`)}
           </Text>
         </View>
       </View>
 
       {membership.plan_name != null && membership.plan_name !== "" && (
-        <Text className="text-base font-semibold text-content-primary">
+        <DisplayText size={22} className="text-on-hero">
           {membership.plan_name}
-        </Text>
+        </DisplayText>
       )}
 
       {expiryLine != null && (
-        <Text className={`text-sm ${warn ? "text-warning" : "text-content-tertiary"}`}>
+        <Text
+          className="text-sm"
+          style={{ color: warn ? colors.warning : colors.onHeroDim }}
+        >
           {expiryLine}
         </Text>
       )}
-      {warn && <Text className="text-xs text-content-tertiary">{t("coach.renewHint")}</Text>}
-    </Card>
+      {warn && <Text className="text-xs text-on-hero-dim">{t("coach.renewHint")}</Text>}
+    </FeatureCard>
   );
 }

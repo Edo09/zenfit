@@ -1,10 +1,10 @@
-import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useVideoPlayer, VideoView } from "expo-video";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Modal, Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Icon } from "@/src/components/ui/icon";
 
 /**
  * Full-screen in-app player for an exercise's demo media.
@@ -39,7 +39,7 @@ function CloseButton({ onClose }: { onClose: () => void }) {
         justifyContent: "center",
       }}
     >
-      <Ionicons name="close" size={24} color="#fff" />
+      <Icon name="x" size={24} color="#fff" />
     </Pressable>
   );
 }

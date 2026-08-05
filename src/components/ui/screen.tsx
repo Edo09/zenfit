@@ -45,7 +45,9 @@ export function Screen({
     <ScrollView
       ref={scrollRef}
       className="flex-1"
-      contentContainerClassName={cn("px-4 py-6 gap-5", contentContainerClassName)}
+      // 20px screen gutter (spec); tab screens add pb-28 so content clears
+      // the floating dock.
+      contentContainerClassName={cn("px-5 py-6 gap-5", contentContainerClassName)}
       keyboardShouldPersistTaps="handled"
       refreshControl={
         onRefresh != null ? (

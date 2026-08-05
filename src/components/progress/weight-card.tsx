@@ -1,15 +1,15 @@
-import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { LineChart } from "@/src/components/progress/line-chart";
-import { Button, Card, Input, useToast } from "@/src/components/ui";
+import { Button, Card, DisplayText, useToast, Input } from "@/src/components/ui";
 import { kgToUnit1, unitToKg, useWeightUnit } from "@/src/lib/weight-unit";
 import { useColors } from "@/src/theme/colors";
 import type { Profile } from "@/src/types/database";
 import { Pressable, Text, View } from "@/src/tw";
 import { addDays, dateKeyToDate, toDateKey } from "@/src/utils/dates";
 import type { WeightStats } from "@/src/utils/progress";
+import { Icon } from "@/src/components/ui/icon";
 
 const TABULAR = { fontVariant: ["tabular-nums" as const] };
 
@@ -81,18 +81,16 @@ export function WeightCard({ weight, profile, onLogWeight }: WeightCardProps) {
   return (
     <Card className="gap-3">
       <View className="flex-row items-center justify-between">
-        <Text className="text-[15px] font-bold text-content-primary">
-          {t("progress.pesoCorporal")}
-        </Text>
+        <DisplayText size={17}>{t("progress.pesoCorporal")}</DisplayText>
         {delta != null && (
           <View
             className={
               deltaGood === true
                 ? "flex-row items-center gap-1 rounded-full bg-success-soft px-2 py-0.5"
-                : "flex-row items-center gap-1 rounded-full bg-brand-dark px-2 py-0.5"
+                : "flex-row items-center gap-1 rounded-full bg-surface-elevated px-2 py-0.5"
             }
           >
-            <Ionicons
+            <Icon
               name={delta <= 0 ? "trending-down" : "trending-up"}
               size={12}
               color={deltaGood === true ? colors.success : colors.contentTertiary}
@@ -115,12 +113,9 @@ export function WeightCard({ weight, profile, onLogWeight }: WeightCardProps) {
         <>
           <View className="flex-row items-end justify-between">
             <View className="flex-row items-baseline gap-1">
-              <Text
-                className="text-[28px] font-extrabold text-content-primary"
-                style={TABULAR}
-              >
+              <DisplayText size={30} weight="extrabold" tabular>
                 {w1(weight.current)}
-              </Text>
+              </DisplayText>
               <Text className="text-sm text-content-tertiary">{unit}</Text>
             </View>
             {weight.bmi != null && goalKey != null && (
@@ -138,8 +133,8 @@ export function WeightCard({ weight, profile, onLogWeight }: WeightCardProps) {
               <LineChart
                 points={weight.series.map((s) => ({ x: s.week, kg: s.kg }))}
                 steps={8}
-                lineColor={colors.brandSecondary}
-                areaColor={colors.infoSoft}
+                lineColor={colors.brandPrimaryDark}
+                areaColor={colors.brandPrimarySoft}
                 gridColor={colors.border}
                 dotStrokeColor={colors.surface}
               />
@@ -157,8 +152,8 @@ export function WeightCard({ weight, profile, onLogWeight }: WeightCardProps) {
         </>
       ) : (
         <View className="items-center gap-2 py-3">
-          <View className="h-12 w-12 items-center justify-center rounded-full border border-border bg-brand-dark">
-            <Ionicons name="scale-outline" size={22} color={colors.contentMuted} />
+          <View className="h-12 w-12 items-center justify-center rounded-full bg-surface-elevated">
+            <Icon name="scale" size={22} color={colors.contentMuted} />
           </View>
           <Text className="text-center text-[13px] text-content-tertiary px-4">
             {t("progress.emptyPeso")}
@@ -178,7 +173,6 @@ export function WeightCard({ weight, profile, onLogWeight }: WeightCardProps) {
               value={value}
               onChangeText={setValue}
               containerClassName="flex-1"
-              className="bg-brand-dark"
             />
             <Button onPress={handleSave} loading={saving}>
               {t("common.save")}
@@ -193,8 +187,8 @@ export function WeightCard({ weight, profile, onLogWeight }: WeightCardProps) {
             accessibilityRole="button"
             className="flex-row items-center justify-center gap-1"
           >
-            <Ionicons name="add" size={15} color={colors.brandPrimary} />
-            <Text className="text-[13px] font-semibold text-brand-primary">
+            <Icon name="plus" size={15} color={colors.brandPrimaryDark} />
+            <Text className="text-[13px] font-bold text-brand-primary-dark">
               {t("progress.registrarPeso")}
             </Text>
           </Pressable>

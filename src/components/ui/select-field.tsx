@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 
 import {
@@ -15,6 +14,7 @@ import {
 import { useColors } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
 import { cn } from "@/src/utils/cn";
+import { Icon } from "@/src/components/ui/icon";
 
 export type SelectFieldOption = { label: string; value: string };
 
@@ -59,7 +59,7 @@ export function SelectField({
             className="flex-1 p-0 text-base text-content-primary"
             placeholderTextColor={colors.contentMuted}
           />
-          <Ionicons name="chevron-down" size={18} color={colors.contentMuted} />
+          <Icon name="chevron-down" size={18} color={colors.contentMuted} />
         </SelectTrigger>
         <SelectPortal>
           <SelectBackdrop />

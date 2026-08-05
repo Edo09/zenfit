@@ -1,13 +1,13 @@
-import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React from "react";
 import { useTranslation } from "react-i18next";
 
-import { Card } from "@/src/components/ui";
+import { Card, DisplayText } from "@/src/components/ui";
 import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 import { dateKeyToDate, toDateKey } from "@/src/utils/dates";
 import type { NutritionStats, Periodo } from "@/src/utils/progress";
+import { Icon } from "@/src/components/ui/icon";
 
 const TABULAR = { fontVariant: ["tabular-nums" as const] };
 const CHART_HEIGHT = 96;
@@ -38,12 +38,10 @@ export function NutritionCard({ periodo, nutrition }: NutritionCardProps) {
   if (!nutrition.hasData) {
     return (
       <Card className="gap-3">
-        <Text className="text-[15px] font-bold text-content-primary">
-          {t("progress.nutricion")}
-        </Text>
+        <DisplayText size={17}>{t("progress.nutricion")}</DisplayText>
         <View className="items-center gap-2 py-3">
           <View className="h-12 w-12 items-center justify-center rounded-full border border-border bg-brand-dark">
-            <Ionicons name="nutrition-outline" size={22} color={colors.contentMuted} />
+            <Icon name="salad" size={22} color={colors.contentMuted} />
           </View>
           <Text className="px-4 text-center text-[13px] text-content-tertiary">
             {t("progress.emptyNutricion")}
@@ -53,7 +51,7 @@ export function NutritionCard({ periodo, nutrition }: NutritionCardProps) {
             accessibilityRole="button"
             hitSlop={8}
           >
-            <Text className="text-[13px] font-semibold text-brand-primary">
+            <Text className="text-[13px] font-semibold text-brand-primary-dark">
               {t("progress.registrarComida")}
             </Text>
           </Pressable>
@@ -65,9 +63,7 @@ export function NutritionCard({ periodo, nutrition }: NutritionCardProps) {
   return (
     <Card className="gap-3">
       <View className="flex-row items-center justify-between">
-        <Text className="text-[15px] font-bold text-content-primary">
-          {t("progress.nutricion")}
-        </Text>
+        <DisplayText size={17}>{t("progress.nutricion")}</DisplayText>
         <Text className="text-[11px] text-content-muted">
           {periodo === "week" ? t("progress.ultimos7") : t("progress.ultimos30")}
         </Text>

@@ -20,14 +20,23 @@ export default function RoutinesLayout() {
         headerStyle: { backgroundColor: colors.brandDark },
         headerTintColor: colors.contentPrimary,
         headerShadowVisible: false,
+        headerTitleStyle: { fontFamily: "SchibstedGrotesk_700Bold", fontSize: 18 },
         contentStyle: { backgroundColor: colors.brandDark },
         // iOS keeps the native push (parallax + swipe-back); Android's OEM
         // default varies, so pin it
         ...(Platform.OS === "android" && { animation: "slide_from_right" as const }),
       }}
     >
-      <Stack.Screen name="index" options={{ title: t("routines.myRoutines") }} />
-      <Stack.Screen name="[id]" options={{ title: t("routines.routineTitle") }} />
+      {/* index and [id] draw their own titles (screen title / image hero), so
+          the native header is off for both. */}
+      <Stack.Screen
+        name="index"
+        options={{ title: t("routines.myRoutines"), headerShown: false }}
+      />
+      <Stack.Screen
+        name="[id]"
+        options={{ title: t("routines.routineTitle"), headerShown: false }}
+      />
       <Stack.Screen
         name="create"
         options={{

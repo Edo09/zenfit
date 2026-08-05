@@ -62,6 +62,9 @@ export default {
     confirmEmailTitle: "Check your email",
     confirmEmailBody:
       "We sent a confirmation link to {{email}}. Verify your address, then sign in.",
+    tagline: "Build the body, one habit at a time.",
+    logIn: "Log in",
+    createAccountCta: "Create an account",
   },
 
   // Onboarding
@@ -92,6 +95,8 @@ export default {
     heightInPlaceholder: "e.g. 9",
     weightLbsPlaceholder: "e.g. 160",
     skip: "Skip",
+    continueCta: "Continue",
+    startTraining: "Start training",
     skipToast: "You can complete your profile later to use AI features",
     lifestyle: "Your Lifestyle",
     lifestyleSubtitle: "This helps us adjust your recommendations",
@@ -160,6 +165,10 @@ export default {
     meals: "Meals",
     progress: "Progress",
     profile: "Profile",
+    // Short dock labels — the floating tab bar only, not screen titles
+    train: "Train",
+    fuel: "Fuel",
+    you: "You",
   },
 
   // Profile
@@ -230,6 +239,15 @@ export default {
     noActivityToday: "No activity logged today",
     startRoutine: "Start a routine →",
     minutes: "Minutes",
+    energyLeft: "Energy left today",
+    onTrack: "On track",
+    overBudget: "Over budget",
+    eatenLower: "eaten",
+    burnedLower: "burned",
+    goalLower: "goal",
+    upNext: "Up next",
+    weekStreak: "Week streak",
+    workoutsThisWeek: "Workouts this week",
   },
 
   // Settings
@@ -246,6 +264,9 @@ export default {
     confirmPassword: "Confirm password",
     passwordsDontMatch: "Passwords don't match",
     passwordChanged: "Password updated",
+    preferences: "Preferences",
+    account: "Account",
+    email: "Email",
   },
 
   // Coach multi-week program
@@ -356,6 +377,9 @@ export default {
     noFoodDetected: "No food detected in the photo",
     nameOrPhotoRequired: "Add a name or a photo of the meal",
     itemRemoved: "Item removed",
+    scanYourMeal: "Scan your meal",
+    scanNote: "Snap a photo and AI reads the calories and macros for you.",
+    addToDiary: "Add to diary",
   },
 
   // Routines
@@ -405,6 +429,21 @@ export default {
     exerciseRemoved: "Exercise removed",
     routineDeleted: "Routine deleted",
     aiBadge: "AI",
+    // Source filter pills on the Train tab
+    allFilter: "All",
+    mineFilter: "Mine",
+    aiFilter: "AI",
+    routineCount_one: "{{count}} routine",
+    routineCount_other: "{{count}} routines",
+    newShort: "New",
+    noRoutinesForFilter: "No routines match this filter",
+    startWorkout: "Start workout",
+    setOf: "Set {{current}} of {{total}}",
+    completeSet: "Complete set",
+    previousExercise: "Previous exercise",
+    nextExercise: "Next exercise",
+    exerciseProgress: "{{current}} / {{total}}",
+    restSeconds: "{{seconds}}s rest",
   },
 
   // Progress
@@ -505,6 +544,10 @@ export default {
 
     historial: "History",
     verTodo: "View full history",
+    // History screen grouping
+    groupThisWeek: "This week",
+    groupLastWeek: "Last week",
+    groupEarlier: "Earlier",
     ejercicios: "{{count}} exercises",
   },
 

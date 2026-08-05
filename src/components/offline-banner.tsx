@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Platform } from "react-native";
@@ -16,6 +15,7 @@ import { subscribeFlushResult, usePendingCount } from "@/src/lib/outbox";
 import { useColors } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
+import { Icon } from "@/src/components/ui/icon";
 
 // Global connectivity strip under the status bar: amber while offline (with
 // the queued-change count), brand-colored while a reconnect flush is draining,
@@ -82,13 +82,13 @@ export function OfflineBanner() {
         style={{ paddingTop: insets.top }}
       >
         <View className="flex-row items-center justify-center gap-2 px-4 py-1.5">
-          <Ionicons
-            name={online ? "sync-outline" : "cloud-offline-outline"}
+          <Icon
+            name={online ? "refresh" : "wifi-off"}
             size={14}
-            color={online ? colors.brandPrimary : colors.warning}
+            color={online ? colors.brandPrimaryDark : colors.warning}
           />
           <Text
-            className={`text-xs font-medium ${online ? "text-brand-primary" : "text-warning"}`}
+            className={`text-xs font-medium ${online ? "text-brand-primary-dark" : "text-warning"}`}
           >
             {online
               ? t("common.syncing")

@@ -1,9 +1,9 @@
-import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import React from "react";
 import { useTranslation } from "react-i18next";
 
-import { Card } from "@/src/components/ui";
+import { Card, DisplayText } from "@/src/components/ui";
+import { Icon, type IconName } from "@/src/components/ui/icon";
 import { enter, exit } from "@/src/lib/motion";
 import { mealPhotoUrl } from "@/src/services/meal-photos";
 import { useColors } from "@/src/theme/colors";
@@ -22,15 +22,17 @@ type Props = {
   onRemove: (entry: DiaryEntry) => void;
 };
 
-const SLOT_ICON: Record<MealType, React.ComponentProps<typeof Ionicons>["name"]> = {
-  breakfast: "cafe-outline",
-  lunch: "restaurant-outline",
-  dinner: "moon-outline",
-  snack: "nutrition-outline",
+const SLOT_ICON: Record<MealType, IconName> = {
+  breakfast: "coffee",
+  lunch: "utensils",
+  dinner: "moon",
+  snack: "salad",
 };
 
-// One fixed diary section: slot header with kcal total + add button, then the
-// slot's food items (flattened across that day's container meals).
+/**
+ * One meal card: slot header with kcal total, the slot's food rows (flattened
+ * across that day's container meals), and a dashed camera "Add food" row.
+ */
 export function DiarySlot({ slot, entries, onAdd, onEdit, onRemove }: Props) {
   const colors = useColors();
   const { t, i18n } = useTranslation();
@@ -41,134 +43,124 @@ export function DiarySlot({ slot, entries, onAdd, onEdit, onRemove }: Props) {
   );
 
   return (
-    <View className="gap-2">
-      <View className="flex-row items-center gap-2">
-        <Ionicons name={SLOT_ICON[slot]} size={16} color={colors.contentTertiary} />
-        <Text className="text-base font-semibold text-content-primary capitalize">
+    <Card className="gap-3 p-4">
+      <View className="flex-row items-center gap-3">
+        <View className="h-10 w-10 items-center justify-center rounded-2xl bg-surface-elevated">
+          <Icon name={SLOT_ICON[slot]} size={18} color={colors.contentSecondary} />
+        </View>
+        <DisplayText size={17} className="flex-1 capitalize">
           {slotLabel}
-        </Text>
+        </DisplayText>
         {entries.length > 0 && (
-          <Text
-            className="text-sm text-content-tertiary"
-            style={{ fontVariant: ["tabular-nums"] }}
-          >
-            {kcalFmt} {t("meals.kcal")}
-          </Text>
+          <View className="flex-row items-baseline gap-1">
+            <DisplayText size={17} tabular>
+              {kcalFmt}
+            </DisplayText>
+            <Text className="text-2xs text-content-muted">{t("meals.kcal")}</Text>
+          </View>
         )}
       </View>
 
-      {entries.length === 0 ? (
-        <Pressable
-          onPress={onAdd}
-          accessibilityRole="button"
-          accessibilityLabel={t("meals.addToSlot", { slot: slotLabel })}
-          className="border-2 border-dashed border-border-strong rounded-2xl py-5 items-center gap-2.5"
-        >
-          {/* Oval add pill — the slot's single add affordance */}
-          <View className="bg-info-soft rounded-full px-7 py-2 items-center justify-center">
-            <Ionicons name="add" size={22} color={colors.brandPrimary} />
-          </View>
-          <Text className="text-content-muted text-sm">{t("meals.emptySlotHint")}</Text>
-        </Pressable>
-      ) : (
-        <View className="gap-2">
-          {entries.map((entry) => (
-            <AnimatedView key={entry.item.id} entering={enter()} exiting={exit()}>
-              {/* Tapping the row opens the item editor (assigned items are read-only).
-                  Delete is an absolute sibling, NOT nested in the card's pressable —
-                  a nested <button> on web re-parents and shifts the row out of place. */}
-              <View>
-              <Card
-                onPress={entry.assigned ? undefined : () => onEdit(entry)}
-                className="px-4 py-3 flex-row items-center justify-between"
-              >
-                {entry.item.photo_path != null && (
-                  <Image
-                    source={{ uri: mealPhotoUrl(entry.item.photo_path) }}
-                    style={{ width: 52, height: 52, borderRadius: 12, marginRight: 12 }}
-                    contentFit="cover"
-                    transition={200}
-                    cachePolicy="disk"
-                  />
-                )}
-                <View className="flex-1 gap-1">
-                  <View className="flex-row items-center gap-2">
-                    <Text className="font-semibold text-content-primary">
-                      {entry.item.name}
-                    </Text>
-                    {entry.assigned && (
-                      <View className="flex-row items-center gap-1 bg-brand-primary rounded-full px-2 py-0.5">
-                        <Ionicons name="ribbon-outline" size={10} color={colors.white} />
-                        <Text className="text-[10px] font-semibold text-white">
-                          {t("coach.badge")}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                  {entry.item.portion != null && entry.item.portion !== "" && (
-                    <Text className="text-content-tertiary text-xs">
-                      {entry.item.portion}
-                    </Text>
-                  )}
-                  <View className="flex-row items-center flex-wrap gap-x-3 gap-y-1">
-                    <Text
-                      className="text-sm font-semibold"
-                      style={{ color: colors.macroProtein, fontVariant: ["tabular-nums"] }}
-                    >
-                      {t("meals.proteinName")} {entry.item.protein_g}g
-                    </Text>
-                    <Text
-                      className="text-sm font-semibold"
-                      style={{ color: colors.macroCarbs, fontVariant: ["tabular-nums"] }}
-                    >
-                      {t("meals.carbsName")} {entry.item.carbs_g}g
-                    </Text>
-                    <Text
-                      className="text-sm font-semibold"
-                      style={{ color: colors.macroFat, fontVariant: ["tabular-nums"] }}
-                    >
-                      {t("meals.fatName")} {entry.item.fat_g}g
-                    </Text>
-                  </View>
-                </View>
-                <View className={`items-end ml-2 ${!entry.assigned ? "pr-6" : ""}`}>
-                  <Text
-                    className="text-lg font-bold text-content-primary"
-                    style={{ fontVariant: ["tabular-nums"] }}
-                  >
-                    {entry.item.calories}
-                  </Text>
-                  <Text className="text-xs text-content-tertiary">{t("meals.kcal")}</Text>
-                </View>
-              </Card>
-              {!entry.assigned && (
-                <Pressable
-                  onPress={() => onRemove(entry)}
-                  className="absolute right-1 top-0 bottom-0 justify-center px-2"
-                  hitSlop={8}
-                  accessibilityRole="button"
-                  accessibilityLabel={t("meals.removeFoodItem")}
-                >
-                  <Ionicons name="trash-outline" size={18} color={colors.error} />
-                </Pressable>
+      {entries.map((entry) => (
+        <AnimatedView key={entry.item.id} entering={enter()} exiting={exit()}>
+          {/* Tapping the row opens the item editor (assigned items are read-only).
+              Delete is an absolute sibling, NOT nested in the row's pressable —
+              a nested <button> on web re-parents and shifts the row out of place. */}
+          <View>
+            <Pressable
+              onPress={entry.assigned ? undefined : () => onEdit(entry)}
+              accessibilityRole={entry.assigned ? undefined : "button"}
+              className="flex-row items-center gap-3 rounded-2xl bg-surface-sunken px-3.5 py-3"
+            >
+              {entry.item.photo_path != null && (
+                <Image
+                  source={{ uri: mealPhotoUrl(entry.item.photo_path) }}
+                  style={{ width: 48, height: 48, borderRadius: 14 }}
+                  contentFit="cover"
+                  transition={200}
+                  cachePolicy="disk"
+                />
               )}
+              <View className="flex-1 gap-1">
+                <View className="flex-row items-center gap-2">
+                  <Text className="font-semibold text-content-primary flex-shrink" numberOfLines={1}>
+                    {entry.item.name}
+                  </Text>
+                  {entry.assigned && (
+                    <View className="flex-row items-center gap-1 bg-brand-primary rounded-full px-2 py-0.5">
+                      <Icon name="award" size={10} color={colors.onAccent} />
+                      <Text className="text-2xs font-semibold text-on-accent">
+                        {t("coach.badge")}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+                {entry.item.portion != null && entry.item.portion !== "" && (
+                  <Text className="text-content-tertiary text-xs">{entry.item.portion}</Text>
+                )}
+                <View className="flex-row items-center flex-wrap gap-x-3">
+                  <MacroTag
+                    label={t("meals.proteinName")}
+                    grams={entry.item.protein_g}
+                    color={colors.macroProtein}
+                  />
+                  <MacroTag
+                    label={t("meals.carbsName")}
+                    grams={entry.item.carbs_g}
+                    color={colors.macroCarbs}
+                  />
+                  <MacroTag
+                    label={t("meals.fatName")}
+                    grams={entry.item.fat_g}
+                    color={colors.macroFat}
+                  />
+                </View>
               </View>
-            </AnimatedView>
-          ))}
+              <View className={`items-end ${!entry.assigned ? "pr-5" : ""}`}>
+                <DisplayText size={18} tabular>
+                  {entry.item.calories}
+                </DisplayText>
+                <Text className="text-2xs text-content-muted">{t("meals.kcal")}</Text>
+              </View>
+            </Pressable>
+            {!entry.assigned && (
+              <Pressable
+                onPress={() => onRemove(entry)}
+                className="absolute right-0.5 top-0 bottom-0 justify-center px-2"
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={t("meals.removeFoodItem")}
+              >
+                <Icon name="trash" size={16} color={colors.contentMuted} />
+              </Pressable>
+            )}
+          </View>
+        </AnimatedView>
+      ))}
 
-          {/* Compact add row so filled slots keep an add affordance */}
-          <Pressable
-            onPress={onAdd}
-            accessibilityRole="button"
-            accessibilityLabel={t("meals.addToSlot", { slot: slotLabel })}
-            className="border-2 border-dashed border-border-strong rounded-2xl py-2 items-center"
-          >
-            <View className="bg-info-soft rounded-full px-6 py-1.5 items-center justify-center">
-              <Ionicons name="add" size={18} color={colors.brandPrimary} />
-            </View>
-          </Pressable>
-        </View>
-      )}
-    </View>
+      {/* Dashed camera affordance — also the empty state for the slot */}
+      <Pressable
+        onPress={onAdd}
+        accessibilityRole="button"
+        accessibilityLabel={t("meals.addToSlot", { slot: slotLabel })}
+        className="flex-row items-center justify-center gap-2 rounded-2xl border border-dashed border-border-strong py-3"
+      >
+        <Icon name="camera" size={16} color={colors.brandPrimaryDark} />
+        <Text className="text-sm font-bold text-brand-primary-dark">
+          {entries.length === 0 ? t("meals.emptySlotHint") : t("meals.addFood")}
+        </Text>
+      </Pressable>
+    </Card>
+  );
+}
+
+function MacroTag({ label, grams, color }: { label: string; grams: number; color: string }) {
+  return (
+    <Text
+      className="text-xs font-semibold"
+      style={{ color, fontVariant: ["tabular-nums"] }}
+    >
+      {label} {grams}g
+    </Text>
   );
 }

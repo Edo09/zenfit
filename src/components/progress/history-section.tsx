@@ -1,14 +1,14 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { EmptyState } from "@/src/components/empty-state";
-import { Card } from "@/src/components/ui";
+import { Card, DisplayText } from "@/src/components/ui";
 import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 import type { WorkoutLog } from "@/src/types/database";
+import { Icon } from "@/src/components/ui/icon";
 
 const TABULAR = { fontVariant: ["tabular-nums" as const] };
 const STORAGE_KEY = "progress:historyOpen";
@@ -52,20 +52,18 @@ export function HistorySection({ logs, onDelete, onLogWorkout }: HistorySectionP
         onPress={toggle}
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
-        className="flex-row items-center gap-2 px-4 py-3.5"
+        className="flex-row items-center gap-2 px-5 py-4"
       >
-        <Text className="text-[15px] font-bold text-content-primary">
-          {t("progress.historial")}
-        </Text>
+        <DisplayText size={17}>{t("progress.historial")}</DisplayText>
         {logs.length > 0 && (
-          <View className="rounded-full bg-brand-dark px-2 py-0.5">
+          <View className="rounded-full bg-surface-elevated px-2 py-0.5">
             <Text className="text-[11px] font-semibold text-content-tertiary" style={TABULAR}>
               {logs.length}
             </Text>
           </View>
         )}
         <View className="flex-1" />
-        <Ionicons
+        <Icon
           name={open ? "chevron-up" : "chevron-down"}
           size={18}
           color={colors.contentTertiary}
@@ -75,14 +73,14 @@ export function HistorySection({ logs, onDelete, onLogWorkout }: HistorySectionP
       {open &&
         (logs.length === 0 ? (
           <EmptyState
-            icon="bar-chart-outline"
+            icon="chart"
             title={t("progress.noWorkoutsLogged")}
             subtitle={t("progress.logFirstWorkout")}
             actionLabel={t("progress.logWorkout")}
             onAction={onLogWorkout}
           />
         ) : (
-          <View className="px-4 pb-3">
+          <View className="px-5 pb-4">
             {logs.slice(0, PREVIEW_COUNT).map((log) => (
               <View
                 key={log.id}
@@ -100,8 +98,8 @@ export function HistorySection({ logs, onDelete, onLogWorkout }: HistorySectionP
                   </Text>
                 </View>
                 {log.duration_minutes != null && (
-                  <View className="rounded-full bg-success-soft px-2.5 py-0.5">
-                    <Text className="text-xs font-medium text-success" style={TABULAR}>
+                  <View className="rounded-full bg-brand-primary-soft px-2.5 py-0.5">
+                    <Text className="text-xs font-semibold text-brand-primary-dark" style={TABULAR}>
                       {t("progress.min", { count: log.duration_minutes })}
                     </Text>
                   </View>
@@ -113,7 +111,7 @@ export function HistorySection({ logs, onDelete, onLogWorkout }: HistorySectionP
                   accessibilityRole="button"
                   accessibilityLabel={t("progress.deleteLog")}
                 >
-                  <Ionicons name="trash-outline" size={16} color={colors.error} />
+                  <Icon name="trash" size={16} color={colors.contentMuted} />
                 </Pressable>
               </View>
             ))}
@@ -123,7 +121,7 @@ export function HistorySection({ logs, onDelete, onLogWorkout }: HistorySectionP
                 accessibilityRole="button"
                 className="items-center border-t border-border py-3"
               >
-                <Text className="text-[13px] font-semibold text-brand-primary">
+                <Text className="text-[13px] font-bold text-brand-primary-dark">
                   {t("progress.verTodo")}
                 </Text>
               </Pressable>

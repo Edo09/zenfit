@@ -1,10 +1,9 @@
-import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router, usePathname } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Card, ConfirmDialog, PosterText, SkewButton, useToast } from "@/src/components/ui";
+import { Button, Card, ConfirmDialog, DisplayText, useToast } from "@/src/components/ui";
 import { useAuth } from "@/src/hooks/use-auth";
 import { useExercises } from "@/src/hooks/use-exercises";
 import { useProfile } from "@/src/hooks/use-profile";
@@ -15,6 +14,7 @@ import { useColors } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
 import type { Profile } from "@/src/types/database";
 import { cn } from "@/src/utils/cn";
+import { Icon } from "@/src/components/ui/icon";
 
 // Generate action temporarily hidden (2026-07-17) — flip back on when the
 // AI feature is ready to expose (LLM-key Edge Function proxy still pending).
@@ -129,59 +129,65 @@ export function AIPlanCard({
 
   return (
     <>
-      {/* AI card — the only gold family in the app (README: AI features only) */}
+      {/* AI card — the only violet family in the app (spec: AI features only) */}
       <Card
-        className={cn("gap-2.5 p-3 rounded-2xl border-brand-accent-border overflow-hidden", className)}
+        className={cn(
+          "gap-3 p-4 border-brand-accent-border overflow-hidden",
+          className,
+        )}
       >
-        {/* Decorative gold-tinted circle off the top-right corner */}
+        {/* Soft violet wash off the top-right corner */}
         <View
           pointerEvents="none"
           className="absolute rounded-full"
           style={{
-            top: -18,
-            right: -18,
-            width: 70,
-            height: 70,
+            top: -30,
+            right: -30,
+            width: 120,
+            height: 120,
             backgroundColor: colors.brandAccentSoft,
-            opacity: 0.5,
           }}
         />
-        <View className="flex-row items-center gap-2.5">
+        <View className="flex-row items-center gap-3">
           <View
-            className="h-9 w-9 items-center justify-center rounded-lg"
+            className="h-10 w-10 items-center justify-center rounded-2xl"
             style={{ backgroundColor: colors.brandAccentSoft }}
           >
-            <Ionicons name="sparkles" size={17} color={colors.brandAccent} />
+            <Icon name="sparkles" size={19} color={colors.brandAccent} />
           </View>
           <View className="flex-1">
-            <PosterText size={15}>{t("profile.aiTitle")}</PosterText>
+            <DisplayText size={16}>{t("profile.aiTitle")}</DisplayText>
             <Text
-              className={cn("text-[11px] mt-0.5", online ? "text-content-tertiary" : "text-content-muted")}
+              className={cn(
+                "text-xs mt-0.5",
+                online ? "text-content-tertiary" : "text-content-muted",
+              )}
             >
               {online ? t("profile.aiSubtitle") : t("common.requiresInternet")}
             </Text>
           </View>
           {SHOW_GENERATE && compact && (
-            <SkewButton
-              size="compact"
+            <Button
+              size="sm"
+              variant="secondary"
               onPress={handlePress}
               loading={generating}
               disabled={!online}
             >
               {t("profile.aiGenerateShort")}
-            </SkewButton>
+            </Button>
           )}
         </View>
         {SHOW_GENERATE && !compact && (
-          <SkewButton
+          <Button
             icon="sparkles"
+            size="lg"
             onPress={handlePress}
             loading={generating}
             disabled={!online}
-            className="mx-1"
           >
             {t("profile.aiGenerate")}
-          </SkewButton>
+          </Button>
         )}
       </Card>
 

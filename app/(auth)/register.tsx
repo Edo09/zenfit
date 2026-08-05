@@ -3,9 +3,10 @@ import { router } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Button, Input, Screen } from "@/src/components/ui";
+import { BrandMark } from "@/src/components/brand-mark";
+import { Button, DisplayText, Input, Screen } from "@/src/components/ui";
 import { useAuth } from "@/src/hooks/use-auth";
-import { Pressable, Text, View } from "@/src/tw";
+import { Text, View } from "@/src/tw";
 
 export default function Register() {
   const { t } = useTranslation();
@@ -59,40 +60,31 @@ export default function Register() {
 
   return (
     <Screen keyboard contentContainerClassName="flex-1 justify-center px-6 py-12 gap-0">
-      {/* Two-tone wordmark, matching the login screen */}
-      <View className="items-center mb-12">
-        <Text className="text-5xl font-extrabold">
-          <Text className="text-5xl font-extrabold text-content-primary">Ho</Text>
-          <Text className="text-5xl font-extrabold text-brand-secondary">kage</Text>
-        </Text>
-        <Text className="text-content-tertiary mt-3 text-base">
+      {/* Ring-mark + wordmark, matching the login screen */}
+      <View className="items-center gap-4 mb-10">
+        <BrandMark size={60} wordmarkSize={32} />
+        <DisplayText size={24} className="text-center">
           {t("auth.createAccount")}
-        </Text>
+        </DisplayText>
       </View>
 
       {confirmEmailSent ? (
         <View className="gap-4">
-          <View className="bg-success-soft rounded-xl p-4 gap-1">
-            <Text className="text-success font-semibold">
-              {t("auth.confirmEmailTitle")}
-            </Text>
+          <View className="bg-success-soft rounded-2xl p-4 gap-1">
+            <Text className="text-success font-bold">{t("auth.confirmEmailTitle")}</Text>
             <Text className="text-content-secondary text-sm">
               {t("auth.confirmEmailBody", { email: email.trim() })}
             </Text>
           </View>
-          <Button
-            size="lg"
-            onPress={() => router.replace("/(auth)/login")}
-            className="rounded-2xl"
-          >
-            {t("auth.signIn")}
+          <Button size="lg" onPress={() => router.replace("/(auth)/login")}>
+            {t("auth.logIn")}
           </Button>
         </View>
       ) : (
       <View className="gap-4">
         <Input
           placeholder={t("auth.namePlaceholder")}
-          leftIcon="person-outline"
+          leftIcon="user"
           autoCapitalize="words"
           value={name}
           onChangeText={(text) => {
@@ -106,7 +98,7 @@ export default function Register() {
 
         <Input
           placeholder={t("auth.emailPlaceholder")}
-          leftIcon="mail-outline"
+          leftIcon="mail"
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
@@ -122,7 +114,7 @@ export default function Register() {
 
         <Input
           placeholder={t("auth.enterPassword")}
-          leftIcon="key-outline"
+          leftIcon="lock"
           secureTextEntry
           value={password}
           onChangeText={(text) => {
@@ -136,31 +128,30 @@ export default function Register() {
         />
 
         {formError != null && (
-          <View className="bg-error-soft rounded-xl p-3">
+          <View className="bg-error-soft rounded-2xl p-3">
             <Text className="text-error text-sm">{formError}</Text>
           </View>
         )}
 
-        <Button size="lg" onPress={handleRegister} loading={loading} className="mt-2 rounded-2xl">
+        <Button size="lg" onPress={handleRegister} loading={loading} className="mt-2">
           {t("auth.signUp")}
         </Button>
 
         {/* ── or ── */}
-        <View className="flex-row items-center gap-3 my-3">
-          <View className="flex-1 h-px bg-border-strong" />
-          <Text className="text-content-muted">{t("common.or")}</Text>
-          <View className="flex-1 h-px bg-border-strong" />
+        <View className="flex-row items-center gap-3 my-2">
+          <View className="flex-1 h-px bg-border" />
+          <Text className="text-content-muted text-sm">{t("common.or")}</Text>
+          <View className="flex-1 h-px bg-border" />
         </View>
 
-        <Pressable
+        <Button
+          variant="secondary"
+          size="lg"
+          haptic={false}
           onPress={() => router.push("/(auth)/login")}
-          accessibilityRole="button"
-          className="border-2 border-brand-primary rounded-2xl py-4 items-center active:opacity-70"
         >
-          <Text className="text-brand-primary font-bold text-base">
-            {t("auth.signIn")}
-          </Text>
-        </Pressable>
+          {t("auth.logIn")}
+        </Button>
       </View>
       )}
     </Screen>

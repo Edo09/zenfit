@@ -21,8 +21,10 @@ import {
   Card,
   Chip,
   ConfirmDialog,
+  DisplayText,
   ErrorState,
   FAB,
+  HeaderPanel,
   Input,
   useToast,
 } from "@/src/components/ui";
@@ -119,9 +121,18 @@ export default function ProgressScreen() {
         behavior="padding"
         keyboardVerticalOffset={Platform.OS === "ios" ? headerHeight : 0}
       >
+        <HeaderPanel>
+          <DisplayText size={27}>{t("tabs.progress")}</DisplayText>
+        </HeaderPanel>
         <RAnimated.ScrollView
           contentInsetAdjustmentBehavior="automatic"
-          contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 72 }}
+          // paddingBottom clears the floating dock plus the FAB above it
+          contentContainerStyle={{
+            paddingHorizontal: 20,
+            paddingTop: 4,
+            gap: 12,
+            paddingBottom: 170,
+          }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           refreshControl={
@@ -225,11 +236,9 @@ export default function ProgressScreen() {
             accessibilityLabel={t("common.cancel")}
           >
             {/* Swallow taps on the card so they don't close the modal */}
-            <Pressable onPress={() => {}} className="mx-4">
+            <Pressable onPress={() => {}} className="mx-5">
               <Card className="gap-3">
-                <Text className="font-semibold text-content-primary">
-                  {t("progress.logAWorkout")}
-                </Text>
+                <DisplayText size={19}>{t("progress.logAWorkout")}</DisplayText>
                 {routines.length === 0 ? (
                   <View className="items-center gap-2 py-2">
                     <Text className="text-content-tertiary text-sm">
@@ -242,7 +251,7 @@ export default function ProgressScreen() {
                       }}
                       accessibilityRole="button"
                     >
-                      <Text className="text-brand-primary font-medium text-sm">
+                      <Text className="text-brand-primary-dark font-bold text-sm">
                         {t("progress.createRoutineFirst")}
                       </Text>
                     </Pressable>
@@ -278,7 +287,6 @@ export default function ProgressScreen() {
                     value={duration}
                     onChangeText={setDuration}
                     containerClassName="flex-1"
-                    className="bg-brand-dark"
                   />
                   <Input
                     label={t("progress.notes")}
@@ -286,7 +294,6 @@ export default function ProgressScreen() {
                     value={notes}
                     onChangeText={setNotes}
                     containerClassName="flex-[2]"
-                    className="bg-brand-dark"
                   />
                 </View>
                 <View className="flex-row gap-2">
@@ -308,7 +315,12 @@ export default function ProgressScreen() {
       </Modal>
 
       {!showLogForm && (
-        <FAB onPress={() => setShowLogForm(true)} accessibilityLabel={t("progress.logWorkout")} />
+        <FAB
+          icon="plus"
+          label={t("progress.logWorkout")}
+          onPress={() => setShowLogForm(true)}
+          accessibilityLabel={t("progress.logWorkout")}
+        />
       )}
 
       <ConfirmDialog

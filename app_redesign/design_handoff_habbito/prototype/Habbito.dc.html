@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--backdrop);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-family:var(--font-body)}
+button{font:inherit;color:inherit;background:none;border:none;padding:0;margin:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+a{color:var(--lime-deep);text-decoration:none}
+a:hover{opacity:.82}
+:root{
+--font-display:'Schibsted Grotesk',system-ui,sans-serif;
+--font-body:'Hanken Grotesk',system-ui,sans-serif;
+--backdrop:#E6E3DA;--bg:#F3F1EA;--surface:#FFFFFF;--sunken:#EDEAE1;--sunken2:#F6F4EE;
+--ink:#1A1915;--ink2:#5F5D54;--ink3:#9C998E;--line:#E7E3D8;--line2:#D9D4C7;
+--lime:#C4ED4B;--lime-ink:#1A1915;--lime-deep:#5E7A0C;--lime-soft:#EAF6C6;
+--blue:#4E6BF0;--amber:#E39A2E;--rose:#EC6A88;--violet:#8E7BF0;--violet-soft:#EEEAFB;
+--success:#2E9F66;--warn:#D6971F;--error:#E1553C;
+--hero-from:#242019;--hero-to:#131109;--on-hero:#F3F1EA;--on-hero-dim:rgba(243,241,234,.58);--hero-track:rgba(243,241,234,.10);
+--shadow:0 6px 22px rgba(26,25,21,.07),0 1px 3px rgba(26,25,21,.05);
+--shadow-lg:0 20px 46px rgba(26,25,21,.16);
+--dock:rgba(255,255,255,.86);
+}
+[data-theme="dark"]{
+--backdrop:#0B0A07;--bg:#151410;--surface:#201E18;--sunken:#2A281F;--sunken2:#26241D;
+--ink:#F3F1EA;--ink2:#B3B0A4;--ink3:#7C796D;--line:#302D24;--line2:#3B382E;
+--lime:#CBF556;--lime-ink:#161510;--lime-deep:#CBF556;--lime-soft:#2C3312;
+--blue:#7A93FF;--amber:#EEAA4A;--rose:#F284A0;--violet:#A594FF;--violet-soft:#2A2540;
+--success:#37C07E;--warn:#E7AE3F;--error:#F26B52;
+--hero-from:#22201A;--hero-to:#0C0B07;--on-hero:#F3F1EA;--on-hero-dim:rgba(243,241,234,.55);--hero-track:rgba(243,241,234,.10);
+--shadow:0 8px 26px rgba(0,0,0,.5),0 1px 2px rgba(0,0,0,.4);
+--shadow-lg:0 22px 50px rgba(0,0,0,.62);
+--dock:rgba(32,30,24,.84);
+}
+@keyframes screenIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes ringDraw{from{stroke-dashoffset:var(--len)}to{stroke-dashoffset:var(--off)}}
+@keyframes barGrow{from{transform:scaleY(.04)}to{transform:scaleY(1)}}
+@keyframes growX{from{transform:scaleX(.02)}to{transform:scaleX(1)}}
+@keyframes popIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+@keyframes floatUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* ── Tweak: Accent energy ── */
+[data-accent="coral"]{--lime:#FF7A5C;--lime-ink:#2A0E08;--lime-deep:#C23A2A;--lime-soft:#FBE4DF}
+[data-accent="coral"][data-theme="dark"]{--lime:#FF876B;--lime-ink:#1E0A06;--lime-deep:#FF876B;--lime-soft:#3A211B}
+[data-accent="violet"]{--lime:#8E7BF0;--lime-ink:#FFFFFF;--lime-deep:#5B45C7;--lime-soft:#ECE8FB}
+[data-accent="violet"][data-theme="dark"]{--lime:#A594FF;--lime-ink:#160C33;--lime-deep:#A594FF;--lime-soft:#2A2540}
+[data-accent="azure"]{--lime:#3BA0E8;--lime-ink:#04223A;--lime-deep:#1E6FBF;--lime-soft:#DFF0FB}
+[data-accent="azure"][data-theme="dark"]{--lime:#4FB0F0;--lime-ink:#04223A;--lime-deep:#4FB0F0;--lime-soft:#123043}
+/* ── Tweak: Surface mood ── */
+[data-mood="cool"]{--backdrop:#DDE1E7;--bg:#EEF1F5;--surface:#FFFFFF;--sunken:#E6EAF0;--sunken2:#F4F6F9;--ink:#161A20;--ink2:#565E6B;--ink3:#949CA8;--line:#E2E6EC;--line2:#D0D6DF;--hero-from:#20242B;--hero-to:#0B0E12}
+[data-mood="cool"][data-theme="dark"]{--backdrop:#070A0F;--bg:#111419;--surface:#1B1F26;--sunken:#252A32;--sunken2:#21262E;--ink:#EEF1F6;--ink2:#AAB2BF;--ink3:#727A86;--line:#2A2F38;--line2:#353B45;--hero-from:#1B2028;--hero-to:#080A0E}
+[data-mood="mono"]{--backdrop:#DADAD8;--bg:#F4F4F2;--surface:#FFFFFF;--sunken:#ECECEA;--sunken2:#F8F8F6;--ink:#0A0A0A;--ink2:#4A4A4A;--ink3:#8A8A8A;--line:#E6E6E4;--line2:#D6D6D4;--hero-from:#1C1C1C;--hero-to:#000000}
+[data-mood="mono"][data-theme="dark"]{--backdrop:#000000;--bg:#0B0B0B;--surface:#161616;--sunken:#212121;--sunken2:#1C1C1C;--ink:#F7F7F7;--ink2:#B0B0B0;--ink3:#767676;--line:#242424;--line2:#303030;--hero-from:#1A1A1A;--hero-to:#000000}
+/* ── Tweak: Depth ── */
+[data-depth="flat"]{--shadow:0 0 0 1px rgba(0,0,0,0);--shadow-lg:0 6px 18px rgba(26,25,21,.06)}
+[data-depth="flat"][data-theme="dark"]{--shadow:0 0 0 1px rgba(0,0,0,0);--shadow-lg:0 8px 22px rgba(0,0,0,.42)}
+[data-depth="bold"]{--shadow:0 10px 30px rgba(26,25,21,.13),0 2px 6px rgba(26,25,21,.08);--shadow-lg:0 28px 60px rgba(26,25,21,.22)}
+[data-depth="bold"][data-theme="dark"]{--shadow:0 12px 32px rgba(0,0,0,.6);--shadow-lg:0 32px 66px rgba(0,0,0,.72)}
+</style>
+</helmet>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="ic-home" viewBox="0 0 24 24"><path d="M15 21v-7a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v7"/><path d="M3 10.2a2 2 0 0 1 .7-1.5l7-6a2 2 0 0 1 2.6 0l7 6a2 2 0 0 1 .7 1.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+<symbol id="ic-dumbbell" viewBox="0 0 24 24"><path d="M14.4 14.4 9.6 9.6"/><path d="M18.7 21.5a2 2 0 1 1-2.9-2.9l-1.7 1.8a2 2 0 1 1-2.9-2.9l6.4-6.3a2 2 0 1 1 2.9 2.8l-1.8 1.8a2 2 0 1 1 2.8 2.8z"/><path d="m21.5 21.5-1.4-1.4"/><path d="M3.9 3.9 2.5 2.5"/><path d="M6.4 12.8a2 2 0 1 1-2.8-2.9l1.8-1.7a2 2 0 1 1-2.9-2.9l2.9-2.8a2 2 0 1 1 2.8 2.8l1.7-1.7a2 2 0 1 1 2.9 2.8z"/></symbol>
+<symbol id="ic-utensils" viewBox="0 0 24 24"><path d="M4 3v6a2 2 0 0 0 4 0V3"/><path d="M6 9v12"/><path d="M18 3c-1.7 0-3 2-3 5v4h3"/><path d="M18 3v18"/></symbol>
+<symbol id="ic-chart" viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><rect x="7" y="12" width="3" height="5.5" rx="1.2"/><rect x="12" y="8" width="3" height="9.5" rx="1.2"/><rect x="17" y="5" width="3" height="12.5" rx="1.2"/></symbol>
+<symbol id="ic-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 20.5a7 7 0 0 1 14 0"/></symbol>
+<symbol id="ic-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="ic-cr" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+<symbol id="ic-cl" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></symbol>
+<symbol id="ic-cd" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="ic-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L20 6.5"/></symbol>
+<symbol id="ic-flame" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.4-.5-2-1-3-1.1-2.1-.2-4 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.2.4-2.3 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></symbol>
+<symbol id="ic-camera" viewBox="0 0 24 24"><path d="M14.5 4 16 6.2h4a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.2a2 2 0 0 1 2-2h4L9.5 4z"/><circle cx="12" cy="13" r="3.2"/></symbol>
+<symbol id="ic-play" viewBox="0 0 24 24"><path d="M7 4.5 19 12 7 19.5z" fill="currentColor" stroke="none"/></symbol>
+<symbol id="ic-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.4 2"/></symbol>
+<symbol id="ic-calendar" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="17" rx="3"/><path d="M3 9.5h18M8 3v3.2M16 3v3.2"/></symbol>
+<symbol id="ic-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/></symbol>
+<symbol id="ic-tu" viewBox="0 0 24 24"><path d="M3 17.5 9.5 11l4 4L21 7.5"/><path d="M15 7.5h6v6"/></symbol>
+<symbol id="ic-td" viewBox="0 0 24 24"><path d="M3 6.5 9.5 13l4-4L21 16.5"/><path d="M15 16.5h6v-6"/></symbol>
+<symbol id="ic-sparkle" viewBox="0 0 24 24"><path d="M12 3.2 13.7 9 19.5 10.7 13.7 12.4 12 18.2 10.3 12.4 4.5 10.7 10.3 9z"/><path d="M18.5 15.5 19.2 17.6 21.3 18.3 19.2 19 18.5 21.1 17.8 19 15.7 18.3 17.8 17.6z" stroke-width="1.2"/></symbol>
+<symbol id="ic-mail" viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="15" rx="3"/><path d="m3.5 6.5 8.5 6 8.5-6"/></symbol>
+<symbol id="ic-lock" viewBox="0 0 24 24"><rect x="4" y="10.5" width="16" height="10.5" rx="3"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></symbol>
+<symbol id="ic-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="ic-moon" viewBox="0 0 24 24"><path d="M20 14.4A8 8 0 1 1 9.6 4a6.5 6.5 0 0 0 10.4 10.4z"/></symbol>
+<symbol id="ic-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+<symbol id="ic-bell" viewBox="0 0 24 24"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6z"/><path d="M10 20a2 2 0 0 0 4 0"/></symbol>
+<symbol id="ic-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></symbol>
+<symbol id="ic-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+<symbol id="ic-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.4-3.4"/></symbol>
+<symbol id="ic-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
+<symbol id="ic-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/></symbol>
+<symbol id="ic-droplet" viewBox="0 0 24 24"><path d="M12 3s6 5.5 6 10a6 6 0 0 1-12 0c0-4.5 6-10 6-10z"/></symbol>
+<symbol id="ic-grid" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></symbol>
+<symbol id="ic-scale" viewBox="0 0 24 24"><path d="M4 21V10a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v11"/><path d="M8 8V6a4 4 0 0 1 8 0v2"/><path d="M9 14h6"/></symbol>
+<symbol id="ic-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18"/></symbol>
+</defs></svg>
+
+<div data-theme="{{ theme }}" data-accent="{{ accent }}" data-mood="{{ mood }}" data-depth="{{ depth }}" style="min-height:100vh;background:var(--backdrop);display:flex;align-items:center;justify-content:center;padding:26px;font-family:var(--font-body)">
+<div style="position:relative;width:390px;height:844px;background:var(--bg);border-radius:48px;box-shadow:var(--shadow-lg);border:1px solid var(--line);overflow:hidden;display:flex;flex-direction:column">
+
+<div style="height:50px;flex:none;display:flex;align-items:flex-end;justify-content:space-between;padding:0 30px 8px;color:var(--ink)">
+<span style="font-family:var(--font-display);font-weight:700;font-size:15px;letter-spacing:.01em">9:41</span>
+<div style="display:flex;align-items:center;gap:7px">
+<svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2.5" width="3" height="9.5" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+<svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><path d="M8 11.4 10 8.9a2.8 2.8 0 0 0-4 0z"/><path d="M8 4.1c2 0 3.8.8 5.2 2.1l1.3-1.5A9.4 9.4 0 0 0 8 2.2a9.4 9.4 0 0 0-6.5 2.5l1.3 1.5A7.4 7.4 0 0 1 8 4.1z" opacity=".55"/><path d="M8 7c1.1 0 2.1.4 2.9 1.1l1.3-1.4A6 6 0 0 0 8 5.2a6 6 0 0 0-4.2 1.5l1.3 1.4A4 4 0 0 1 8 7z"/></svg>
+<svg width="27" height="13" viewBox="0 0 27 13" fill="none"><rect x="1" y="1" width="22" height="11" rx="3.2" stroke="currentColor" stroke-opacity=".38"/><rect x="3" y="3" width="15.5" height="7" rx="1.6" fill="currentColor"/><path d="M25 4.6v3.8a2 2 0 0 0 0-3.8z" fill="currentColor" opacity=".38"/></svg>
+</div>
+</div>
+
+<div style="flex:1;position:relative;overflow:hidden">
+<div id="hb-scroll" style="position:absolute;inset:0;overflow-y:auto;overflow-x:hidden">
+
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+<div style="animation:screenIn .34s ease both;min-height:794px;display:flex;flex-direction:column;padding:0 28px 30px">
+<div style="display:flex;justify-content:space-between;align-items:center;padding-top:14px">
+<button onClick="{{ toggleTheme }}" style="width:40px;height:40px;border-radius:14px;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink2)"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="{{ themeIcon }}"/></svg></button>
+<button style="padding:9px 15px;border-radius:999px;background:var(--surface);border:1px solid var(--line);font-weight:700;font-size:13px;color:var(--ink2);letter-spacing:.02em">EN</button>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:8px;padding:20px 0">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+<svg width="52" height="52" viewBox="0 0 36 36"><circle cx="18" cy="18" r="14" fill="none" stroke="var(--line2)" stroke-width="5"/><circle cx="18" cy="18" r="14" fill="none" stroke="var(--lime)" stroke-width="5" stroke-linecap="round" stroke-dasharray="88" stroke-dashoffset="24" transform="rotate(-90 18 18)"/><circle cx="18" cy="8.6" r="2.5" fill="var(--lime)"/></svg>
+<span style="font-family:var(--font-display);font-weight:800;font-size:34px;color:var(--ink);letter-spacing:-.03em">habbito</span>
+</div>
+<h1 style="font-family:var(--font-display);font-weight:700;font-size:32px;line-height:1.08;color:var(--ink);letter-spacing:-.02em;margin:6px 0 0">Build the body,<br>one habit at a time.</h1>
+<p style="font-size:15px;line-height:1.5;color:var(--ink2);margin:8px 0 22px;max-width:300px">Track workouts, food and progress in a space that stays calm and keeps you moving.</p>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:11px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:0 16px;height:56px">
+<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ink3)"><use href="#ic-mail"/></svg>
+<input placeholder="Email address" value="alex@habbito.app" style="flex:1;border:none;outline:none;background:none;font-family:var(--font-body);font-size:15px;color:var(--ink);font-weight:500"/>
+</div>
+<div style="display:flex;align-items:center;gap:11px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:0 16px;height:56px">
+<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ink3)"><use href="#ic-lock"/></svg>
+<input type="password" value="password" style="flex:1;border:none;outline:none;background:none;font-family:var(--font-body);font-size:15px;color:var(--ink);font-weight:500"/>
+<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ink3)"><use href="#ic-eye"/></svg>
+</div>
+</div>
+<button onClick="{{ signIn }}" style="margin-top:18px;height:56px;border-radius:18px;background:var(--lime);color:var(--lime-ink);font-family:var(--font-display);font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 20px -8px var(--lime)">Log in<svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-cr"/></svg></button>
+<div style="display:flex;align-items:center;gap:14px;margin:20px 0"><div style="flex:1;height:1px;background:var(--line)"></div><span style="font-size:12px;color:var(--ink3);font-weight:600">or</span><div style="flex:1;height:1px;background:var(--line)"></div></div>
+<button onClick="{{ goOnboard }}" style="height:56px;border-radius:18px;background:var(--surface);border:1px solid var(--line2);color:var(--ink);font-family:var(--font-display);font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center">Create an account</button>
+<p style="text-align:center;color:var(--ink3);font-size:13px;margin-top:16px">Forgot your password?</p>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+<div style="animation:screenIn .34s ease both;padding:2px 20px 120px">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0 16px">
+<div style="display:flex;align-items:center;gap:9px">
+<svg width="30" height="30" viewBox="0 0 36 36"><circle cx="18" cy="18" r="14" fill="none" stroke="var(--line2)" stroke-width="5"/><circle cx="18" cy="18" r="14" fill="none" stroke="var(--lime)" stroke-width="5" stroke-linecap="round" stroke-dasharray="88" stroke-dashoffset="24" transform="rotate(-90 18 18)"/></svg>
+<span style="font-family:var(--font-display);font-weight:800;font-size:20px;color:var(--ink);letter-spacing:-.02em">habbito</span>
+</div>
+<div style="display:flex;gap:9px">
+<button onClick="{{ toggleTheme }}" style="width:42px;height:42px;border-radius:14px;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink2)"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="{{ themeIcon }}"/></svg></button>
+<button style="position:relative;width:42px;height:42px;border-radius:14px;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink2)"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-bell"/></svg><span style="position:absolute;top:10px;right:11px;width:7px;height:7px;border-radius:9px;background:var(--lime);border:1.5px solid var(--surface)"></span></button>
+</div>
+</div>
+<p style="font-size:14px;color:var(--ink3);font-weight:500;margin:0">Thursday, July 16</p>
+<h1 style="font-family:var(--font-display);font-weight:700;font-size:29px;color:var(--ink);letter-spacing:-.02em;margin:3px 0 18px">Good afternoon, Alex</h1>
+
+<div style="background:linear-gradient(160deg,var(--hero-from),var(--hero-to));border-radius:30px;padding:22px;box-shadow:var(--shadow);position:relative;overflow:hidden">
+<div style="position:absolute;inset:0;background:radial-gradient(170px 130px at 90% 4%,rgba(196,237,75,.15),transparent);pointer-events:none"></div>
+<div style="position:relative;display:flex;align-items:center;justify-content:space-between">
+<span style="font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--on-hero-dim)">Energy left today</span>
+<span style="display:inline-flex;align-items:center;gap:5px;background:var(--lime);color:var(--lime-ink);font-size:11px;font-weight:700;padding:5px 11px;border-radius:999px"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-check"/></svg>On track</span>
+</div>
+<div style="position:relative;display:flex;align-items:flex-end;gap:9px;margin-top:14px">
+<span style="font-family:var(--font-display);font-weight:800;font-size:52px;line-height:.86;color:var(--on-hero);letter-spacing:-.03em">1,050</span>
+<span style="font-size:15px;font-weight:600;color:var(--on-hero-dim);padding-bottom:6px">kcal</span>
+</div>
+<div style="position:relative;font-size:12.5px;color:var(--on-hero-dim);margin-top:9px">1,470 eaten · 320 burned · <span style="color:var(--on-hero);font-weight:600">2,200 goal</span></div>
+<div style="position:relative;height:13px;border-radius:999px;background:var(--hero-track);overflow:hidden;margin-top:14px"><div style="height:100%;width:67%;border-radius:999px;background:var(--lime);transform-origin:left;animation:growX 1s .15s ease both"></div></div>
+<div style="position:relative;display:flex;gap:20px;margin-top:20px;padding-top:18px;border-top:1px solid var(--hero-track)">
+<div style="flex:1">
+<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:7px"><span style="font-size:11px;font-weight:600;color:var(--on-hero-dim);letter-spacing:.02em">Protein</span><span style="font-family:var(--font-display);font-weight:700;font-size:14px;color:var(--on-hero)">98<span style="font-size:10px;color:var(--on-hero-dim);font-weight:500">g</span></span></div>
+<div style="height:5px;border-radius:999px;background:var(--hero-track);overflow:hidden"><div style="height:100%;width:65%;border-radius:999px;background:var(--blue);transform-origin:left;animation:growX .9s .3s ease both"></div></div>
+</div>
+<div style="flex:1">
+<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:7px"><span style="font-size:11px;font-weight:600;color:var(--on-hero-dim);letter-spacing:.02em">Carbs</span><span style="font-family:var(--font-display);font-weight:700;font-size:14px;color:var(--on-hero)">142<span style="font-size:10px;color:var(--on-hero-dim);font-weight:500">g</span></span></div>
+<div style="height:5px;border-radius:999px;background:var(--hero-track);overflow:hidden"><div style="height:100%;width:64%;border-radius:999px;background:var(--amber);transform-origin:left;animation:growX .9s .38s ease both"></div></div>
+</div>
+<div style="flex:1">
+<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:7px"><span style="font-size:11px;font-weight:600;color:var(--on-hero-dim);letter-spacing:.02em">Fat</span><span style="font-family:var(--font-display);font-weight:700;font-size:14px;color:var(--on-hero)">48<span style="font-size:10px;color:var(--on-hero-dim);font-weight:500">g</span></span></div>
+<div style="height:5px;border-radius:999px;background:var(--hero-track);overflow:hidden"><div style="height:100%;width:68%;border-radius:999px;background:var(--rose);transform-origin:left;animation:growX .9s .46s ease both"></div></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;gap:12px;margin-top:14px">
+<div style="flex:1;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:var(--shadow)">
+<div style="display:flex;align-items:center;gap:7px;color:var(--amber)"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-flame"/></svg><span style="font-family:var(--font-display);font-weight:700;font-size:22px;color:var(--ink);letter-spacing:-.02em">5</span></div>
+<div style="font-size:12.5px;color:var(--ink3);font-weight:500;margin-top:6px">week streak</div>
+</div>
+<div style="flex:1;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:var(--shadow)">
+<div style="display:flex;align-items:center;gap:7px;color:var(--lime-deep)"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-dumbbell"/></svg><span style="font-family:var(--font-display);font-weight:700;font-size:22px;color:var(--ink);letter-spacing:-.02em">3<span style="font-size:15px;color:var(--ink3)"> / 4</span></span></div>
+<div style="font-size:12.5px;color:var(--ink3);font-weight:500;margin-top:6px">workouts this week</div>
+</div>
+</div>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin:26px 0 12px">
+<h2 style="font-family:var(--font-display);font-weight:700;font-size:19px;color:var(--ink);letter-spacing:-.01em;margin:0">Up next</h2>
+<button onClick="{{ goRoutines }}" style="font-size:13px;font-weight:600;color:var(--ink3)">See all</button>
+</div>
+<button onClick="{{ openRoutine }}" style="display:block;width:100%;text-align:left;border-radius:26px;overflow:hidden;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow)">
+<div style="height:132px;background:linear-gradient(135deg,#3b4a1a,#1c2410);position:relative;display:flex;align-items:flex-end;padding:14px">
+<div style="position:absolute;inset:0;opacity:.5;background:radial-gradient(120px 90px at 78% 25%,rgba(196,237,75,.5),transparent)"></div>
+<span style="position:absolute;top:14px;left:14px;background:var(--lime);color:var(--lime-ink);font-weight:700;font-size:11px;letter-spacing:.05em;padding:5px 11px;border-radius:999px">TODAY · MON</span>
+<span style="position:absolute;top:12px;right:12px;width:44px;height:44px;border-radius:999px;background:rgba(243,241,234,.16);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;color:#fff;border:1px solid rgba(243,241,234,.25)"><svg width="18" height="18" fill="none" stroke="currentColor"><use href="#ic-play"/></svg></span>
+<div style="position:relative;color:#fff"><div style="font-family:var(--font-display);font-weight:700;font-size:21px;letter-spacing:-.01em">Upper Body Strength</div></div>
+</div>
+<div style="display:flex;align-items:center;gap:16px;padding:14px 16px">
+<span style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink2);font-weight:500"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ink3)"><use href="#ic-dumbbell"/></svg>6 exercises</span>
+<span style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink2);font-weight:500"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ink3)"><use href="#ic-clock"/></svg>45 min</span>
+<span style="margin-left:auto;font-size:12px;font-weight:700;color:var(--lime-deep);background:var(--lime-soft);padding:5px 10px;border-radius:999px">Push day</span>
+</div>
+</button>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin:26px 0 12px">
+<h2 style="font-family:var(--font-display);font-weight:700;font-size:19px;color:var(--ink);letter-spacing:-.01em;margin:0">Today's fuel</h2>
+<button onClick="{{ goMeals }}" style="font-size:13px;font-weight:600;color:var(--ink3)">See all</button>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<button onClick="{{ goMeals }}" style="display:flex;width:100%;align-items:center;gap:13px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:13px 15px;box-shadow:var(--shadow)"><span style="width:40px;height:40px;border-radius:13px;background:var(--sunken2);display:flex;align-items:center;justify-content:center;color:var(--amber)"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-utensils"/></svg></span><div style="flex:1;text-align:left"><div style="font-size:14.5px;font-weight:600;color:var(--ink)">Breakfast</div><div style="font-size:12px;color:var(--ink3)">2 items</div></div><span style="font-family:var(--font-display);font-weight:700;font-size:16px;color:var(--ink)">520<span style="font-size:11px;color:var(--ink3);font-weight:500"> kcal</span></span></button>
+<button onClick="{{ goMeals }}" style="display:flex;width:100%;align-items:center;gap:13px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:13px 15px;box-shadow:var(--shadow)"><span style="width:40px;height:40px;border-radius:13px;background:var(--sunken2);display:flex;align-items:center;justify-content:center;color:var(--amber)"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-utensils"/></svg></span><div style="flex:1;text-align:left"><div style="font-size:14.5px;font-weight:600;color:var(--ink)">Lunch</div><div style="font-size:12px;color:var(--ink3)">1 item</div></div><span style="font-family:var(--font-display);font-weight:700;font-size:16px;color:var(--ink)">640<span style="font-size:11px;color:var(--ink3);font-weight:500"> kcal</span></span></button>
+<button onClick="{{ openMealAdd }}" style="display:flex;width:100%;align-items:center;gap:13px;background:transparent;border:1.5px dashed var(--line2);border-radius:20px;padding:13px 15px"><span style="width:40px;height:40px;border-radius:13px;background:var(--sunken);display:flex;align-items:center;justify-content:center;color:var(--ink3)"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-plus"/></svg></span><div style="flex:1;text-align:left"><div style="font-size:14.5px;font-weight:600;color:var(--ink2)">Add dinner</div><div style="font-size:12px;color:var(--ink3)">Snap a photo or search</div></div></button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isRoutines }}" hint-placeholder-val="{{ false }}">
+<div style="animation:screenIn .34s ease both;padding:8px 20px 120px">
+<div style="display:flex;align-items:flex-start;justify-content:space-between;padding:6px 0 4px">
+<div><h1 style="font-family:var(--font-display);font-weight:700;font-size:28px;color:var(--ink);letter-spacing:-.02em;margin:0">Workouts</h1><p style="font-size:14px;color:var(--ink3);margin:4px 0 0">3 routines · 2 scheduled this week</p></div>
+<button style="width:42px;height:42px;border-radius:14px;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink2)"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-search"/></svg></button>
+</div>
+<div style="display:flex;gap:8px;margin:16px 0 18px">
+<span style="padding:9px 16px;border-radius:999px;background:var(--ink);color:var(--bg);font-size:13px;font-weight:600">All</span>
+<span style="padding:9px 16px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--ink2);font-size:13px;font-weight:600">Strength</span>
+<span style="padding:9px 16px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--ink2);font-size:13px;font-weight:600">Cardio</span>
+</div>
+<div style="background:var(--violet-soft);border:1px solid var(--line);border-radius:24px;padding:18px;display:flex;align-items:center;gap:14px;margin-bottom:18px">
+<span style="width:46px;height:46px;border-radius:15px;background:var(--violet);display:flex;align-items:center;justify-content:center;color:#fff;flex:none"><svg width="22" height="22" fill="currentColor" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"><use href="#ic-sparkle"/></svg></span>
+<div style="flex:1"><div style="font-family:var(--font-display);font-weight:700;font-size:16px;color:var(--ink)">Generate a plan</div><div style="font-size:12.5px;color:var(--ink2);margin-top:2px">Tailored to your goal in seconds</div></div>
+<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="color:var(--violet)"><use href="#ic-cr"/></svg>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<sc-for list="{{ routines }}" as="r" hint-placeholder-count="3">
+<button onClick="{{ openRoutine }}" style="display:flex;width:100%;text-align:left;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:12px;box-shadow:var(--shadow)">
+<span style="width:78px;height:78px;border-radius:18px;flex:none;background:linear-gradient(140deg,var(--sunken),var(--sunken2));display:flex;align-items:center;justify-content:center;color:var(--ink3)"><svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-dumbbell"/></svg></span>
+<div style="flex:1;min-width:0;padding-top:3px">
+<div style="font-family:var(--font-display);font-weight:700;font-size:16.5px;color:var(--ink);letter-spacing:-.01em">{{ r.name }}</div>
+<div style="font-size:12.5px;color:var(--ink3);margin:3px 0 9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.focus }}</div>
+<div style="display:flex;align-items:center;gap:7px">
+<span style="font-size:11px;font-weight:700;color:var(--ink2);background:var(--sunken);padding:4px 9px;border-radius:999px">{{ r.day }}</span>
+<span style="font-size:11.5px;color:var(--ink3)">{{ r.meta }}</span>
+</div>
+</div>
+<svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ink3);align-self:center"><use href="#ic-cr"/></svg>
+</button>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isMeals }}" hint-placeholder-val="{{ false }}">
+<div style="animation:screenIn .34s ease both;padding:8px 20px 120px">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0 16px">
+<button style="width:40px;height:40px;border-radius:13px;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink2)"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-cl"/></svg></button>
+<div style="text-align:center"><div style="font-family:var(--font-display);font-weight:700;font-size:19px;color:var(--ink)">Today</div><div style="font-size:12px;color:var(--ink3)">Thu · Jul 16</div></div>
+<button style="width:40px;height:40px;border-radius:13px;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink3);opacity:.5"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-cr"/></svg></button>
+</div>
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:20px">
+<div style="position:relative;width:104px;height:104px;flex:none">
+<svg width="104" height="104" viewBox="0 0 104 104" style="transform:rotate(-90deg)"><circle cx="52" cy="52" r="44" fill="none" stroke="var(--sunken)" stroke-width="11"/><circle cx="52" cy="52" r="44" fill="none" stroke="var(--lime)" stroke-width="11" stroke-linecap="round" stroke-dasharray="{{ rDay.len }}" style="stroke-dashoffset:{{ rDay.off }};--len:{{ rDay.len }};--off:{{ rDay.off }};animation:ringDraw 1s .1s ease both"/></svg>
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="font-family:var(--font-display);font-weight:800;font-size:23px;color:var(--ink);line-height:1">1,470</span><span style="font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-top:2px">of 2,200</span></div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:13px">
+<div><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:12px;font-weight:600;color:var(--ink2)">Protein</span><span style="font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--ink)">98<span style="color:var(--ink3);font-weight:500">/150g</span></span></div><div style="height:6px;border-radius:6px;background:var(--sunken);overflow:hidden"><div style="width:65%;height:100%;border-radius:6px;background:var(--blue)"></div></div></div>
+<div><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:12px;font-weight:600;color:var(--ink2)">Carbs</span><span style="font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--ink)">142<span style="color:var(--ink3);font-weight:500">/220g</span></span></div><div style="height:6px;border-radius:6px;background:var(--sunken);overflow:hidden"><div style="width:64%;height:100%;border-radius:6px;background:var(--amber)"></div></div></div>
+<div><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:12px;font-weight:600;color:var(--ink2)">Fat</span><span style="font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--ink)">48<span style="color:var(--ink3);font-weight:500">/70g</span></span></div><div style="height:6px;border-radius:6px;background:var(--sunken);overflow:hidden"><div style="width:68%;height:100%;border-radius:6px;background:var(--rose)"></div></div></div>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;margin-top:18px">
+<sc-for list="{{ meals }}" as="m" hint-placeholder-count="3">
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:16px 16px 12px;box-shadow:var(--shadow)">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><span style="font-family:var(--font-display);font-weight:700;font-size:16px;color:var(--ink)">{{ m.slot }}</span><span style="font-size:13px;color:var(--ink3);font-weight:600">{{ m.kcal }} kcal</span></div>
+<sc-for list="{{ m.items }}" as="it" hint-placeholder-count="1">
+<div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-top:1px solid var(--line)">
+<span style="width:44px;height:44px;border-radius:13px;flex:none;background:linear-gradient(140deg,var(--sunken2),var(--sunken));display:flex;align-items:center;justify-content:center;color:var(--ink3)"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-utensils"/></svg></span>
+<div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:600;color:var(--ink)">{{ it.name }}</div><div style="font-size:12px;color:var(--ink3);margin-top:1px">{{ it.serving }} · {{ it.macros }}</div></div>
+<span style="font-family:var(--font-display);font-weight:700;font-size:15px;color:var(--ink)">{{ it.kcal }}</span>
+</div>
+</sc-for>
+<button onClick="{{ openMealAdd }}" style="display:flex;width:100%;align-items:center;justify-content:center;gap:8px;margin-top:10px;padding:11px;border-radius:15px;border:1.5px dashed var(--line2);color:var(--lime-deep);font-weight:700;font-size:13px"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-camera"/></svg>Add food</button>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isProgress }}" hint-placeholder-val="{{ false }}">
+<div style="animation:screenIn .34s ease both;padding:8px 20px 120px">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0 16px">
+<h1 style="font-family:var(--font-display);font-weight:700;font-size:28px;color:var(--ink);letter-spacing:-.02em;margin:0">Progress</h1>
+<div style="display:flex;gap:3px;background:var(--sunken);padding:3px;border-radius:999px"><span style="padding:7px 15px;border-radius:999px;background:var(--surface);color:var(--ink);font-size:12.5px;font-weight:700;box-shadow:var(--shadow)">Week</span><span style="padding:7px 15px;border-radius:999px;color:var(--ink3);font-size:12.5px;font-weight:600">Month</span></div>
+</div>
+<div style="background:linear-gradient(160deg,var(--hero-from),var(--hero-to));border-radius:28px;padding:22px;box-shadow:var(--shadow)">
+<div style="display:flex;align-items:center;gap:20px">
+<div style="position:relative;width:112px;height:112px;flex:none">
+<svg width="112" height="112" viewBox="0 0 112 112" style="transform:rotate(-90deg)"><circle cx="56" cy="56" r="46" fill="none" stroke="var(--hero-track)" stroke-width="11"/><circle cx="56" cy="56" r="46" fill="none" stroke="var(--lime)" stroke-width="11" stroke-linecap="round" stroke-dasharray="{{ rSess.len }}" style="stroke-dashoffset:{{ rSess.off }};--len:{{ rSess.len }};--off:{{ rSess.off }};animation:ringDraw 1s .1s ease both"/></svg>
+<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="font-family:var(--font-display);font-weight:800;font-size:26px;color:var(--on-hero);line-height:1">3/4</span><span style="font-size:9.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--on-hero-dim);margin-top:2px">sessions</span></div>
+</div>
+<div style="flex:1"><div style="font-family:var(--font-display);font-weight:700;font-size:17px;color:var(--on-hero)">This week</div><p style="font-size:12.5px;color:var(--on-hero-dim);line-height:1.5;margin:5px 0 10px">One session left — scheduled for Friday.</p><span style="display:inline-flex;align-items:center;gap:6px;background:rgba(196,237,75,.16);color:var(--lime);font-size:11.5px;font-weight:700;padding:5px 11px;border-radius:999px"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-flame"/></svg>5-week streak</span></div>
+</div>
+<div style="display:flex;justify-content:space-between;gap:6px;margin:20px 2px 18px">
+<div style="display:flex;flex-direction:column;align-items:center;gap:7px"><span style="font-size:10px;font-weight:700;color:var(--on-hero-dim)">M</span><span style="width:32px;height:32px;border-radius:11px;background:var(--lime);color:var(--lime-ink);display:flex;align-items:center;justify-content:center"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-check"/></svg></span></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:7px"><span style="font-size:10px;font-weight:700;color:var(--on-hero-dim)">T</span><span style="width:32px;height:32px;border-radius:11px;background:var(--lime);color:var(--lime-ink);display:flex;align-items:center;justify-content:center"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-check"/></svg></span></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:7px"><span style="font-size:10px;font-weight:700;color:var(--on-hero-dim)">W</span><span style="width:32px;height:32px;border-radius:11px;background:var(--lime);color:var(--lime-ink);display:flex;align-items:center;justify-content:center"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-check"/></svg></span></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:7px"><span style="font-size:10px;font-weight:700;color:var(--on-hero)">T</span><span style="width:32px;height:32px;border-radius:11px;background:transparent;border:2px solid var(--lime)"></span></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:7px"><span style="font-size:10px;font-weight:700;color:var(--on-hero-dim)">F</span><span style="width:32px;height:32px;border-radius:11px;background:transparent;border:1.5px dashed var(--on-hero-dim)"></span></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:7px"><span style="font-size:10px;font-weight:700;color:var(--on-hero-dim)">S</span><span style="width:32px;height:32px;border-radius:11px;background:var(--hero-track)"></span></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:7px"><span style="font-size:10px;font-weight:700;color:var(--on-hero-dim)">S</span><span style="width:32px;height:32px;border-radius:11px;background:var(--hero-track)"></span></div>
+</div>
+<div style="display:flex;border-top:1px solid var(--hero-track);padding-top:16px">
+<div style="flex:1;text-align:center"><div style="font-family:var(--font-display);font-weight:700;font-size:17px;color:var(--on-hero)">4h 05m</div><div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--on-hero-dim);margin-top:3px">Trained</div></div>
+<div style="width:1px;background:var(--hero-track)"></div>
+<div style="flex:1;text-align:center"><div style="font-family:var(--font-display);font-weight:700;font-size:17px;color:var(--on-hero)">1,240</div><div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--on-hero-dim);margin-top:3px">Kcal burned</div></div>
+<div style="width:1px;background:var(--hero-track)"></div>
+<div style="flex:1;text-align:center"><div style="font-family:var(--font-display);font-weight:700;font-size:17px;color:var(--on-hero)">12,400</div><div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--on-hero-dim);margin-top:3px">Kg volume</div></div>
+</div>
+</div>
+
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:20px;box-shadow:var(--shadow);margin-top:14px">
+<div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:13px;font-weight:600;color:var(--ink2)">Body weight</span><span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--success);background:rgba(46,159,102,.12);padding:4px 9px;border-radius:999px"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-td"/></svg>0.8 kg / 30d</span></div>
+<div style="display:flex;align-items:baseline;gap:6px;margin:8px 0 4px"><span style="font-family:var(--font-display);font-weight:800;font-size:38px;color:var(--ink);letter-spacing:-.03em">72.4</span><span style="font-size:15px;color:var(--ink3);font-weight:600">kg</span><span style="margin-left:auto;font-size:11.5px;color:var(--ink3)">BMI 22.9 · Goal: lose</span></div>
+<svg viewBox="0 0 300 92" width="100%" height="92" preserveAspectRatio="none" style="margin-top:6px;overflow:visible"><defs><linearGradient id="wg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--lime)" stop-opacity="0.28"/><stop offset="1" stop-color="var(--lime)" stop-opacity="0"/></linearGradient></defs><path d="M0 30 L50 24 L100 34 L150 28 L200 44 L250 52 L300 64 L300 92 L0 92 Z" fill="url(#wg)"/><path d="M0 30 L50 24 L100 34 L150 28 L200 44 L250 52 L300 64" fill="none" stroke="var(--lime-deep)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="300" cy="64" r="4.5" fill="var(--lime-deep)" stroke="var(--surface)" stroke-width="2.5"/></svg>
+<div style="display:flex;justify-content:space-between;margin-top:6px;font-size:10.5px;color:var(--ink3);font-weight:500"><span>28 May</span><span>Jun</span><span>Today</span></div>
+<button style="display:flex;width:100%;align-items:center;justify-content:center;gap:8px;margin-top:14px;padding:12px;border-radius:16px;background:var(--sunken2);color:var(--ink);font-weight:700;font-size:13.5px;border:1px solid var(--line)"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-plus"/></svg>Log weight</button>
+</div>
+
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:20px;box-shadow:var(--shadow);margin-top:14px">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px"><span style="font-size:13px;font-weight:600;color:var(--ink2)">Strength & volume</span><span style="font-size:11px;color:var(--ink3);font-weight:600">8 weeks</span></div>
+<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:14px"><span style="font-family:var(--font-display);font-weight:800;font-size:27px;color:var(--ink);letter-spacing:-.02em">12,400</span><span style="font-size:13px;color:var(--ink3)">kg this week</span><span style="margin-left:auto;font-size:12px;font-weight:700;color:var(--success);background:rgba(46,159,102,.12);padding:3px 9px;border-radius:999px">+8%</span></div>
+<div style="display:flex;align-items:flex-end;gap:9px;height:74px">
+<div style="flex:1;height:42%;background:var(--sunken);border-radius:7px 7px 4px 4px;transform-origin:bottom;animation:barGrow .6s .1s ease both"></div>
+<div style="flex:1;height:54%;background:var(--sunken);border-radius:7px 7px 4px 4px;transform-origin:bottom;animation:barGrow .6s .16s ease both"></div>
+<div style="flex:1;height:48%;background:var(--sunken);border-radius:7px 7px 4px 4px;transform-origin:bottom;animation:barGrow .6s .22s ease both"></div>
+<div style="flex:1;height:66%;background:var(--sunken);border-radius:7px 7px 4px 4px;transform-origin:bottom;animation:barGrow .6s .28s ease both"></div>
+<div style="flex:1;height:60%;background:var(--sunken);border-radius:7px 7px 4px 4px;transform-origin:bottom;animation:barGrow .6s .34s ease both"></div>
+<div style="flex:1;height:78%;background:var(--sunken);border-radius:7px 7px 4px 4px;transform-origin:bottom;animation:barGrow .6s .4s ease both"></div>
+<div style="flex:1;height:72%;background:var(--sunken);border-radius:7px 7px 4px 4px;transform-origin:bottom;animation:barGrow .6s .46s ease both"></div>
+<div style="flex:1;height:92%;background:var(--lime);border-radius:7px 7px 4px 4px;transform-origin:bottom;animation:barGrow .6s .52s ease both"></div>
+</div>
+</div>
+<button onClick="{{ openHistory }}" style="display:flex;width:100%;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:var(--shadow);margin-top:14px"><span style="width:40px;height:40px;border-radius:13px;background:var(--sunken2);display:flex;align-items:center;justify-content:center;color:var(--ink2)"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-clock"/></svg></span><div style="flex:1;text-align:left"><div style="font-size:14.5px;font-weight:600;color:var(--ink)">Workout history</div><div style="font-size:12px;color:var(--ink3)">28 sessions logged</div></div><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ink3)"><use href="#ic-cr"/></svg></button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}">
+<div style="animation:screenIn .34s ease both;padding:8px 20px 120px">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0 18px"><h1 style="font-family:var(--font-display);font-weight:700;font-size:28px;color:var(--ink);letter-spacing:-.02em;margin:0">Profile</h1><button onClick="{{ openSettings }}" style="width:42px;height:42px;border-radius:14px;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink2)"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-edit"/></svg></button></div>
+<div style="display:flex;align-items:center;gap:15px;margin-bottom:20px">
+<div style="width:66px;height:66px;border-radius:22px;background:linear-gradient(140deg,var(--lime),#9ec92f);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:800;font-size:26px;color:var(--lime-ink);flex:none">A</div>
+<div><div style="font-family:var(--font-display);font-weight:700;font-size:20px;color:var(--ink)">Alex Rivera</div><div style="font-size:13px;color:var(--ink3);margin-top:1px">alex@habbito.app</div></div>
+</div>
+<div style="display:flex;gap:11px;margin-bottom:16px">
+<div style="flex:1;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:15px 12px;text-align:center;box-shadow:var(--shadow)"><div style="font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3)">Age</div><div style="font-family:var(--font-display);font-weight:800;font-size:24px;color:var(--ink);margin-top:5px">28</div><div style="font-size:11px;color:var(--ink3)">years</div></div>
+<div style="flex:1;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:15px 12px;text-align:center;box-shadow:var(--shadow)"><div style="font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3)">Height</div><div style="font-family:var(--font-display);font-weight:800;font-size:24px;color:var(--ink);margin-top:5px">178</div><div style="font-size:11px;color:var(--ink3)">cm</div></div>
+<div style="flex:1;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:15px 12px;text-align:center;box-shadow:var(--shadow)"><div style="font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3)">Weight</div><div style="font-family:var(--font-display);font-weight:800;font-size:24px;color:var(--ink);margin-top:5px">72.4</div><div style="font-size:11px;color:var(--ink3)">kg</div></div>
+</div>
+<div style="background:var(--ink);border-radius:24px;padding:19px;display:flex;align-items:center;gap:15px;margin-bottom:16px">
+<span style="width:48px;height:48px;border-radius:16px;background:var(--lime);color:var(--lime-ink);display:flex;align-items:center;justify-content:center;flex:none"><svg width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-target"/></svg></span>
+<div style="flex:1"><div style="font-size:11.5px;font-weight:600;color:var(--on-hero-dim)">Current goal</div><div style="font-family:var(--font-display);font-weight:700;font-size:18px;color:var(--bg)">Lose weight · 2,200 kcal</div></div>
+</div>
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:4px 18px;margin-bottom:16px">
+<div style="display:flex;align-items:center;gap:13px;padding:15px 0;border-bottom:1px solid var(--line)"><span style="color:var(--ink3)"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-flame"/></svg></span><span style="flex:1;font-size:14.5px;font-weight:500;color:var(--ink)">Activity level</span><span style="font-size:13px;color:var(--ink3)">Active</span><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ink3)"><use href="#ic-cr"/></svg></div>
+<div style="display:flex;align-items:center;gap:13px;padding:15px 0;border-bottom:1px solid var(--line)"><span style="color:var(--ink3)"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-calendar"/></svg></span><span style="flex:1;font-size:14.5px;font-weight:500;color:var(--ink)">Training days</span><span style="font-size:13px;color:var(--ink3)">4 / week</span><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ink3)"><use href="#ic-cr"/></svg></div>
+<div style="display:flex;align-items:center;gap:13px;padding:15px 0"><span style="color:var(--ink3)"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-clock"/></svg></span><span style="flex:1;font-size:14.5px;font-weight:500;color:var(--ink)">Session length</span><span style="font-size:13px;color:var(--ink3)">60 min</span><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ink3)"><use href="#ic-cr"/></svg></div>
+</div>
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:4px 18px;margin-bottom:20px">
+<button onClick="{{ toggleTheme }}" style="display:flex;width:100%;align-items:center;gap:13px;padding:15px 0;border-bottom:1px solid var(--line)"><span style="color:var(--ink3)"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="{{ themeIcon }}"/></svg></span><span style="flex:1;text-align:left;font-size:14.5px;font-weight:500;color:var(--ink)">Appearance</span><span style="font-size:13px;color:var(--ink3)">{{ themeLabel }}</span></button>
+<div style="display:flex;align-items:center;gap:13px;padding:15px 0;border-bottom:1px solid var(--line)"><span style="color:var(--ink3)"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-scale"/></svg></span><span style="flex:1;font-size:14.5px;font-weight:500;color:var(--ink)">Units</span><span style="font-size:13px;color:var(--ink3)">Metric (kg)</span><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ink3)"><use href="#ic-cr"/></svg></div>
+<div style="display:flex;align-items:center;gap:13px;padding:15px 0"><span style="color:var(--ink3)"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-globe"/></svg></span><span style="flex:1;font-size:14.5px;font-weight:500;color:var(--ink)">Language</span><span style="font-size:13px;color:var(--ink3)">English</span><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ink3)"><use href="#ic-cr"/></svg></div>
+</div>
+<button onClick="{{ signOut }}" style="display:flex;width:100%;align-items:center;justify-content:center;gap:9px;padding:15px;border-radius:18px;background:var(--surface);border:1px solid var(--line2);color:var(--error);font-weight:700;font-size:14.5px"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-logout"/></svg>Log out</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSplash }}" hint-placeholder-val="{{ false }}">
+<div style="min-height:794px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;animation:screenIn .3s ease both">
+<svg width="70" height="70" viewBox="0 0 36 36" style="animation:spin 1s linear infinite"><circle cx="18" cy="18" r="14" fill="none" stroke="var(--line2)" stroke-width="4"/><circle cx="18" cy="18" r="14" fill="none" stroke="var(--lime)" stroke-width="4" stroke-linecap="round" stroke-dasharray="88" stroke-dashoffset="62"/></svg>
+<span style="font-family:var(--font-display);font-weight:800;font-size:24px;color:var(--ink);letter-spacing:-.02em">habbito</span>
+<span style="font-size:13px;color:var(--ink3)">Setting up your day…</span>
+</div>
+</sc-if>
+
+<sc-if value="{{ isOnboarding }}" hint-placeholder-val="{{ false }}">
+<div style="min-height:794px;display:flex;flex-direction:column;animation:screenIn .3s ease both">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 24px 0">
+<button onClick="{{ onbBack }}" style="width:40px;height:40px;border-radius:13px;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink2)"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-cl"/></svg></button>
+<button onClick="{{ goHome }}" style="font-size:13px;font-weight:600;color:var(--ink3)">Skip</button>
+</div>
+<div style="height:6px;background:var(--sunken);border-radius:999px;margin:18px 24px 2px;overflow:hidden"><div style="height:100%;background:var(--lime);border-radius:999px;width:{{ onbFill }};transition:width .35s ease"></div></div>
+<div style="flex:1;padding:26px 24px 0">
+<sc-if value="{{ onbStep0 }}" hint-placeholder-val="{{ true }}">
+<h2 style="font-family:var(--font-display);font-weight:700;font-size:26px;color:var(--ink);letter-spacing:-.02em;margin:0">About you</h2>
+<p style="font-size:14.5px;color:var(--ink3);margin:6px 0 26px">This tailors your calorie and training targets.</p>
+<div style="font-size:12.5px;font-weight:600;color:var(--ink2);margin-bottom:8px">Age</div>
+<div style="display:flex;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;height:54px;padding:0 16px;margin-bottom:22px"><input value="28" style="flex:1;border:none;outline:none;background:none;font-family:var(--font-display);font-weight:700;font-size:18px;color:var(--ink)"/><span style="font-size:13px;color:var(--ink3)">years</span></div>
+<div style="font-size:12.5px;font-weight:600;color:var(--ink2);margin-bottom:8px">Sex</div>
+<div style="display:flex;gap:10px">
+<div style="flex:1;height:52px;border-radius:15px;border:1.5px solid var(--line2);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;color:var(--ink2)">Female</div>
+<div style="flex:1;height:52px;border-radius:15px;border:1.5px solid var(--lime);background:var(--lime-soft);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--lime-deep)">Male</div>
+<div style="flex:1;height:52px;border-radius:15px;border:1.5px solid var(--line2);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;color:var(--ink2)">Other</div>
+</div>
+</sc-if>
+<sc-if value="{{ onbStep1 }}" hint-placeholder-val="{{ false }}">
+<h2 style="font-family:var(--font-display);font-weight:700;font-size:26px;color:var(--ink);letter-spacing:-.02em;margin:0">Your body</h2>
+<p style="font-size:14.5px;color:var(--ink3);margin:6px 0 26px">Used to estimate your daily energy needs.</p>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:12.5px;font-weight:600;color:var(--ink2)">Height</span><div style="display:flex;gap:6px"><span style="padding:5px 12px;border-radius:999px;background:var(--lime-soft);color:var(--lime-deep);font-size:12px;font-weight:700">cm</span><span style="padding:5px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--ink3);font-size:12px;font-weight:600">ft</span></div></div>
+<div style="display:flex;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;height:54px;padding:0 16px;margin-bottom:20px"><input value="178" style="flex:1;border:none;outline:none;background:none;font-family:var(--font-display);font-weight:700;font-size:18px;color:var(--ink)"/><span style="font-size:13px;color:var(--ink3)">cm</span></div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:12.5px;font-weight:600;color:var(--ink2)">Weight</span><div style="display:flex;gap:6px"><span style="padding:5px 12px;border-radius:999px;background:var(--lime-soft);color:var(--lime-deep);font-size:12px;font-weight:700">kg</span><span style="padding:5px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--ink3);font-size:12px;font-weight:600">lb</span></div></div>
+<div style="display:flex;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;height:54px;padding:0 16px"><input value="72.4" style="flex:1;border:none;outline:none;background:none;font-family:var(--font-display);font-weight:700;font-size:18px;color:var(--ink)"/><span style="font-size:13px;color:var(--ink3)">kg</span></div>
+</sc-if>
+<sc-if value="{{ onbStep2 }}" hint-placeholder-val="{{ false }}">
+<h2 style="font-family:var(--font-display);font-weight:700;font-size:26px;color:var(--ink);letter-spacing:-.02em;margin:0">Lifestyle</h2>
+<p style="font-size:14.5px;color:var(--ink3);margin:6px 0 22px">How active is a typical day for you?</p>
+<div style="display:flex;align-items:center;gap:13px;padding:15px;border-radius:16px;border:1.5px solid var(--line2);background:var(--surface);margin-bottom:10px"><span style="width:20px;height:20px;border-radius:999px;border:2px solid var(--line2);flex:none"></span><div><div style="font-size:14.5px;font-weight:600;color:var(--ink)">Sedentary</div><div style="font-size:12.5px;color:var(--ink3)">Little movement during the day</div></div></div>
+<div style="display:flex;align-items:center;gap:13px;padding:15px;border-radius:16px;border:1.5px solid var(--lime);background:var(--lime-soft);margin-bottom:10px"><span style="width:20px;height:20px;border-radius:999px;border:2px solid var(--lime-deep);display:flex;align-items:center;justify-content:center;flex:none"><span style="width:9px;height:9px;border-radius:999px;background:var(--lime-deep)"></span></span><div><div style="font-size:14.5px;font-weight:700;color:var(--ink)">Active</div><div style="font-size:12.5px;color:var(--ink3)">On your feet or training 3–5 days a week</div></div></div>
+<div style="display:flex;align-items:center;gap:13px;padding:15px;border-radius:16px;border:1.5px solid var(--line2);background:var(--surface)"><span style="width:20px;height:20px;border-radius:999px;border:2px solid var(--line2);flex:none"></span><div><div style="font-size:14.5px;font-weight:600;color:var(--ink)">Very active</div><div style="font-size:12.5px;color:var(--ink3)">Intense training or physical work</div></div></div>
+<div style="font-size:12.5px;font-weight:600;color:var(--ink2);margin:20px 0 8px">Work type</div>
+<div style="display:flex;gap:10px">
+<div style="flex:1;height:50px;border-radius:14px;border:1.5px solid var(--lime);background:var(--lime-soft);display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:14px;color:var(--lime-deep)"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-grid"/></svg>Desk</div>
+<div style="flex:1;height:50px;border-radius:14px;border:1.5px solid var(--line2);display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:14px;color:var(--ink2)"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-dumbbell"/></svg>Physical</div>
+</div>
+</sc-if>
+<sc-if value="{{ onbStep3 }}" hint-placeholder-val="{{ false }}">
+<h2 style="font-family:var(--font-display);font-weight:700;font-size:26px;color:var(--ink);letter-spacing:-.02em;margin:0">Your goal</h2>
+<p style="font-size:14.5px;color:var(--ink3);margin:6px 0 22px">We'll shape your plan and calories around it.</p>
+<div style="display:flex;align-items:center;gap:13px;padding:16px;border-radius:16px;border:1.5px solid var(--lime);background:var(--lime-soft);margin-bottom:10px"><span style="width:42px;height:42px;border-radius:13px;background:var(--lime);color:var(--lime-ink);display:flex;align-items:center;justify-content:center;flex:none"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-td"/></svg></span><div style="flex:1"><div style="font-size:15px;font-weight:700;color:var(--ink)">Lose weight</div><div style="font-size:12.5px;color:var(--ink3)">Trim fat while keeping strength</div></div><span style="width:20px;height:20px;border-radius:999px;border:2px solid var(--lime-deep);display:flex;align-items:center;justify-content:center;flex:none"><span style="width:9px;height:9px;border-radius:999px;background:var(--lime-deep)"></span></span></div>
+<div style="display:flex;align-items:center;gap:13px;padding:16px;border-radius:16px;border:1.5px solid var(--line2);background:var(--surface);margin-bottom:10px"><span style="width:42px;height:42px;border-radius:13px;background:var(--sunken);color:var(--ink3);display:flex;align-items:center;justify-content:center;flex:none"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-tu"/></svg></span><div style="flex:1"><div style="font-size:15px;font-weight:600;color:var(--ink)">Gain muscle</div><div style="font-size:12.5px;color:var(--ink3)">Build size and strength</div></div><span style="width:20px;height:20px;border-radius:999px;border:2px solid var(--line2);flex:none"></span></div>
+<div style="display:flex;align-items:center;gap:13px;padding:16px;border-radius:16px;border:1.5px solid var(--line2);background:var(--surface)"><span style="width:42px;height:42px;border-radius:13px;background:var(--sunken);color:var(--ink3);display:flex;align-items:center;justify-content:center;flex:none"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-target"/></svg></span><div style="flex:1"><div style="font-size:15px;font-weight:600;color:var(--ink)">Maintain</div><div style="font-size:12.5px;color:var(--ink3)">Stay balanced and consistent</div></div><span style="width:20px;height:20px;border-radius:999px;border:2px solid var(--line2);flex:none"></span></div>
+</sc-if>
+<sc-if value="{{ onbStep4 }}" hint-placeholder-val="{{ false }}">
+<h2 style="font-family:var(--font-display);font-weight:700;font-size:26px;color:var(--ink);letter-spacing:-.02em;margin:0">Training plan</h2>
+<p style="font-size:14.5px;color:var(--ink3);margin:6px 0 22px">When and how long can you train?</p>
+<div style="font-size:12.5px;font-weight:600;color:var(--ink2);margin-bottom:8px">Days per week</div>
+<div style="display:flex;gap:7px;margin-bottom:20px">
+<span style="flex:1;height:44px;border-radius:12px;border:1.5px solid var(--line2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--ink3)">2</span>
+<span style="flex:1;height:44px;border-radius:12px;border:1.5px solid var(--line2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--ink3)">3</span>
+<span style="flex:1;height:44px;border-radius:12px;border:1.5px solid var(--lime);background:var(--lime-soft);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:var(--lime-deep)">4</span>
+<span style="flex:1;height:44px;border-radius:12px;border:1.5px solid var(--line2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--ink3)">5</span>
+<span style="flex:1;height:44px;border-radius:12px;border:1.5px solid var(--line2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--ink3)">6</span>
+</div>
+<div style="font-size:12.5px;font-weight:600;color:var(--ink2);margin-bottom:8px">Session length</div>
+<div style="display:flex;gap:8px;margin-bottom:20px">
+<span style="flex:1;height:44px;border-radius:12px;border:1.5px solid var(--line2);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;color:var(--ink3)">30m</span>
+<span style="flex:1;height:44px;border-radius:12px;border:1.5px solid var(--line2);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;color:var(--ink3)">45m</span>
+<span style="flex:1;height:44px;border-radius:12px;border:1.5px solid var(--lime);background:var(--lime-soft);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:var(--lime-deep)">60m</span>
+<span style="flex:1;height:44px;border-radius:12px;border:1.5px solid var(--line2);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;color:var(--ink3)">90m</span>
+</div>
+<div style="font-size:12.5px;font-weight:600;color:var(--ink2);margin-bottom:8px">Available days</div>
+<div style="display:flex;gap:6px">
+<span style="flex:1;height:44px;border-radius:12px;border:1.5px solid var(--lime);background:var(--lime-soft);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:var(--lime-deep)">M</span>
+<span style="flex:1;height:44px;border-radius:12px;border:1.5px solid var(--lime);background:var(--lime-soft);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:var(--lime-deep)">T</span>
+<span style="flex:1;height:44px;border-radius:12px;border:1.5px solid var(--line2);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;color:var(--ink3)">W</span>
+<span style="flex:1;height:44px;border-radius:12px;border:1.5px solid var(--lime);background:var(--lime-soft);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:var(--lime-deep)">T</span>
+<span style="flex:1;height:44px;border-radius:12px;border:1.5px solid var(--line2);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;color:var(--ink3)">F</span>
+<span style="flex:1;height:44px;border-radius:12px;border:1.5px solid var(--lime);background:var(--lime-soft);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:var(--lime-deep)">S</span>
+<span style="flex:1;height:44px;border-radius:12px;border:1.5px solid var(--line2);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;color:var(--ink3)">S</span>
+</div>
+</sc-if>
+</div>
+<div style="padding:18px 24px 30px"><button onClick="{{ onbNext }}" style="height:56px;width:100%;border-radius:18px;background:var(--lime);color:var(--lime-ink);font-family:var(--font-display);font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px">{{ onbNextLabel }}<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-cr"/></svg></button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isRoutine }}" hint-placeholder-val="{{ false }}">
+<div style="animation:screenIn .34s ease both;padding-bottom:112px">
+<div style="position:relative;height:224px;background:linear-gradient(150deg,#3d4d1c,#161c0d);padding:16px 20px;display:flex;flex-direction:column">
+<div style="position:absolute;inset:0;background:radial-gradient(150px 110px at 82% 20%,rgba(196,237,75,.4),transparent)"></div>
+<div style="position:relative;display:flex;justify-content:space-between">
+<button onClick="{{ back }}" style="width:42px;height:42px;border-radius:14px;background:rgba(243,241,234,.14);border:1px solid rgba(243,241,234,.22);display:flex;align-items:center;justify-content:center;color:#fff"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-cl"/></svg></button>
+<button style="width:42px;height:42px;border-radius:14px;background:rgba(243,241,234,.14);border:1px solid rgba(243,241,234,.22);display:flex;align-items:center;justify-content:center;color:#fff"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-edit"/></svg></button>
+</div>
+<div style="position:relative;margin-top:auto;color:#fff">
+<span style="display:inline-block;background:var(--lime);color:var(--lime-ink);font-weight:700;font-size:11px;letter-spacing:.05em;padding:5px 11px;border-radius:999px;margin-bottom:10px">MONDAY · PUSH DAY</span>
+<h1 style="font-family:var(--font-display);font-weight:700;font-size:27px;letter-spacing:-.01em;margin:0">Upper Body Strength</h1>
+<div style="display:flex;gap:16px;margin-top:8px">
+<span style="display:flex;align-items:center;gap:6px;font-size:13px;color:rgba(243,241,234,.85)"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-dumbbell"/></svg>6 exercises</span>
+<span style="display:flex;align-items:center;gap:6px;font-size:13px;color:rgba(243,241,234,.85)"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-clock"/></svg>45 min</span>
+</div>
+</div>
+</div>
+<div style="padding:20px 20px 0">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><h2 style="font-family:var(--font-display);font-weight:700;font-size:18px;color:var(--ink);margin:0">Exercises</h2><span style="font-size:13px;color:var(--ink3);font-weight:600">Tap to preview</span></div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<sc-for list="{{ rexs }}" as="e" hint-placeholder-count="6">
+<div style="display:flex;align-items:center;gap:13px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:11px 13px;box-shadow:var(--shadow)">
+<span style="width:46px;height:46px;border-radius:13px;flex:none;background:linear-gradient(140deg,var(--sunken),var(--sunken2));display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:14px;color:var(--ink3)">{{ e.num }}</span>
+<div style="flex:1;min-width:0"><div style="font-size:14.5px;font-weight:600;color:var(--ink)">{{ e.name }}</div><div style="font-size:12.5px;color:var(--ink3);margin-top:1px">{{ e.target }}</div></div>
+<span style="font-size:11.5px;color:var(--ink3);display:flex;align-items:center;gap:4px"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-clock"/></svg>{{ e.rest }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isWorkout }}" hint-placeholder-val="{{ false }}">
+<div style="min-height:794px;background:linear-gradient(180deg,var(--hero-from),var(--hero-to));animation:screenIn .3s ease both;display:flex;flex-direction:column;padding:16px 22px 26px;color:var(--on-hero)">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<button onClick="{{ back }}" style="width:42px;height:42px;border-radius:14px;background:rgba(243,241,234,.12);display:flex;align-items:center;justify-content:center;color:var(--on-hero)"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-x"/></svg></button>
+<div style="text-align:center"><div style="font-size:12px;color:var(--on-hero-dim)">Upper Body Strength</div><div style="font-family:var(--font-display);font-weight:700;font-size:16px;color:var(--on-hero)">18:24</div></div>
+<div style="width:42px"></div>
+</div>
+<div style="display:flex;align-items:center;gap:10px;margin-top:18px"><div style="flex:1;height:6px;background:var(--hero-track);border-radius:999px;overflow:hidden"><div style="height:100%;width:{{ wProgPct }};background:var(--lime);border-radius:999px;transition:width .3s ease"></div></div><span style="font-size:12px;font-weight:700;color:var(--on-hero-dim)">{{ wexNum }}</span></div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+<div style="width:216px;height:196px;border-radius:26px;background:rgba(243,241,234,.06);border:1px solid var(--hero-track);display:flex;align-items:center;justify-content:center;margin-bottom:26px;position:relative"><svg width="52" height="52" fill="none" stroke="var(--on-hero-dim)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-dumbbell"/></svg><span style="position:absolute;bottom:12px;right:12px;width:38px;height:38px;border-radius:999px;background:var(--lime);color:var(--lime-ink);display:flex;align-items:center;justify-content:center"><svg width="15" height="15" fill="currentColor" stroke="none"><use href="#ic-play"/></svg></span></div>
+<h1 style="font-family:var(--font-display);font-weight:700;font-size:25px;color:var(--on-hero);letter-spacing:-.01em;margin:0">{{ wexName }}</h1>
+<div style="font-size:14px;color:var(--on-hero-dim);margin-top:3px">{{ wexTarget }}</div>
+<div style="display:flex;gap:8px;margin-top:22px">
+<sc-for list="{{ setPips }}" as="p" hint-placeholder-count="4"><span style="width:36px;height:6px;border-radius:999px;background:{{ p.bg }}"></span></sc-for>
+</div>
+<div style="font-size:12.5px;font-weight:600;color:var(--on-hero-dim);margin-top:11px">{{ wexSetsText }}</div>
+</div>
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+<button onClick="{{ prevEx }}" style="width:54px;height:54px;border-radius:16px;background:rgba(243,241,234,.1);display:flex;align-items:center;justify-content:center;color:var(--on-hero)"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-cl"/></svg></button>
+<button onClick="{{ completeSet }}" style="flex:1;height:54px;border-radius:16px;background:var(--lime);color:var(--lime-ink);font-family:var(--font-display);font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-check"/></svg>Complete set</button>
+<button onClick="{{ nextEx }}" style="width:54px;height:54px;border-radius:16px;background:rgba(243,241,234,.1);display:flex;align-items:center;justify-content:center;color:var(--on-hero)"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-cr"/></svg></button>
+</div>
+<button onClick="{{ finishWorkout }}" style="height:46px;border-radius:14px;background:transparent;color:var(--on-hero-dim);font-weight:700;font-size:14px">Finish workout</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isMealAdd }}" hint-placeholder-val="{{ false }}">
+<div style="animation:screenIn .34s ease both;padding:8px 20px 96px">
+<div style="display:flex;align-items:center;gap:12px;padding:6px 0 16px"><button onClick="{{ back }}" style="width:40px;height:40px;border-radius:13px;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink2)"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-cl"/></svg></button><div><div style="font-family:var(--font-display);font-weight:700;font-size:19px;color:var(--ink)">Add to Lunch</div><div style="font-size:12px;color:var(--ink3)">Thu · Jul 16</div></div></div>
+<div style="background:var(--ink);border-radius:24px;padding:20px;display:flex;align-items:center;gap:16px;position:relative;overflow:hidden">
+<div style="position:absolute;inset:0;background:radial-gradient(130px 100px at 86% 18%,rgba(196,237,75,.3),transparent)"></div>
+<span style="width:54px;height:54px;border-radius:17px;background:var(--lime);color:var(--lime-ink);display:flex;align-items:center;justify-content:center;flex:none;position:relative"><svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-camera"/></svg></span>
+<div style="flex:1;position:relative"><div style="font-family:var(--font-display);font-weight:700;font-size:16px;color:var(--bg)">Scan your meal</div><div style="font-size:12.5px;color:var(--on-hero-dim);margin-top:2px">AI reads calories & macros from a photo</div></div>
+<svg width="20" height="20" fill="none" stroke="var(--lime)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:relative"><use href="#ic-cr"/></svg>
+</div>
+<div style="display:flex;align-items:center;gap:11px;background:var(--surface);border:1px solid var(--line);border-radius:16px;height:52px;padding:0 15px;margin:16px 0 14px"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ink3)"><use href="#ic-search"/></svg><input placeholder="Search foods…" style="flex:1;border:none;outline:none;background:none;font-size:15px;color:var(--ink)"/></div>
+<div style="display:flex;gap:8px;margin-bottom:16px"><span style="padding:8px 15px;border-radius:999px;background:var(--ink);color:var(--bg);font-size:12.5px;font-weight:600">Recent</span><span style="padding:8px 15px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--ink2);font-size:12.5px;font-weight:600">Frequent</span><span style="padding:8px 15px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--ink2);font-size:12.5px;font-weight:600">My meals</span></div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<sc-for list="{{ foods }}" as="f" hint-placeholder-count="5">
+<div style="display:flex;align-items:center;gap:13px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:11px 13px;box-shadow:var(--shadow)"><span style="width:44px;height:44px;border-radius:13px;flex:none;background:linear-gradient(140deg,var(--sunken2),var(--sunken));display:flex;align-items:center;justify-content:center;color:var(--ink3)"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-utensils"/></svg></span><div style="flex:1;min-width:0"><div style="font-size:14.5px;font-weight:600;color:var(--ink)">{{ f.name }}</div><div style="font-size:12px;color:var(--ink3)">{{ f.serving }} · {{ f.kcal }} kcal</div></div><button style="width:34px;height:34px;border-radius:11px;background:var(--lime-soft);color:var(--lime-deep);display:flex;align-items:center;justify-content:center;flex:none"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-plus"/></svg></button></div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isHistory }}" hint-placeholder-val="{{ false }}">
+<div style="animation:screenIn .34s ease both;padding:8px 20px 120px">
+<div style="display:flex;align-items:center;gap:12px;padding:6px 0 18px"><button onClick="{{ back }}" style="width:40px;height:40px;border-radius:13px;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink2)"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-cl"/></svg></button><h1 style="font-family:var(--font-display);font-weight:700;font-size:24px;color:var(--ink);margin:0">History</h1></div>
+<div style="display:flex;gap:11px;margin-bottom:20px">
+<div style="flex:1;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px 10px;text-align:center;box-shadow:var(--shadow)"><div style="font-family:var(--font-display);font-weight:800;font-size:22px;color:var(--ink)">28</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">sessions</div></div>
+<div style="flex:1;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px 10px;text-align:center;box-shadow:var(--shadow)"><div style="font-family:var(--font-display);font-weight:800;font-size:22px;color:var(--ink)">42h</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">trained</div></div>
+<div style="flex:1;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px 10px;text-align:center;box-shadow:var(--shadow)"><div style="font-family:var(--font-display);font-weight:800;font-size:22px;color:var(--ink)">168k</div><div style="font-size:11px;color:var(--ink3);margin-top:2px">kg lifted</div></div>
+</div>
+<sc-for list="{{ logs }}" as="g" hint-placeholder-count="2">
+<div style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:4px 2px 10px">{{ g.group }}</div>
+<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+<sc-for list="{{ g.rows }}" as="l" hint-placeholder-count="3">
+<div style="display:flex;align-items:center;gap:13px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:13px;box-shadow:var(--shadow)"><span style="width:44px;height:44px;border-radius:13px;flex:none;background:var(--sunken2);display:flex;align-items:center;justify-content:center;color:var(--lime-deep)"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-dumbbell"/></svg></span><div style="flex:1;min-width:0"><div style="font-size:14.5px;font-weight:600;color:var(--ink)">{{ l.name }}</div><div style="font-size:12px;color:var(--ink3);margin-top:1px">{{ l.when }}</div></div><span style="font-size:12.5px;font-weight:600;color:var(--ink2)">{{ l.vol }}</span></div>
+</sc-for>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+<div style="animation:screenIn .34s ease both;padding:8px 20px 120px">
+<div style="display:flex;align-items:center;gap:12px;padding:6px 0 18px"><button onClick="{{ back }}" style="width:40px;height:40px;border-radius:13px;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink2)"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-cl"/></svg></button><h1 style="font-family:var(--font-display);font-weight:700;font-size:24px;color:var(--ink);margin:0">Settings</h1></div>
+<div style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:0 2px 8px">Preferences</div>
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:4px 18px;margin-bottom:20px">
+<button onClick="{{ toggleTheme }}" style="display:flex;width:100%;align-items:center;gap:13px;padding:15px 0;border-bottom:1px solid var(--line)"><span style="color:var(--ink3)"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="{{ themeIcon }}"/></svg></span><span style="flex:1;text-align:left;font-size:14.5px;font-weight:500;color:var(--ink)">Appearance</span><span style="font-size:13px;color:var(--ink3)">{{ themeLabel }}</span></button>
+<div style="display:flex;align-items:center;gap:13px;padding:15px 0;border-bottom:1px solid var(--line)"><span style="color:var(--ink3)"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-scale"/></svg></span><span style="flex:1;font-size:14.5px;font-weight:500;color:var(--ink)">Units</span><span style="font-size:13px;color:var(--ink3)">Metric (kg)</span></div>
+<div style="display:flex;align-items:center;gap:13px;padding:15px 0;border-bottom:1px solid var(--line)"><span style="color:var(--ink3)"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-globe"/></svg></span><span style="flex:1;font-size:14.5px;font-weight:500;color:var(--ink)">Language</span><span style="font-size:13px;color:var(--ink3)">English</span></div>
+<div style="display:flex;align-items:center;gap:13px;padding:15px 0"><span style="color:var(--ink3)"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-bell"/></svg></span><span style="flex:1;font-size:14.5px;font-weight:500;color:var(--ink)">Notifications</span><span style="width:42px;height:25px;border-radius:999px;background:var(--lime);position:relative;flex:none"><span style="position:absolute;top:2.5px;right:2.5px;width:20px;height:20px;border-radius:999px;background:#fff"></span></span></div>
+</div>
+<div style="background:linear-gradient(150deg,var(--hero-from),var(--hero-to));border-radius:24px;padding:20px;margin-bottom:20px">
+<div style="display:flex;align-items:center;gap:9px;margin-bottom:8px"><svg width="20" height="20" fill="var(--lime)" stroke="var(--lime)" stroke-width="1.2" stroke-linejoin="round"><use href="#ic-sparkle"/></svg><span style="font-family:var(--font-display);font-weight:700;font-size:17px;color:var(--on-hero)">Habbito Pro</span></div>
+<p style="font-size:12.5px;color:var(--on-hero-dim);margin:0 0 14px;line-height:1.5">AI training plans, photo food scan and advanced insights.</p>
+<button style="height:44px;padding:0 20px;border-radius:14px;background:var(--lime);color:var(--lime-ink);font-family:var(--font-display);font-weight:700;font-size:14px">Upgrade</button>
+</div>
+<div style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:0 2px 8px">Account</div>
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:4px 18px;margin-bottom:20px">
+<div style="display:flex;align-items:center;gap:13px;padding:15px 0;border-bottom:1px solid var(--line)"><span style="color:var(--ink3)"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-mail"/></svg></span><span style="flex:1;font-size:14.5px;font-weight:500;color:var(--ink)">Email</span><span style="font-size:13px;color:var(--ink3)">alex@habbito.app</span></div>
+<div style="display:flex;align-items:center;gap:13px;padding:15px 0"><span style="color:var(--ink3)"><svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-lock"/></svg></span><span style="flex:1;font-size:14.5px;font-weight:500;color:var(--ink)">Change password</span><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ink3)"><use href="#ic-cr"/></svg></div>
+</div>
+<button onClick="{{ signOut }}" style="display:flex;width:100%;align-items:center;justify-content:center;gap:9px;padding:15px;border-radius:18px;background:var(--surface);border:1px solid var(--line2);color:var(--error);font-weight:700;font-size:14.5px"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-logout"/></svg>Log out</button>
+</div>
+</sc-if>
+
+</div>
+
+<sc-if value="{{ isRoutine }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:0;right:0;bottom:0;padding:16px 20px 24px;background:linear-gradient(to top,var(--bg) 62%,transparent)"><button onClick="{{ startWorkout }}" style="height:56px;width:100%;border-radius:18px;background:var(--lime);color:var(--lime-ink);font-family:var(--font-display);font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:0 14px 28px -10px var(--lime)"><svg width="18" height="18" fill="currentColor" stroke="none"><use href="#ic-play"/></svg>Start workout</button></div>
+</sc-if>
+<sc-if value="{{ isMealAdd }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:0;right:0;bottom:0;padding:16px 20px 24px;background:linear-gradient(to top,var(--bg) 62%,transparent)"><button onClick="{{ back }}" style="height:56px;width:100%;border-radius:18px;background:var(--lime);color:var(--lime-ink);font-family:var(--font-display);font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:space-between;padding:0 22px"><span>Add to diary</span><span style="font-family:var(--font-display);font-weight:700">1 item · 120 kcal</span></button></div>
+</sc-if>
+
+<sc-if value="{{ showRoutineFab }}" hint-placeholder-val="{{ false }}">
+<button onClick="{{ openRoutine }}" style="position:absolute;right:18px;bottom:98px;height:54px;padding:0 22px;border-radius:999px;background:var(--lime);color:var(--lime-ink);font-family:var(--font-display);font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;box-shadow:0 12px 26px -8px var(--lime),var(--shadow)"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-plus"/></svg>New</button>
+</sc-if>
+<sc-if value="{{ showMealFab }}" hint-placeholder-val="{{ false }}">
+<button onClick="{{ openMealAdd }}" style="position:absolute;right:18px;bottom:98px;height:54px;padding:0 22px;border-radius:999px;background:var(--lime);color:var(--lime-ink);font-family:var(--font-display);font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;box-shadow:0 12px 26px -8px var(--lime),var(--shadow)"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-camera"/></svg>Log food</button>
+</sc-if>
+
+<sc-if value="{{ showTabs }}" hint-placeholder-val="{{ true }}">
+<div style="position:absolute;left:16px;right:16px;bottom:14px;height:66px;background:var(--surface);border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow-lg);display:flex;align-items:center;justify-content:space-around;padding:0 6px">
+<button onClick="{{ goHome }}" style="display:flex;flex-direction:column;align-items:center;gap:2px;color:{{ homeColor }}"><span style="width:5px;height:5px;border-radius:9px;background:{{ homeDot }};margin-bottom:1px"></span><svg width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-home"/></svg><span style="font-size:9.5px;font-weight:700;letter-spacing:.02em">Home</span></button>
+<button onClick="{{ goRoutines }}" style="display:flex;flex-direction:column;align-items:center;gap:2px;color:{{ routinesColor }}"><span style="width:5px;height:5px;border-radius:9px;background:{{ routinesDot }};margin-bottom:1px"></span><svg width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-dumbbell"/></svg><span style="font-size:9.5px;font-weight:700;letter-spacing:.02em">Train</span></button>
+<button onClick="{{ goMeals }}" style="display:flex;flex-direction:column;align-items:center;gap:2px;color:{{ mealsColor }}"><span style="width:5px;height:5px;border-radius:9px;background:{{ mealsDot }};margin-bottom:1px"></span><svg width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-utensils"/></svg><span style="font-size:9.5px;font-weight:700;letter-spacing:.02em">Fuel</span></button>
+<button onClick="{{ goProgress }}" style="display:flex;flex-direction:column;align-items:center;gap:2px;color:{{ progressColor }}"><span style="width:5px;height:5px;border-radius:9px;background:{{ progressDot }};margin-bottom:1px"></span><svg width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-chart"/></svg><span style="font-size:9.5px;font-weight:700;letter-spacing:.02em">Progress</span></button>
+<button onClick="{{ goProfile }}" style="display:flex;flex-direction:column;align-items:center;gap:2px;color:{{ profileColor }}"><span style="width:5px;height:5px;border-radius:9px;background:{{ profileDot }};margin-bottom:1px"></span><svg width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-user"/></svg><span style="font-size:9.5px;font-weight:700;letter-spacing:.02em">You</span></button>
+</div>
+</sc-if>
+
+</div>
+
+<div style="position:absolute;left:50%;transform:translateX(-50%);bottom:8px;width:132px;height:5px;border-radius:5px;background:var(--ink);opacity:.28;pointer-events:none"></div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:442,&quot;height&quot;:896},&quot;accent&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Lime&quot;,&quot;options&quot;:[&quot;Lime&quot;,&quot;Coral&quot;,&quot;Violet&quot;,&quot;Azure&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Feel&quot;,&quot;label&quot;:&quot;Accent energy&quot;},&quot;mood&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Warm paper&quot;,&quot;options&quot;:[&quot;Warm paper&quot;,&quot;Cool mist&quot;,&quot;Mono&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Feel&quot;,&quot;label&quot;:&quot;Surface mood&quot;},&quot;depth&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Soft&quot;,&quot;options&quot;:[&quot;Soft&quot;,&quot;Flat&quot;,&quot;Bold&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Feel&quot;,&quot;label&quot;:&quot;Depth&quot;}}">
+class Component extends DCLogic {
+  state = { theme: 'light', screen: 'home', hist: [], step: 0, exIdx: 0, setsDone: 1 };
+
+  scroll0() { const el = document.getElementById('hb-scroll'); if (el) el.scrollTop = 0; }
+  go(screen) { return () => { this.setState({ screen, hist: [] }); this.scroll0(); }; }
+  push(screen) { return () => { this.setState((s) => ({ screen, hist: [...s.hist, s.screen] })); this.scroll0(); }; }
+  back() { this.setState((s) => { const h = [...s.hist]; const prev = h.pop() || 'home'; return { screen: prev, hist: h }; }); this.scroll0(); }
+
+  renderVals() {
+    const s = this.state;
+    const TABS = ['home', 'routines', 'meals', 'progress', 'profile'];
+    const ring = (r, frac) => {
+      const len = 2 * Math.PI * r;
+      const f = Math.max(0, Math.min(1, frac));
+      return { len: len.toFixed(1), off: (len * (1 - f)).toFixed(1) };
+    };
+    const active = 'var(--ink)';
+    const dim = 'var(--ink3)';
+    const col = (name) => (s.screen === name ? active : dim);
+    const dot = (name) => (s.screen === name ? 'var(--lime)' : 'transparent');
+
+    const routines = [
+      { name: 'Upper Body Strength', focus: 'Push · chest, shoulders, triceps', meta: '6 exercises · 45 min', day: 'MON' },
+      { name: 'Lower Body Power', focus: 'Squat-focused legs & glutes', meta: '7 exercises · 50 min', day: 'THU' },
+      { name: 'HIIT Cardio Blast', focus: 'Full-body conditioning circuit', meta: '8 rounds · 30 min', day: 'SAT' },
+    ];
+    const meals = [
+      { slot: 'Breakfast', kcal: '520', items: [
+        { name: 'Oatmeal & Berries', serving: '1 bowl', macros: 'P12 C58 F9', kcal: '320' },
+        { name: 'Protein Shake', serving: '1 scoop', macros: 'P24 C8 F3', kcal: '200' } ] },
+      { slot: 'Lunch', kcal: '640', items: [
+        { name: 'Chicken & Rice Bowl', serving: '1 plate', macros: 'P42 C68 F18', kcal: '640' } ] },
+      { slot: 'Dinner', kcal: '0', items: [] },
+      { slot: 'Snacks', kcal: '0', items: [] },
+    ];
+    const WEX = [
+      { name: 'Barbell Bench Press', target: '4 × 8 · 60 kg', sets: 4 },
+      { name: 'Incline Dumbbell Press', target: '3 × 10 · 22 kg', sets: 3 },
+      { name: 'Cable Fly', target: '3 × 12 · 15 kg', sets: 3 },
+      { name: 'Overhead Press', target: '4 × 8 · 40 kg', sets: 4 },
+      { name: 'Lateral Raise', target: '3 × 15 · 10 kg', sets: 3 },
+      { name: 'Triceps Rope Pushdown', target: '3 × 12 · 25 kg', sets: 3 },
+    ];
+    const rexs = WEX.map((e, i) => ({ name: e.name, target: e.target, num: String(i + 1).padStart(2, '0'), rest: '60s' }));
+    const cur = WEX[s.exIdx] || WEX[0];
+    const setPips = Array.from({ length: cur.sets }, (_, i) => ({ bg: i < s.setsDone ? 'var(--lime)' : (i === s.setsDone ? 'var(--on-hero)' : 'var(--hero-track)') }));
+    const foods = [
+      { name: 'Greek Yogurt', serving: '170 g · plain', kcal: '120' },
+      { name: 'Banana', serving: '1 medium', kcal: '105' },
+      { name: 'Grilled Chicken Breast', serving: '150 g', kcal: '248' },
+      { name: 'Almonds', serving: '30 g', kcal: '174' },
+      { name: 'Brown Rice', serving: '1 cup cooked', kcal: '216' },
+    ];
+    const logs = [
+      { group: 'This week', rows: [
+        { name: 'Upper Body Strength', when: 'Today · 46 min', vol: '5,200 kg', kind: 'strength' },
+        { name: 'HIIT Cardio Blast', when: 'Tue · 28 min', vol: 'Cardio', kind: 'cardio' },
+        { name: 'Lower Body Power', when: 'Mon · 52 min', vol: '7,200 kg', kind: 'strength' } ] },
+      { group: 'Last week', rows: [
+        { name: 'Upper Body Strength', when: 'Fri · 44 min', vol: '5,050 kg', kind: 'strength' },
+        { name: 'HIIT Cardio Blast', when: 'Wed · 30 min', vol: 'Cardio', kind: 'cardio' } ] },
+    ];
+
+    return {
+      theme: s.theme,
+      accent: ({ Lime: 'lime', Coral: 'coral', Violet: 'violet', Azure: 'azure' })[this.props.accent] || 'lime',
+      mood: ({ 'Warm paper': 'warm', 'Cool mist': 'cool', Mono: 'mono' })[this.props.mood] || 'warm',
+      depth: ({ Soft: 'soft', Flat: 'flat', Bold: 'bold' })[this.props.depth] || 'soft',
+      themeIcon: s.theme === 'light' ? '#ic-moon' : '#ic-sun',
+      themeLabel: s.theme === 'light' ? 'Light' : 'Dark',
+      toggleTheme: () => this.setState((x) => ({ theme: x.theme === 'light' ? 'dark' : 'light' })),
+      isLogin: s.screen === 'login',
+      isHome: s.screen === 'home',
+      isRoutines: s.screen === 'routines',
+      isMeals: s.screen === 'meals',
+      isProgress: s.screen === 'progress',
+      isProfile: s.screen === 'profile',
+      showTabs: TABS.includes(s.screen),
+      showRoutineFab: s.screen === 'routines',
+      showMealFab: s.screen === 'meals',
+      goHome: this.go('home'),
+      goRoutines: this.go('routines'),
+      goMeals: this.go('meals'),
+      goProgress: this.go('progress'),
+      goProfile: this.go('profile'),
+      signIn: () => { this.setState({ screen: 'splash', hist: [] }); this.scroll0(); setTimeout(() => { if (this.state.screen === 'splash') { this.setState({ screen: 'home' }); this.scroll0(); } }, 1400); },
+      signOut: this.go('login'),
+      isOnboarding: s.screen === 'onboarding', isRoutine: s.screen === 'routine', isWorkout: s.screen === 'workout', isMealAdd: s.screen === 'mealadd', isHistory: s.screen === 'history', isSettings: s.screen === 'settings', isSplash: s.screen === 'splash',
+      back: () => this.back(),
+      openRoutine: this.push('routine'), startWorkout: this.push('workout'), openMealAdd: this.push('mealadd'), openHistory: this.push('history'), openSettings: this.push('settings'), goOnboard: this.go('onboarding'),
+      step: s.step, onbStep0: s.step === 0, onbStep1: s.step === 1, onbStep2: s.step === 2, onbStep3: s.step === 3, onbStep4: s.step === 4,
+      onbFill: (((s.step + 1) / 5) * 100).toFixed(0) + '%', onbNextLabel: s.step < 4 ? 'Continue' : 'Start training',
+      onbNext: () => { if (this.state.step < 4) { this.setState((st) => ({ step: st.step + 1 })); } else { this.go('home')(); } this.scroll0(); },
+      onbBack: () => { if (this.state.step > 0) { this.setState((st) => ({ step: st.step - 1 })); } else { this.go('login')(); } },
+      rexs, foods, logs,
+      wexName: cur.name, wexTarget: cur.target, wexNum: (s.exIdx + 1) + ' / ' + WEX.length, wexSetsText: 'Set ' + Math.min(s.setsDone + 1, cur.sets) + ' of ' + cur.sets,
+      wProgPct: ((s.exIdx) / WEX.length * 100).toFixed(0) + '%', setPips,
+      completeSet: () => this.setState((st) => { const ex = WEX[st.exIdx]; if (st.setsDone + 1 >= ex.sets) { return { setsDone: 0, exIdx: Math.min(st.exIdx + 1, WEX.length - 1) }; } return { setsDone: st.setsDone + 1 }; }),
+      nextEx: () => this.setState((st) => ({ exIdx: Math.min(st.exIdx + 1, WEX.length - 1), setsDone: 0 })),
+      prevEx: () => this.setState((st) => ({ exIdx: Math.max(st.exIdx - 1, 0), setsDone: 0 })),
+      finishWorkout: this.go('home'),
+      homeColor: col('home'),
+      routinesColor: col('routines'),
+      mealsColor: col('meals'),
+      progressColor: col('progress'),
+      profileColor: col('profile'),
+      homeDot: dot('home'), routinesDot: dot('routines'), mealsDot: dot('meals'), progressDot: dot('progress'), profileDot: dot('profile'),
+      rCal: ring(66, 1470 / 2200),
+      rPro: ring(51, 98 / 150),
+      rMove: ring(36, 320 / 500),
+      rDay: ring(44, 1470 / 2200),
+      rSess: ring(46, 3 / 4),
+      routines,
+      meals,
+    };
+  }
+}
+</script>
+</body>
+</html>

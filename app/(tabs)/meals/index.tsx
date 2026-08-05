@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import React, { useMemo, useState } from "react";
@@ -6,12 +5,18 @@ import { useTranslation } from "react-i18next";
 import { RefreshControl } from "react-native";
 
 import { DiaryEntry, DiarySlot } from "@/src/components/diary-slot";
+import { Ring } from "@/src/components/progress/ring";
 import {
   Card,
+  CapsLabel,
   ConfirmDialog,
+  DisplayText,
   ErrorState,
   FAB,
+  HeaderPanel,
+  Icon,
   LoadingBlock,
+  ProgressBar,
   useToast,
 } from "@/src/components/ui";
 import { useAuth } from "@/src/hooks/use-auth";
@@ -25,6 +30,8 @@ import { AnimatedView } from "@/src/tw/animated";
 import type { MealItem, MealType } from "@/src/types/database";
 import {
   caloriesConsumed,
+  macroTargets,
+  macroTotals,
   recommendedCalorieGoal,
 } from "@/src/utils/calories";
 import { addDays, formatDayLabel, toDateKey } from "@/src/utils/dates";
@@ -62,10 +69,7 @@ export default function DiaryScreen() {
     setDateKey(todayKey);
   };
 
-  const dayMeals = useMemo(
-    () => meals.filter((m) => m.date === dateKey),
-    [meals, dateKey],
-  );
+  const dayMeals = useMemo(() => meals.filter((m) => m.date === dateKey), [meals, dateKey]);
 
   // Flatten items across ALL meals of (date, slot) — legacy multi-meal slots
   // merge naturally. mealId kept per entry so removal cleans the right container.
@@ -92,26 +96,31 @@ export default function DiaryScreen() {
   const goal = profile?.calorie_goal ?? recommendedCalorieGoal(profile);
   const numberLocale = i18n.language === "es" ? "es-ES" : "en-US";
   const kcalFmt = (v: number) => Math.round(v).toLocaleString(numberLocale);
+  const fuelFrac = goal != null && goal > 0 ? consumed / goal : 0;
 
-  // Day macro totals for the summary card (matches the old nutrition summary)
   const dayItems = useMemo(() => dayMeals.flatMap((m) => m.meal_items), [dayMeals]);
+  const totals = macroTotals(dayMeals);
+  const targets = macroTargets(goal);
   const dayMacros = [
     {
       key: "protein",
       label: t("meals.proteinName"),
-      value: dayItems.reduce((s, i) => s + i.protein_g, 0),
+      grams: totals.protein,
+      target: targets?.protein ?? null,
       color: colors.macroProtein,
     },
     {
       key: "carbs",
       label: t("meals.carbsName"),
-      value: dayItems.reduce((s, i) => s + i.carbs_g, 0),
+      grams: totals.carbs,
+      target: targets?.carbs ?? null,
       color: colors.macroCarbs,
     },
     {
       key: "fat",
       label: t("meals.fatName"),
-      value: dayItems.reduce((s, i) => s + i.fat_g, 0),
+      grams: totals.fat,
+      target: targets?.fat ?? null,
       color: colors.macroFat,
     },
   ];
@@ -152,8 +161,12 @@ export default function DiaryScreen() {
 
   return (
     <View className="flex-1 bg-brand-dark">
-      {/* Date navigation */}
-      <View className="flex-row items-center justify-between px-4 pt-3 pb-1">
+      <HeaderPanel>
+        <DisplayText size={27}>{t("meals.diary")}</DisplayText>
+      </HeaderPanel>
+
+      {/* ‹ Today › */}
+      <View className="flex-row items-center justify-between px-5 pb-2">
         <PressableScale
           haptic
           onPress={() => goToDay(-1)}
@@ -161,18 +174,16 @@ export default function DiaryScreen() {
           accessibilityLabel={t("meals.previousDay")}
           className="h-10 w-10 rounded-full bg-surface border border-border items-center justify-center"
         >
-          <Ionicons name="chevron-back" size={20} color={colors.contentSecondary} />
+          <Icon name="chevron-left" size={20} color={colors.contentSecondary} />
         </PressableScale>
         <Pressable
           onPress={onToday ? undefined : jumpToToday}
           accessibilityRole="button"
           className="items-center"
         >
-          <Text className="text-base font-semibold text-content-primary">
-            {formatDayLabel(dateKey, i18n.language, t)}
-          </Text>
+          <DisplayText size={17}>{formatDayLabel(dateKey, i18n.language, t)}</DisplayText>
           {!onToday && (
-            <Text className="text-xs font-medium text-brand-primary">
+            <Text className="text-xs font-semibold text-brand-primary-dark">
               {t("meals.backToToday")}
             </Text>
           )}
@@ -185,12 +196,12 @@ export default function DiaryScreen() {
           accessibilityLabel={t("meals.nextDay")}
           className={`h-10 w-10 rounded-full bg-surface border border-border items-center justify-center ${onToday ? "opacity-30" : ""}`}
         >
-          <Ionicons name="chevron-forward" size={20} color={colors.contentSecondary} />
+          <Icon name="chevron-right" size={20} color={colors.contentSecondary} />
         </PressableScale>
       </View>
 
       <ScrollView
-        contentContainerClassName="px-4 py-3 pb-28 gap-4"
+        contentContainerClassName="px-5 pt-1 pb-32 gap-3"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -202,49 +213,59 @@ export default function DiaryScreen() {
         }
       >
         {/* Keyed by date: day changes slide in from the travel direction */}
-        <AnimatedView key={dateKey} entering={slideEnter(direction)} className="gap-4">
-          {/* Day summary */}
-          <Card className="gap-3">
-            <View className="flex-row items-end justify-between">
-              <View>
+        <AnimatedView key={dateKey} entering={slideEnter(direction)} className="gap-3">
+          {/* Day summary — calorie ring + macro capsule bars */}
+          <Card className="flex-row items-center gap-5">
+            <Ring
+              size={104}
+              strokeWidth={10}
+              frac={fuelFrac}
+              color={colors.brandPrimary}
+              trackColor={colors.surfaceElevated}
+            >
+              <DisplayText size={22} tabular>
+                {kcalFmt(consumed)}
+              </DisplayText>
+              <CapsLabel size={9}>{t("meals.kcal")}</CapsLabel>
+            </Ring>
+
+            <View className="flex-1 gap-2.5">
+              <View className="flex-row items-baseline justify-between">
                 <Text className="text-xs text-content-tertiary">{t("meals.dayTotal")}</Text>
-                <Text
-                  className="text-2xl font-bold text-content-primary"
-                  style={{ fontVariant: ["tabular-nums"] }}
-                >
-                  {kcalFmt(consumed)}
-                  {goal != null ? ` / ${kcalFmt(goal)}` : ""}{" "}
-                  <Text className="text-sm font-normal text-content-tertiary">
-                    {t("meals.kcal")}
+                {goal != null && (
+                  <Text
+                    className={`text-xs font-semibold ${goal - consumed < 0 ? "text-error" : "text-success"}`}
+                  >
+                    {goal - consumed < 0
+                      ? t("meals.kcalOver", { kcal: kcalFmt(consumed - goal) })
+                      : t("meals.kcalLeft", { kcal: kcalFmt(goal - consumed) })}
                   </Text>
-                </Text>
+                )}
               </View>
-              {goal != null && (
-                <Text
-                  className={`text-sm font-medium ${goal - consumed < 0 ? "text-error" : "text-success"}`}
-                >
-                  {goal - consumed < 0
-                    ? t("meals.kcalOver", { kcal: kcalFmt(consumed - goal) })
-                    : t("meals.kcalLeft", { kcal: kcalFmt(goal - consumed) })}
-                </Text>
-              )}
-            </View>
-            {dayItems.length > 0 && (
-              <View className="flex-row justify-between border-t border-border pt-3">
-                {dayMacros.map((macro) => (
-                  <View key={macro.key} className="items-center flex-1">
-                    <Text
-                      className="text-lg font-bold"
-                      style={{ color: macro.color, fontVariant: ["tabular-nums"] }}
-                    >
-                      {macro.value.toFixed(1)}g
-                    </Text>
-                    <Text className="text-sm text-content-tertiary">{macro.label}</Text>
+
+              {dayMacros.map((macro) => (
+                <View key={macro.key} className="gap-1">
+                  <View className="flex-row items-baseline justify-between">
+                    <Text className="text-xs text-content-tertiary">{macro.label}</Text>
+                    <DisplayText size={13} tabular>
+                      {`${Math.round(macro.grams)}g`}
+                    </DisplayText>
                   </View>
-                ))}
-              </View>
-            )}
+                  <ProgressBar
+                    value={macro.target != null ? macro.grams / macro.target : 0}
+                    height={6}
+                    color={macro.color}
+                  />
+                </View>
+              ))}
+            </View>
           </Card>
+
+          {dayItems.length === 0 && goal == null && (
+            <Text className="text-center text-xs text-content-muted px-6">
+              {t("home.setCalorieGoalHint")}
+            </Text>
+          )}
 
           {MEAL_SLOTS.map((slot, i) => (
             <AnimatedView key={slot} entering={staggered(i)}>
@@ -266,6 +287,8 @@ export default function DiaryScreen() {
       </ScrollView>
 
       <FAB
+        icon="plus"
+        label={t("meals.addFood")}
         onPress={() => openAdd(suggestedSlot())}
         accessibilityLabel={t("meals.addFood")}
       />

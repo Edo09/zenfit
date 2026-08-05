@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import React from "react";
 import {
@@ -11,6 +10,7 @@ import {
   Button as GSButton,
   ButtonText,
 } from "@/components/ui/button";
+import { Icon, type IconName } from "@/src/components/ui/icon";
 import { Spinner } from "@/src/components/ui/spinner";
 import { DUR, EASE_OUT } from "@/src/lib/motion";
 import { useColors, type PaletteColor } from "@/src/theme/colors";
@@ -18,13 +18,11 @@ import { View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
 import { cn } from "@/src/utils/cn";
 
-type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
-
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "destructive";
 export type ButtonSize = "sm" | "md" | "lg";
 
 // gluestack variant that most closely matches, then className restores
-// the exact Hokage look on top of it.
+// the exact Habbito look on top of it.
 const VARIANT_GS: Record<ButtonVariant, "default" | "secondary" | "ghost"> = {
   primary: "default",
   secondary: "secondary",
@@ -34,35 +32,36 @@ const VARIANT_GS: Record<ButtonVariant, "default" | "secondary" | "ghost"> = {
 
 const VARIANT_CONTAINER: Record<ButtonVariant, string> = {
   primary: "bg-brand-primary",
-  secondary: "bg-surface border border-border",
+  secondary: "bg-surface border border-border-strong",
   ghost: "bg-transparent",
   destructive: "bg-error-soft",
 };
 
+// brand-primary is a cyan FILL — its label is ink, never white.
 const VARIANT_LABEL: Record<ButtonVariant, string> = {
-  primary: "text-white",
+  primary: "text-on-accent",
   secondary: "text-content-primary",
-  ghost: "text-brand-primary",
+  ghost: "text-brand-primary-dark",
   destructive: "text-error",
 };
 
 const VARIANT_SPINNER: Record<ButtonVariant, PaletteColor> = {
-  primary: "white",
+  primary: "onAccent",
   secondary: "contentPrimary",
-  ghost: "brandPrimary",
+  ghost: "brandPrimaryDark",
   destructive: "error",
 };
 
 const SIZE_CONTAINER: Record<ButtonSize, string> = {
-  sm: "px-4 py-2 rounded-full",
+  sm: "px-4 py-2.5 rounded-full",
   md: "px-5 py-3.5 rounded-2xl",
   lg: "w-full py-4 rounded-2xl",
 };
 
 const SIZE_LABEL: Record<ButtonSize, string> = {
-  sm: "text-sm font-semibold",
-  md: "text-base font-semibold",
-  lg: "text-base font-bold",
+  sm: "text-sm font-bold",
+  md: "text-base font-display",
+  lg: "text-base font-display",
 };
 
 const SIZE_ICON: Record<ButtonSize, number> = { sm: 16, md: 18, lg: 20 };
@@ -72,7 +71,9 @@ type ButtonProps = {
   size?: ButtonSize;
   loading?: boolean;
   disabled?: boolean;
-  icon?: IoniconName;
+  icon?: IconName;
+  /** Render the icon after the label instead of before it. */
+  iconTrailing?: boolean;
   onPress: () => void;
   children: React.ReactNode;
   className?: string;
@@ -87,6 +88,7 @@ export function Button({
   loading = false,
   disabled = false,
   icon,
+  iconTrailing = false,
   onPress,
   children,
   className,
@@ -108,6 +110,9 @@ export function Button({
     onPress();
   };
 
+  const glyph =
+    icon != null ? <Icon name={icon} size={SIZE_ICON[size]} color={accentColor} /> : null;
+
   return (
     <AnimatedView className={containerClassName} style={pressStyle}>
     <GSButton
@@ -128,10 +133,22 @@ export function Button({
         "gap-2 h-auto",
         VARIANT_CONTAINER[variant],
         SIZE_CONTAINER[size],
-        disabled && "opacity-50",
+        disabled && "opacity-45",
         loading && "opacity-70",
         className
       )}
+      // Subtle cyan glow under the primary CTA (spec: 0 8–14px …-8px cyan)
+      style={
+        variant === "primary" && !inactive
+          ? {
+              shadowColor: colors.brandPrimary,
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: 0.45,
+              shadowRadius: 16,
+              elevation: 6,
+            }
+          : undefined
+      }
     >
       {loading ? (
         <View className="py-0.5">
@@ -139,12 +156,11 @@ export function Button({
         </View>
       ) : (
         <>
-          {icon != null && (
-            <Ionicons name={icon} size={SIZE_ICON[size]} color={accentColor} />
-          )}
+          {!iconTrailing && glyph}
           <ButtonText className={cn(VARIANT_LABEL[variant], SIZE_LABEL[size])}>
             {children}
           </ButtonText>
+          {iconTrailing && glyph}
         </>
       )}
     </GSButton>

@@ -1,19 +1,17 @@
 import * as Haptics from "expo-haptics";
-import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Button, Input, Screen } from "@/src/components/ui";
+import { BrandMark } from "@/src/components/brand-mark";
+import { Button, DisplayText, Input, Screen } from "@/src/components/ui";
 import { useAuth } from "@/src/hooks/use-auth";
 import { setLanguage } from "@/src/i18n";
 import { useIsOnline } from "@/src/lib/online";
-import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 
 export default function Login() {
   const { t, i18n } = useTranslation();
-  const colors = useColors();
   const online = useIsOnline();
   const { signIn } = useAuth();
   const [email, setEmail] = useState("");
@@ -59,45 +57,23 @@ export default function Login() {
         </Text>
       </Pressable>
 
-      {/* App icon + brush wordmark (Edo SZ), sized to dominate the screen */}
-      <View className="items-center mb-12">
-        <Image
-          source={require("@/assets/images/app-icon/icon.png")}
-          style={{
-            width: 112,
-            height: 112,
-            borderRadius: 24,
-            borderWidth: 1,
-            borderColor: colors.border,
-          }}
-          accessibilityIgnoresInvertColors
-        />
-        <Text
-          className="font-display text-content-primary text-6xl text-center mt-5"
-          style={{ lineHeight: 64 }}
-        >
-          The Hokage
-        </Text>
-        <Text className="text-brand-accent text-sm font-bold uppercase tracking-[4px] mt-1">
-          Coaching App
-        </Text>
-        {/* <Text className="text-content-tertiary mt-3 text-base">
-          {t("auth.fitnessCompanion")}
-        </Text> */}
+      <View className="items-center gap-4 mb-10">
+        <BrandMark size={68} wordmarkSize={36} />
+        <DisplayText size={26} className="text-center px-2">
+          {t("auth.tagline")}
+        </DisplayText>
       </View>
 
       <View className="gap-4">
         {!online && (
-          <View className="bg-warning-soft rounded-xl p-3">
-            <Text className="text-warning text-sm text-center">
-              {t("auth.offlineLogin")}
-            </Text>
+          <View className="bg-warning-soft rounded-2xl p-3">
+            <Text className="text-warning text-sm text-center">{t("auth.offlineLogin")}</Text>
           </View>
         )}
 
         <Input
           placeholder={t("auth.emailPlaceholder")}
-          leftIcon="mail-outline"
+          leftIcon="mail"
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
@@ -113,7 +89,7 @@ export default function Login() {
 
         <Input
           placeholder={t("auth.enterPassword")}
-          leftIcon="key-outline"
+          leftIcon="lock"
           secureTextEntry
           value={password}
           onChangeText={(text) => {
@@ -126,31 +102,30 @@ export default function Login() {
         />
 
         {formError != null && (
-          <View className="bg-error-soft rounded-xl p-3">
+          <View className="bg-error-soft rounded-2xl p-3">
             <Text className="text-error text-sm">{formError}</Text>
           </View>
         )}
 
-        <Button size="lg" onPress={handleLogin} loading={loading} className="mt-2 rounded-2xl">
-          {t("auth.signIn")}
+        <Button size="lg" onPress={handleLogin} loading={loading} className="mt-2">
+          {t("auth.logIn")}
         </Button>
 
         {/* ── or ── */}
-        <View className="flex-row items-center gap-3 my-3">
-          <View className="flex-1 h-px bg-border-strong" />
-          <Text className="text-content-muted">{t("common.or")}</Text>
-          <View className="flex-1 h-px bg-border-strong" />
+        <View className="flex-row items-center gap-3 my-2">
+          <View className="flex-1 h-px bg-border" />
+          <Text className="text-content-muted text-sm">{t("common.or")}</Text>
+          <View className="flex-1 h-px bg-border" />
         </View>
 
-        <Pressable
+        <Button
+          variant="secondary"
+          size="lg"
+          haptic={false}
           onPress={() => router.push("/(auth)/register")}
-          accessibilityRole="button"
-          className="border-2 border-brand-primary rounded-2xl py-4 items-center active:opacity-70"
         >
-          <Text className="text-brand-primary font-bold text-base">
-            {t("auth.signUp")}
-          </Text>
-        </Pressable>
+          {t("auth.createAccountCta")}
+        </Button>
       </View>
     </Screen>
   );

@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -11,7 +10,7 @@ import RAnimated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { Button, Chip, Input, Screen, useToast } from "@/src/components/ui";
+import { Button, Chip, DisplayText, Input, Screen, useToast } from "@/src/components/ui";
 import { useAuth } from "@/src/hooks/use-auth";
 import { useProfile } from "@/src/hooks/use-profile";
 import { DUR, EASE_OUT, enter, exit, slideEnter } from "@/src/lib/motion";
@@ -21,6 +20,7 @@ import { Pressable, Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
 import type { ProfileGoal } from "@/src/types/database";
 import { cn } from "@/src/utils/cn";
+import { Icon } from "@/src/components/ui/icon";
 
 const TOTAL_STEPS = 5;
 
@@ -53,6 +53,10 @@ const toHeightCm = (form: FormData): number =>
 const toWeightKg = (form: FormData): number =>
   form.weight_unit === "kg" ? parseFloat(form.weight) : parseFloat(form.weight) * 0.453592;
 
+/**
+ * Radio card — the onboarding's one decision affordance. Selected =
+ * cyan border + cyan-soft fill + a filled radio dot.
+ */
 function OptionButton({
   label,
   selected,
@@ -68,18 +72,26 @@ function OptionButton({
   };
   return (
     <Pressable
-      accessibilityRole="button"
+      accessibilityRole="radio"
       accessibilityState={{ selected }}
       className={cn(
-        "flex-1 py-3 rounded-xl items-center border",
-        selected ? "bg-brand-primary border-brand-primary" : "bg-surface border-border"
+        "flex-1 flex-row items-center gap-2.5 rounded-2xl border px-3.5 py-3.5",
+        selected ? "bg-brand-primary-soft border-brand-primary" : "bg-surface border-border"
       )}
       onPress={handlePress}
     >
+      <View
+        className={cn(
+          "h-4.5 w-4.5 items-center justify-center rounded-full border-2",
+          selected ? "border-brand-primary-dark" : "border-border-strong"
+        )}
+      >
+        {selected && <View className="h-2 w-2 rounded-full bg-brand-primary-dark" />}
+      </View>
       <Text
         className={cn(
-          "font-semibold text-sm",
-          selected ? "text-white" : "text-content-secondary"
+          "flex-1 font-semibold text-sm",
+          selected ? "text-brand-primary-dark" : "text-content-secondary"
         )}
       >
         {label}
@@ -283,9 +295,9 @@ export default function Onboarding() {
         return (
           <View className="gap-6">
             <View className="gap-1">
-              <Text className="text-2xl font-bold text-content-primary">
+              <DisplayText size={26}>
                 {t("onboarding.personalData")}
-              </Text>
+              </DisplayText>
               <Text className="text-content-tertiary text-base">
                 {t("onboarding.tellUsAboutYou")}
               </Text>
@@ -328,9 +340,9 @@ export default function Onboarding() {
         return (
           <View className="gap-6">
             <View className="gap-1">
-              <Text className="text-2xl font-bold text-content-primary">
+              <DisplayText size={26}>
                 {t("onboarding.bodyMeasurements")}
-              </Text>
+              </DisplayText>
               <Text className="text-content-tertiary text-base">
                 {t("onboarding.measurementsSubtitle")}
               </Text>
@@ -421,9 +433,9 @@ export default function Onboarding() {
         return (
           <View className="gap-6">
             <View className="gap-1">
-              <Text className="text-2xl font-bold text-content-primary">
+              <DisplayText size={26}>
                 {t("onboarding.lifestyle")}
-              </Text>
+              </DisplayText>
               <Text className="text-content-tertiary text-base">
                 {t("onboarding.lifestyleSubtitle")}
               </Text>
@@ -476,9 +488,9 @@ export default function Onboarding() {
         return (
           <View className="gap-6">
             <View className="gap-1">
-              <Text className="text-2xl font-bold text-content-primary">
+              <DisplayText size={26}>
                 {t("profile.goalTitle")}
-              </Text>
+              </DisplayText>
               <Text className="text-content-tertiary text-base">
                 {t("profile.goalSubtitle")}
               </Text>
@@ -508,9 +520,9 @@ export default function Onboarding() {
         return (
           <View className="gap-6">
             <View className="gap-1">
-              <Text className="text-2xl font-bold text-content-primary">
+              <DisplayText size={26}>
                 {t("onboarding.trainingPlan")}
-              </Text>
+              </DisplayText>
               <Text className="text-content-tertiary text-base">
                 {t("onboarding.trainingSubtitle")}
               </Text>
@@ -558,17 +570,31 @@ export default function Onboarding() {
   return (
     <Screen keyboard contentContainerClassName="flex-grow px-0 py-0 gap-0">
       <View className="px-6 pt-16 pb-4 flex-row items-center gap-3">
-        <View className="w-12 h-12 bg-brand-primary rounded-xl items-center justify-center">
-          <Ionicons name="barbell" size={26} color={colors.white} />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t("common.back")}
+          onPress={handleBack}
+          disabled={saving || step === 0}
+          hitSlop={8}
+          className={cn(
+            "h-10 w-10 items-center justify-center rounded-full border border-border bg-surface",
+            step === 0 && "opacity-0"
+          )}
+        >
+          <Icon name="arrow-left" size={19} color={colors.contentSecondary} />
+        </Pressable>
+        <View className="flex-1 items-center">
+          <DisplayText size={19} weight="extrabold">
+            habbito
+          </DisplayText>
         </View>
-        <Text className="flex-1 text-3xl font-extrabold text-brand-primary">The Hokage Coaching APP</Text>
         <Pressable
           accessibilityRole="button"
           onPress={handleSkip}
           disabled={saving}
           hitSlop={8}
         >
-          <Text className="text-base font-semibold text-content-tertiary">
+          <Text className="text-sm font-bold text-content-tertiary">
             {t("onboarding.skip")}
           </Text>
         </Pressable>
@@ -587,23 +613,19 @@ export default function Onboarding() {
           <AnimatedView
             entering={enter()}
             exiting={exit()}
-            className="bg-error-soft rounded-xl p-3 mt-6"
+            className="bg-error-soft rounded-2xl p-3 mt-6"
           >
             <Text className="text-error text-sm">{stepError}</Text>
           </AnimatedView>
         )}
       </View>
 
-      <View className="px-6 pb-12 gap-3">
-        <Button size="lg" onPress={handleNext} loading={saving}>
-          {step === TOTAL_STEPS - 1 ? t("common.start") : t("common.next")}
+      <View className="px-6 pb-12">
+        <Button size="lg" onPress={handleNext} loading={saving} icon="arrow-right" iconTrailing>
+          {step === TOTAL_STEPS - 1
+            ? t("onboarding.startTraining")
+            : t("onboarding.continueCta")}
         </Button>
-
-        {step > 0 && (
-          <Button variant="ghost" onPress={handleBack} disabled={saving}>
-            {t("common.back")}
-          </Button>
-        )}
       </View>
     </Screen>
   );

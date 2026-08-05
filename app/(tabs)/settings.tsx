@@ -1,9 +1,10 @@
-import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { CoachSection } from "@/src/components/coach-section";
-import { Button, Card, Input, Screen, useToast } from "@/src/components/ui";
+import { Button, CapsLabel, Card, Input, Screen, useToast } from "@/src/components/ui";
+import { Icon, type IconName } from "@/src/components/ui/icon";
+import { useAuth } from "@/src/hooks/use-auth";
 import { setLanguage } from "@/src/i18n";
 import { useIsOnline } from "@/src/lib/online";
 import { setWeightUnit, useWeightUnit } from "@/src/lib/weight-unit";
@@ -14,37 +15,54 @@ import { Pressable, Text, View } from "@/src/tw";
 import { supabase } from "@/src/utils/supabase";
 
 type RowProps = {
-  icon: React.ComponentProps<typeof Ionicons>["name"];
+  icon: IconName;
   label: string;
-  value: string;
-  onPress: () => void;
+  value?: string;
+  onPress?: () => void;
   last?: boolean;
+  /** Destructive rows (log out) get the error ink and no chevron. */
+  danger?: boolean;
 };
 
-// Tappable preference row: label left, current value + chevron right.
+// Preference row: icon tile, label left, current value + chevron right.
 // Tapping cycles the setting (all three prefs are binary toggles today).
-function SettingsRow({ icon, label, value, onPress, last = false }: RowProps) {
+function SettingsRow({ icon, label, value, onPress, last = false, danger = false }: RowProps) {
   const colors = useColors();
   return (
     <Pressable
       onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={`${label}: ${value}`}
+      disabled={onPress == null}
+      accessibilityRole={onPress != null ? "button" : undefined}
+      accessibilityLabel={value != null ? `${label}: ${value}` : label}
       className={`flex-row items-center gap-3 py-3.5 ${last ? "" : "border-b border-border"}`}
     >
-      <View className="h-8 w-8 items-center justify-center rounded-lg bg-brand-dark">
-        <Ionicons name={icon} size={16} color={colors.contentSecondary} />
+      <View className="h-9 w-9 items-center justify-center rounded-2xl bg-surface-elevated">
+        <Icon
+          name={icon}
+          size={17}
+          color={danger ? colors.error : colors.contentSecondary}
+        />
       </View>
-      <Text className="flex-1 text-[15px] font-medium text-content-primary">{label}</Text>
-      <Text className="text-sm text-content-tertiary">{value}</Text>
-      <Ionicons name="chevron-forward" size={16} color={colors.contentMuted} />
+      <Text
+        className={`flex-1 text-[15px] font-semibold ${danger ? "text-error" : "text-content-primary"}`}
+      >
+        {label}
+      </Text>
+      {value != null && value !== "" && (
+        <Text className="text-sm text-content-tertiary" numberOfLines={1}>
+          {value}
+        </Text>
+      )}
+      {onPress != null && !danger && (
+        <Icon name="chevron-right" size={16} color={colors.contentMuted} />
+      )}
     </Pressable>
   );
 }
 
 // Lets a client rotate the temporary password the coach created their
 // account with (panel "Añadir cliente" flow) — or change it any time.
-function ChangePasswordCard() {
+function ChangePasswordRows({ last }: { last: boolean }) {
   const { t } = useTranslation();
   const toast = useToast();
   const online = useIsOnline();
@@ -83,18 +101,18 @@ function ChangePasswordCard() {
   };
 
   return (
-    <Card className="py-0">
+    <>
       <SettingsRow
-        icon="key-outline"
+        icon="key"
         label={t("settings.changePassword")}
-        value=""
         onPress={() => setOpen((v) => !v)}
-        last={!open}
+        last={last && !open}
       />
       {open && (
         <View className="gap-3 py-4">
           <Input
             label={t("settings.newPassword")}
+            leftIcon="lock"
             placeholder={t("auth.passwordPlaceholder")}
             helper={error == null ? t("auth.passwordMin") : undefined}
             error={error}
@@ -105,10 +123,10 @@ function ChangePasswordCard() {
               setPassword(text);
               if (error != null) setError(undefined);
             }}
-            className="bg-brand-dark"
           />
           <Input
             label={t("settings.confirmPassword")}
+            leftIcon="lock"
             placeholder={t("auth.passwordPlaceholder")}
             secureTextEntry
             autoCapitalize="none"
@@ -117,14 +135,13 @@ function ChangePasswordCard() {
               setConfirm(text);
               if (error != null) setError(undefined);
             }}
-            className="bg-brand-dark"
           />
           <Button onPress={submit} loading={saving} className="w-full">
             {t("settings.changePassword")}
           </Button>
         </View>
       )}
-    </Card>
+    </>
   );
 }
 
@@ -133,35 +150,46 @@ export default function SettingsScreen() {
   const scheme = useThemeScheme();
   const isDark = scheme === "dark";
   const weightUnit = useWeightUnit();
+  const { user, signOut } = useAuth();
 
   return (
-    <Screen contentContainerClassName="gap-4">
-      <Card className="py-0">
-        <SettingsRow
-          icon={isDark ? "moon-outline" : "sunny-outline"}
-          label={t("settings.theme")}
-          value={t(isDark ? "home.dark" : "home.light")}
-          onPress={() => void setThemeMode(isDark ? "light" : "dark")}
-        />
-        <SettingsRow
-          icon="language-outline"
-          label={t("settings.language")}
-          value={i18n.language === "es" ? t("common.spanish") : t("common.english")}
-          onPress={() => setLanguage(i18n.language === "en" ? "es" : "en")}
-        />
-        <SettingsRow
-          icon="scale-outline"
-          label={t("settings.weightUnit")}
-          value={t(weightUnit === "kg" ? "settings.unitKgLabel" : "settings.unitLbLabel")}
-          onPress={() => void setWeightUnit(weightUnit === "kg" ? "lb" : "kg")}
-          last
-        />
-      </Card>
+    <Screen keyboard contentContainerClassName="gap-5 pb-28">
+      <View className="gap-2">
+        <CapsLabel size={10}>{t("settings.preferences")}</CapsLabel>
+        <Card className="py-0">
+          <SettingsRow
+            icon={isDark ? "moon" : "sun"}
+            label={t("settings.theme")}
+            value={t(isDark ? "home.dark" : "home.light")}
+            onPress={() => void setThemeMode(isDark ? "light" : "dark")}
+          />
+          <SettingsRow
+            icon="languages"
+            label={t("settings.language")}
+            value={i18n.language === "es" ? t("common.spanish") : t("common.english")}
+            onPress={() => setLanguage(i18n.language === "en" ? "es" : "en")}
+          />
+          <SettingsRow
+            icon="scale"
+            label={t("settings.weightUnit")}
+            value={t(weightUnit === "kg" ? "settings.unitKgLabel" : "settings.unitLbLabel")}
+            onPress={() => void setWeightUnit(weightUnit === "kg" ? "lb" : "kg")}
+            last
+          />
+        </Card>
+      </View>
 
-      <ChangePasswordCard />
-
-      {/* Coach + membership (moved from Profile — read-only, coach manages on web) */}
+      {/* Coach + membership (read-only, coach manages on web) */}
       <CoachSection />
+
+      <View className="gap-2">
+        <CapsLabel size={10}>{t("settings.account")}</CapsLabel>
+        <Card className="py-0">
+          <SettingsRow icon="mail" label={t("settings.email")} value={user?.email ?? "—"} />
+          <ChangePasswordRows last={false} />
+          <SettingsRow icon="log-out" label={t("auth.signOut")} onPress={signOut} danger last />
+        </Card>
+      </View>
     </Screen>
   );
 }

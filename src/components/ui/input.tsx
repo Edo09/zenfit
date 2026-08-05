@@ -1,8 +1,8 @@
-import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Input as GSInput, InputField } from "@/components/ui/input";
+import { Icon, type IconName } from "@/src/components/ui/icon";
 import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, TextInput, View } from "@/src/tw";
 import { cn } from "@/src/utils/cn";
@@ -12,8 +12,8 @@ type InputProps = React.ComponentProps<typeof TextInput> & {
   error?: string;
   helper?: string;
   containerClassName?: string;
-  /** Leading icon inside the field (e.g. mail/key on auth screens). */
-  leftIcon?: React.ComponentProps<typeof Ionicons>["name"];
+  /** Leading icon inside the field (e.g. mail/lock on auth screens). */
+  leftIcon?: IconName;
   /** "lg" = taller field, bigger text/icons (auth screens). */
   size?: "md" | "lg";
 };
@@ -35,7 +35,7 @@ export function Input({
   const [revealed, setRevealed] = useState(false);
   const isSecure = secureTextEntry === true;
   const lg = size === "lg";
-  const iconSize = lg ? 22 : 20;
+  const iconSize = lg ? 21 : 19;
 
   return (
     <View className={cn("gap-1.5", containerClassName)}>
@@ -45,8 +45,7 @@ export function Input({
       <GSInput
         isInvalid={error != null}
         className={cn(
-          "bg-surface border-border px-0 min-h-0 shadow-none",
-          lg ? "rounded-2xl" : "rounded-xl",
+          "bg-surface border-border px-0 min-h-0 shadow-none rounded-2xl",
           error != null && "border-error data-[focus=true]:border-error"
         )}
         // gluestack's tva doesn't reliably let className overrides beat its
@@ -58,7 +57,7 @@ export function Input({
       >
         {leftIcon != null && (
           <View className="justify-center pl-4">
-            <Ionicons name={leftIcon} size={iconSize} color={colors.contentMuted} />
+            <Icon name={leftIcon} size={iconSize} color={colors.contentMuted} />
           </View>
         )}
         <InputField
@@ -80,8 +79,8 @@ export function Input({
             accessibilityLabel={t(revealed ? "auth.hidePassword" : "auth.showPassword")}
             className="justify-center pr-4"
           >
-            <Ionicons
-              name={revealed ? "eye-off-outline" : "eye-outline"}
+            <Icon
+              name={revealed ? "eye-off" : "eye"}
               size={iconSize}
               color={colors.contentMuted}
             />

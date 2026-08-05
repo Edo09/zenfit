@@ -14,5 +14,13 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "nativewind-env.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    // Design handoff reference material, not app code
+    "app_redesign",
+    // Deno runtime, not the RN tsconfig's environment
+    "supabase/functions"
   ]
 }

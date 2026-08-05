@@ -1,25 +1,24 @@
-import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 
-import { Card } from "@/src/components/ui";
+import { Card, DisplayText } from "@/src/components/ui";
+import { Icon, type IconName } from "@/src/components/ui/icon";
 import { PressableScale } from "@/src/lib/motion";
 import { useColors } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
-
-type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
 
 type Props = {
   label: string;
   value: number | string;
   unit?: string;
   color?: string;
-  icon?: IoniconName;
+  icon?: IconName;
   /** Makes the card tappable (e.g. deep-link to the metric's source screen). */
   onPress?: () => void;
   /** Tighter layout for 3-up rows: icon+label stacked over the value. */
   compact?: boolean;
 };
 
+/** KPI tile — sunken icon chip, Hanken caption, Schibsted numeral. */
 export function StatCard({
   label,
   value,
@@ -30,44 +29,38 @@ export function StatCard({
   compact = false,
 }: Props) {
   const colors = useColors();
-  const iconColor = color ?? colors.brandPrimary;
+  const iconColor = color ?? colors.brandPrimaryDark;
   const card = compact ? (
-    <Card className="flex-1 gap-1.5 px-3 py-3">
+    <Card className="flex-1 gap-1.5 px-3.5 py-3.5">
       <View className="flex-row items-center gap-1.5">
-        {icon != null && <Ionicons name={icon} size={14} color={iconColor} />}
+        {icon != null && <Icon name={icon} size={14} color={iconColor} />}
         <Text className="text-xs text-content-tertiary flex-1" numberOfLines={1}>
           {label}
         </Text>
       </View>
       <View className="flex-row items-baseline gap-1">
-        <Text
-          className="text-xl font-bold text-content-primary"
-          style={{ fontVariant: ["tabular-nums"] }}
-          numberOfLines={1}
-          adjustsFontSizeToFit
-        >
+        <DisplayText size={20} tabular numberOfLines={1} adjustsFontSizeToFit>
           {value}
-        </Text>
+        </DisplayText>
         {unit != null && <Text className="text-2xs text-content-tertiary">{unit}</Text>}
       </View>
     </Card>
   ) : (
-    <Card className="flex-1 gap-2">
+    <Card className="flex-1 gap-2.5">
       <View className="flex-row items-center justify-between">
-        <Text className="text-sm text-content-tertiary">{label}</Text>
+        <Text className="text-sm text-content-tertiary flex-1" numberOfLines={1}>
+          {label}
+        </Text>
         {icon != null && (
-          <View className="h-8 w-8 items-center justify-center rounded-full bg-info-soft">
-            <Ionicons name={icon} size={16} color={iconColor} />
+          <View className="h-9 w-9 items-center justify-center rounded-2xl bg-surface-elevated">
+            <Icon name={icon} size={17} color={iconColor} />
           </View>
         )}
       </View>
       <View className="flex-row items-baseline gap-1">
-        <Text
-          className="text-2xl font-bold text-content-primary"
-          style={{ fontVariant: ["tabular-nums"] }}
-        >
+        <DisplayText size={24} tabular>
           {value}
-        </Text>
+        </DisplayText>
         {unit != null && <Text className="text-xs text-content-tertiary">{unit}</Text>}
       </View>
     </Card>

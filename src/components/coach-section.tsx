@@ -1,15 +1,15 @@
-import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Linking } from "react-native";
 
 import { MembershipCard } from "@/src/components/membership-card";
-import { Button, Card } from "@/src/components/ui";
+import { Button, Card, DisplayText } from "@/src/components/ui";
 import { useCoach } from "@/src/hooks/use-coach";
 import { useMembership } from "@/src/hooks/use-membership";
 import { useColors } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
+import { Icon } from "@/src/components/ui/icon";
 
 // Client-side coaching surface: who your coach is, a WhatsApp shortcut, and
 // your membership status. All read-only — the coach manages everything on web.
@@ -31,9 +31,7 @@ export function CoachSection() {
   return (
     <>
       <Card className="gap-3">
-        <Text className="text-[15px] font-bold text-content-primary">
-          {t("coach.yourCoach")}
-        </Text>
+        <DisplayText size={17}>{t("coach.yourCoach")}</DisplayText>
 
         <View className="flex-row items-center gap-3">
           {coach?.avatar_url != null && coach.avatar_url !== "" ? (
@@ -45,7 +43,7 @@ export function CoachSection() {
             />
           ) : (
             <View className="h-11 w-11 items-center justify-center rounded-full bg-info-soft">
-              <Ionicons name="person" size={22} color={colors.brandPrimary} />
+              <Icon name="user" size={22} color={colors.brandPrimaryDark} />
             </View>
           )}
           <Text className="flex-1 text-base font-semibold text-content-primary">
@@ -54,7 +52,7 @@ export function CoachSection() {
         </View>
 
         {hasWhatsapp && (
-          <Button variant="secondary" icon="logo-whatsapp" onPress={openWhatsapp}>
+          <Button variant="secondary" icon="message-circle" onPress={openWhatsapp}>
             {t("coach.contactWhatsapp")}
           </Button>
         )}

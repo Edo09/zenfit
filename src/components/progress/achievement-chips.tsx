@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { useTranslation } from "react-i18next";
 
@@ -6,6 +5,7 @@ import { KG_PER_LB, useWeightUnit } from "@/src/lib/weight-unit";
 import { useColors } from "@/src/theme/colors";
 import { ScrollView, Text, View } from "@/src/tw";
 import type { AchievementChip } from "@/src/utils/progress";
+import { Icon } from "@/src/components/ui/icon";
 
 const TABULAR = { fontVariant: ["tabular-nums" as const] };
 
@@ -27,19 +27,19 @@ export function AchievementChips({ chips }: AchievementChipsProps) {
       case "streak":
         return {
           icon: "flame" as const,
-          color: colors.warning,
+          color: colors.brandPrimaryDark,
           label: t("progress.chipRacha", { count: chip.value }),
         };
       case "workouts":
         return {
-          icon: "trophy-outline" as const,
-          color: colors.brandAccent,
+          icon: "trophy" as const,
+          color: colors.brandPrimaryDark,
           label: t("progress.chipEntrenos", { count: chip.value }),
         };
       case "tonnage":
         // chip.value is metric tonnes (1000 kg); lb mode shows klb instead.
         return {
-          icon: "barbell-outline" as const,
+          icon: "dumbbell" as const,
           color: colors.brandSecondary,
           label:
             unit === "lb"
@@ -64,7 +64,7 @@ export function AchievementChips({ chips }: AchievementChipsProps) {
             key={chip.kind}
             className="flex-row items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5"
           >
-            <Ionicons name={icon} size={14} color={color} />
+            <Icon name={icon} size={14} color={color} />
             <Text className="text-xs font-semibold text-content-secondary" style={TABULAR}>
               {label}
             </Text>

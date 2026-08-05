@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, Modal } from "react-native";
@@ -7,6 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, TextInput, View } from "@/src/tw";
 import { cn } from "@/src/utils/cn";
+import { Icon } from "@/src/components/ui/icon";
 
 export type SearchableSelectOption = {
   label: string;
@@ -103,7 +103,7 @@ export function SearchableSelectField({
         >
           {selected?.label ?? placeholder}
         </Text>
-        <Ionicons name="chevron-down" size={18} color={colors.contentMuted} />
+        <Icon name="chevron-down" size={18} color={colors.contentMuted} />
       </Pressable>
 
       {helper != null && <Text className="text-xs text-content-tertiary">{helper}</Text>}
@@ -125,12 +125,12 @@ export function SearchableSelectField({
               accessibilityRole="button"
               accessibilityLabel={t("common.close")}
             >
-              <Ionicons name="close" size={26} color={colors.contentPrimary} />
+              <Icon name="x" size={26} color={colors.contentPrimary} />
             </Pressable>
           </View>
 
           <View className="mx-4 mb-2 flex-row items-center gap-2 bg-surface border border-border rounded-xl px-4">
-            <Ionicons name="search" size={18} color={colors.contentMuted} />
+            <Icon name="search" size={18} color={colors.contentMuted} />
             <TextInput
               value={query}
               onChangeText={setQuery}
@@ -148,7 +148,7 @@ export function SearchableSelectField({
                 accessibilityRole="button"
                 accessibilityLabel={t("common.close")}
               >
-                <Ionicons name="close-circle" size={18} color={colors.contentMuted} />
+                <Icon name="x-circle" size={18} color={colors.contentMuted} />
               </Pressable>
             )}
           </View>
@@ -194,7 +194,7 @@ export function SearchableSelectField({
                     )}
                   </View>
                   {isSelected && (
-                    <Ionicons name="checkmark" size={20} color={colors.brandAccent} />
+                    <Icon name="check" size={20} color={colors.brandAccent} />
                   )}
                 </Pressable>
               );

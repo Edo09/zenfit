@@ -1,12 +1,12 @@
-import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { useTranslation } from "react-i18next";
 
-import { Card } from "@/src/components/ui";
+import { Card, DisplayText } from "@/src/components/ui";
 import type { AIInsight } from "@/src/services/ai-insight";
 import { useColors } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
 import type { Insight } from "@/src/utils/progress";
+import { Icon, type IconName } from "@/src/components/ui/icon";
 
 type InsightCardProps = {
   /** Rule-based fallback (instant/offline); may be null when only AI has content. */
@@ -16,7 +16,7 @@ type InsightCardProps = {
 };
 
 type Action = {
-  icon: React.ComponentProps<typeof Ionicons>["name"];
+  icon: IconName;
   color: "info" | "success";
   label: string;
 };
@@ -37,8 +37,8 @@ export function InsightCard({ insight, ai }: InsightCardProps) {
     actions = ai.actions.map((action) => ({
       icon:
         action.type === "nutrition"
-          ? ("nutrition-outline" as const)
-          : ("barbell-outline" as const),
+          ? ("salad" as const)
+          : ("dumbbell" as const),
       color: action.type === "nutrition" ? ("success" as const) : ("info" as const),
       label: action.label,
     }));
@@ -53,7 +53,7 @@ export function InsightCard({ insight, ai }: InsightCardProps) {
       });
       actions = [
         {
-          icon: "barbell-outline",
+          icon: "dumbbell",
           color: "info",
           label: t("progress.accionEntrenar", { grupo: groupName(insight.group) }),
         },
@@ -65,7 +65,7 @@ export function InsightCard({ insight, ai }: InsightCardProps) {
         objetivo: insight.target,
       });
       actions = [
-        { icon: "nutrition-outline", color: "success", label: t("progress.accionProteina") },
+        { icon: "salad", color: "success", label: t("progress.accionProteina") },
       ];
       break;
     case "adherence":
@@ -74,13 +74,13 @@ export function InsightCard({ insight, ai }: InsightCardProps) {
         plan: insight.plan,
       });
       actions = [
-        { icon: "barbell-outline", color: "info", label: t("progress.accionRegistrar") },
+        { icon: "dumbbell", color: "info", label: t("progress.accionRegistrar") },
       ];
       break;
     case "encourage":
       body = t("progress.insightAnimo");
       actions = [
-        { icon: "barbell-outline", color: "info", label: t("progress.accionRutina") },
+        { icon: "dumbbell", color: "info", label: t("progress.accionRutina") },
       ];
       break;
     }
@@ -90,11 +90,9 @@ export function InsightCard({ insight, ai }: InsightCardProps) {
     <Card className="gap-3 border-brand-accent-soft">
       <View className="flex-row items-center gap-2.5">
         <View className="h-7 w-7 items-center justify-center rounded-lg bg-brand-accent-soft">
-          <Ionicons name="sparkles" size={15} color={colors.brandAccent} />
+          <Icon name="sparkles" size={15} color={colors.brandAccent} />
         </View>
-        <Text className="flex-1 text-[15px] font-bold text-content-primary">
-          {t("progress.analisisSemana")}
-        </Text>
+        <DisplayText size={17} className="flex-1">{t("progress.analisisSemana")}</DisplayText>
         <Text
           className="text-[10px] font-semibold text-brand-accent"
           style={{ letterSpacing: 0.4 }}
@@ -111,7 +109,7 @@ export function InsightCard({ insight, ai }: InsightCardProps) {
             key={action.label}
             className="flex-row items-center gap-1.5 rounded-full border border-border px-3 py-1.5"
           >
-            <Ionicons
+            <Icon
               name={action.icon}
               size={13}
               color={action.color === "info" ? colors.brandSecondary : colors.success}

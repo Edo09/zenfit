@@ -1,5 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -14,15 +12,17 @@ import {
   ActionsheetItemText,
 } from "@/components/ui/actionsheet";
 import { AIPlanCard } from "@/src/components/ai-plan-card";
-import { Ring } from "@/src/components/progress/ring";
+import { StatCard } from "@/src/components/stat-card";
 import {
   CapsLabel,
   Card,
-  DashLabel,
+  DisplayText,
   ErrorState,
+  FeatureCard,
   HeaderPanel,
+  Icon,
   LoadingBlock,
-  PosterText,
+  ProgressBar,
   Screen,
   SectionHeader,
 } from "@/src/components/ui";
@@ -40,10 +40,13 @@ import { AnimatedView } from "@/src/tw/animated";
 import {
   caloriesConsumed,
   estimateCaloriesBurned,
+  macroTargets,
+  macroTotals,
   recommendedCalorieGoal,
 } from "@/src/utils/calories";
-import { toDateKey } from "@/src/utils/dates";
+import { addDays, toDateKey } from "@/src/utils/dates";
 import { MEAL_SLOTS, suggestedSlot } from "@/src/utils/meal-slots";
+import { mondayOf, weeklyStreak } from "@/src/utils/progress";
 
 export default function HomeScreen() {
   const colors = useColors();
@@ -56,7 +59,7 @@ export default function HomeScreen() {
   const { profile } = useProfile(user?.id);
 
   const { todaysMeals } = meals;
-  const { todaysLogs } = progress;
+  const { todaysLogs, logs } = progress;
   const { routines } = routinesData;
 
   // Daily calorie KPIs — recompute whenever today's meals/logs change, so
@@ -68,13 +71,17 @@ export default function HomeScreen() {
     0,
   );
   const remaining = calorieGoal != null ? calorieGoal - consumed + burned : null;
-  const fuelFrac = calorieGoal != null && calorieGoal > 0 ? consumed / calorieGoal : 0;
+  const budget = calorieGoal != null ? calorieGoal + burned : null;
+  const fuelFrac = budget != null && budget > 0 ? consumed / budget : 0;
+
+  const macros = macroTotals(todaysMeals);
+  const macroGoal = macroTargets(calorieGoal);
 
   const numberLocale = i18n.language === "es" ? "es-ES" : "en-US";
   const kcal = (value: number | null) =>
     value != null ? Math.round(value).toLocaleString(numberLocale) : "—";
 
-  // Per-slot summary for the nutrition section (only slots with items)
+  // Per-slot summary for the fuel section (only slots with items)
   const slotSummaries = MEAL_SLOTS.map((slot) => {
     const items = todaysMeals
       .filter((m) => m.meal_type === slot)
@@ -85,6 +92,16 @@ export default function HomeScreen() {
       kcal: items.reduce((sum, i) => sum + i.calories, 0),
     };
   }).filter((s) => s.count > 0);
+
+  // Weekly KPI tiles. daysPerWeek drives the streak rule; without a profile
+  // plan, treat one session a week as the bar.
+  const daysPerWeek = profile?.days_per_week ?? 1;
+  const streak = weeklyStreak(logs, daysPerWeek);
+  const weekStart = mondayOf(toDateKey());
+  const weekEnd = addDays(weekStart, 6);
+  const weekWorkouts = new Set(
+    logs.filter((l) => l.date >= weekStart && l.date <= weekEnd).map((l) => l.date),
+  ).size;
 
   const loading = meals.loading || progress.loading || routinesData.loading;
   const error = meals.error || progress.error || routinesData.error;
@@ -111,7 +128,7 @@ export default function HomeScreen() {
     user?.email?.split("@")[0] ??
     "there";
 
-  const today = new Date().toLocaleDateString(i18n.language === "es" ? "es-ES" : "en-US", {
+  const today = new Date().toLocaleDateString(numberLocale, {
     weekday: "long",
     month: "long",
     day: "numeric",
@@ -125,66 +142,75 @@ export default function HomeScreen() {
     }))
     .slice(0, 3);
 
-  // Fuel-card breakdown rows: caps label left, Anton numeral right
-  const fuelRows = [
-    { key: "goal", label: t("home.goalShort"), value: kcal(calorieGoal), color: colors.contentPrimary },
-    { key: "burned", label: t("home.caloriesBurned"), value: kcal(burned), color: colors.info },
+  // Macro mini-bars under the energy budget
+  const macroBars = [
     {
-      key: "left",
-      label: t("home.caloriesRemaining"),
-      value: kcal(remaining),
-      color: remaining != null && remaining < 0 ? colors.error : colors.success,
+      key: "protein",
+      label: t("meals.proteinName"),
+      grams: macros.protein,
+      target: macroGoal?.protein ?? null,
+      color: colors.macroProtein,
+    },
+    {
+      key: "carbs",
+      label: t("meals.carbsName"),
+      grams: macros.carbs,
+      target: macroGoal?.carbs ?? null,
+      color: colors.macroCarbs,
+    },
+    {
+      key: "fat",
+      label: t("meals.fatName"),
+      grams: macros.fat,
+      target: macroGoal?.fat ?? null,
+      color: colors.macroFat,
     },
   ];
+
+  const openCalorieGoal = () =>
+    router.push({
+      pathname: "/(tabs)/profile",
+      params: { highlight: "calorie-goal", ts: String(Date.now()) },
+    });
+
+  // Seed the target tab's own stack with its index first, then push the
+  // detail on the next tick — pushing both in the same tick gets coalesced
+  // into a single history entry (no parent screen, no back button).
+  const pushInTab = (tab: "/(tabs)/meals" | "/(tabs)/routines", go: () => void) => {
+    router.push(tab);
+    setTimeout(go, 0);
+  };
+
+  const addFood = (slot = suggestedSlot()) =>
+    pushInTab("/(tabs)/meals", () =>
+      router.push({
+        pathname: "/(tabs)/meals/create",
+        params: { mealType: slot, date: toDateKey() },
+      }),
+    );
 
   return (
     <Screen
       refreshing={refreshing}
       onRefresh={refreshAll}
-      contentContainerClassName="px-0 py-0 pb-12 gap-0"
+      contentContainerClassName="px-0 py-0 pb-28 gap-0"
     >
-      {/* Poster header: brand row → greeting → red dash + date */}
       <HeaderPanel>
-        <View className="flex-row items-center justify-between">
-          <Pressable
-            onPress={() => router.push("/(tabs)/profile")}
-            accessibilityRole="button"
-            accessibilityLabel={t("tabs.profile")}
-            className="flex-row items-center gap-2.5 flex-1 mr-2"
-          >
-            <Image
-              source={require("@/assets/images/app-icon/icon.png")}
-              style={{
-                width: 56,
-                height: 56,
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: colors.border,
-              }}
-              accessibilityIgnoresInvertColors
-            />
-            <Text
-              className="text-brand-primary font-display text-[19px] flex-1"
-              numberOfLines={1}
-              adjustsFontSizeToFit
-            >
-              The Hokage Coaching
-            </Text>
-          </Pressable>
+        <View className="flex-row items-start justify-between gap-3">
+          <View className="flex-1">
+            <DisplayText size={27} numberOfLines={1} adjustsFontSizeToFit>
+              {t("home.hey", { name: displayName })}
+            </DisplayText>
+            <Text className="text-sm text-content-tertiary mt-1.5 capitalize">{today}</Text>
+          </View>
           <Pressable
             onPress={() => setMenuOpen(true)}
             accessibilityRole="button"
             accessibilityLabel={t("common.menu")}
-            className="w-11 h-11 rounded-xl bg-surface items-center justify-center border border-border"
+            className="w-11 h-11 rounded-full bg-surface items-center justify-center border border-border"
           >
-            <Ionicons name="ellipsis-vertical" size={18} color={colors.contentSecondary} />
+            <Icon name="more-vertical" size={18} color={colors.contentSecondary} />
           </Pressable>
-        </View>
-        <View className="mt-5">
-          <PosterText size={27} numberOfLines={1} adjustsFontSizeToFit>
-            {t("home.hey", { name: displayName })}
-          </PosterText>
-          <DashLabel className="mt-2.5">{today}</DashLabel>
         </View>
       </HeaderPanel>
 
@@ -200,7 +226,7 @@ export default function HomeScreen() {
               router.push("/(tabs)/profile");
             }}
           >
-            <Ionicons name="person-outline" size={20} color={colors.contentSecondary} />
+            <Icon name="user" size={20} color={colors.contentSecondary} />
             <ActionsheetItemText>{t("tabs.profile")}</ActionsheetItemText>
           </ActionsheetItem>
           {/* Theme/language/unit toggles live in Settings now */}
@@ -210,7 +236,7 @@ export default function HomeScreen() {
               router.push("/(tabs)/settings");
             }}
           >
-            <Ionicons name="settings-outline" size={20} color={colors.contentSecondary} />
+            <Icon name="settings" size={20} color={colors.contentSecondary} />
             <ActionsheetItemText>{t("settings.title")}</ActionsheetItemText>
           </ActionsheetItem>
           <ActionsheetItem
@@ -219,7 +245,7 @@ export default function HomeScreen() {
               signOut();
             }}
           >
-            <Ionicons name="log-out-outline" size={20} color={colors.error} />
+            <Icon name="log-out" size={20} color={colors.error} />
             <ActionsheetItemText className="text-error">
               {t("auth.signOut")}
             </ActionsheetItemText>
@@ -233,77 +259,110 @@ export default function HomeScreen() {
         <ErrorState onRetry={refreshAll} />
       ) : (
         <AnimatedView entering={enterFade()}>
-          {/* Fuel summary: ring + goal/burned/left breakdown. Tapping opens
-              the profile's calorie-goal section (unchanged behavior). */}
-          <View className="px-5 pt-2">
-            <Card
-              topAccent={fuelFrac}
-              className="rounded-[20px] p-[18px]"
-              onPress={() =>
-                router.push({
-                  pathname: "/(tabs)/profile",
-                  params: { highlight: "calorie-goal", ts: String(Date.now()) },
-                })
-              }
-            >
-              <View className="flex-row items-center gap-[18px]">
-                <Ring
-                  size={104}
-                  strokeWidth={9}
-                  frac={fuelFrac}
-                  color={colors.brandPrimary}
-                  trackColor={colors.border}
-                >
-                  <PosterText size={23} tabular>
-                    {kcal(consumed)}
-                  </PosterText>
-                  <CapsLabel size={8.5} em={0.14}>
-                    {t("home.caloriesConsumed")}
-                  </CapsLabel>
-                </Ring>
-                <View className="flex-1">
-                  {fuelRows.map((row, i) => (
-                    <View
-                      key={row.key}
-                      className={
-                        i < fuelRows.length - 1
-                          ? "flex-row items-center justify-between py-[7px] border-b border-border"
-                          : "flex-row items-center justify-between py-[7px]"
-                      }
+          {/* Energy budget — the screen's one loud surface. Tapping opens the
+              profile's calorie-goal section (unchanged behavior). */}
+          <View className="px-5 pt-1">
+            <FeatureCard onPress={openCalorieGoal}>
+              <View className="flex-row items-center justify-between">
+                <CapsLabel size={10} className="text-on-hero-dim">
+                  {t("home.energyLeft")}
+                </CapsLabel>
+                {remaining != null && (
+                  <View
+                    className="rounded-full px-2.5 py-1"
+                    style={{
+                      backgroundColor: remaining < 0 ? colors.error : colors.brandPrimary,
+                    }}
+                  >
+                    <Text
+                      className="text-xs font-bold"
+                      style={{ color: remaining < 0 ? colors.onHero : colors.onAccent }}
                     >
-                      <CapsLabel size={9.5} em={0.14}>
-                        {row.label}
-                      </CapsLabel>
-                      <PosterText size={17} tabular style={{ color: row.color }}>
-                        {row.value}
-                      </PosterText>
-                    </View>
-                  ))}
-                </View>
+                      {remaining < 0 ? t("home.overBudget") : t("home.onTrack")}
+                    </Text>
+                  </View>
+                )}
               </View>
-            </Card>
+
+              <View className="flex-row items-baseline gap-1.5 mt-2">
+                <DisplayText
+                  size={52}
+                  weight="extrabold"
+                  tabular
+                  className="text-on-hero"
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                >
+                  {kcal(remaining != null ? Math.abs(remaining) : null)}
+                </DisplayText>
+                <Text className="text-sm text-on-hero-dim">{t("home.kcal")}</Text>
+              </View>
+
+              <Text className="text-xs text-on-hero-dim mt-1">
+                {`${kcal(consumed)} ${t("home.eatenLower")} · ${kcal(burned)} ${t("home.burnedLower")} · ${kcal(calorieGoal)} ${t("home.goalLower")}`}
+              </Text>
+
+              <ProgressBar
+                value={fuelFrac}
+                height={10}
+                color={colors.brandPrimary}
+                trackColor={colors.heroTrack}
+                className="mt-4"
+              />
+
+              <View className="flex-row gap-3 mt-4">
+                {macroBars.map((macro) => (
+                  <View key={macro.key} className="flex-1 gap-1.5">
+                    <View className="flex-row items-baseline justify-between">
+                      <Text className="text-2xs text-on-hero-dim">{macro.label}</Text>
+                      <DisplayText size={13} tabular className="text-on-hero">
+                        {`${Math.round(macro.grams)}g`}
+                      </DisplayText>
+                    </View>
+                    <ProgressBar
+                      value={macro.target != null ? macro.grams / macro.target : 0}
+                      height={5}
+                      color={macro.color}
+                      trackColor={colors.heroTrack}
+                    />
+                  </View>
+                ))}
+              </View>
+            </FeatureCard>
+
             {calorieGoal == null && (
               <Pressable
-                onPress={() =>
-                  router.push({
-                    pathname: "/(tabs)/profile",
-                    params: { highlight: "calorie-goal", ts: String(Date.now()) },
-                  })
-                }
+                onPress={openCalorieGoal}
                 accessibilityRole="button"
-                className="bg-brand-primary-soft px-4 py-3 mt-3"
+                className="bg-brand-primary-soft rounded-2xl px-4 py-3 mt-3"
               >
-                <Text className="text-brand-primary text-sm font-semibold text-center">
+                <Text className="text-brand-primary-dark text-sm font-semibold text-center">
                   {t("home.setCalorieGoalHint")}
                 </Text>
               </Pressable>
             )}
           </View>
 
-          {/* The user's routines + AI plan generator. */}
+          {/* Weekly KPIs */}
+          <View className="px-5 pt-3 flex-row gap-3">
+            <StatCard
+              icon="flame"
+              label={t("home.weekStreak")}
+              value={streak}
+              onPress={() => router.push("/(tabs)/progress")}
+            />
+            <StatCard
+              icon="dumbbell"
+              label={t("home.workoutsThisWeek")}
+              value={weekWorkouts}
+              onPress={() => router.push("/(tabs)/progress")}
+            />
+          </View>
+
+          {/* Up next — the user's routines + AI plan generator. */}
           <View className="pt-7">
             <SectionHeader
-              title={t("home.yourRoutines")}
+              title={t("home.upNext")}
               actionLabel={t("common.seeAll")}
               onAction={() => router.push("/(tabs)/routines")}
               className="px-5 mb-3"
@@ -314,7 +373,7 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          {/* Today's meals */}
+          {/* Today's fuel */}
           <View className="px-5 pt-7 gap-3">
             <SectionHeader
               title={t("home.todaysNutrition")}
@@ -325,31 +384,17 @@ export default function HomeScreen() {
             {slotSummaries.length === 0 ? (
               <Pressable
                 key="meals-empty"
-                onPress={() => {
-                  // Seed the Meals tab's own stack with its index first, then
-                  // push "create" on the next tick — pushing both in the same
-                  // tick gets coalesced into one history entry (no parent
-                  // screen, no back button); yielding first makes them two.
-                  router.push("/(tabs)/meals");
-                  setTimeout(
-                    () =>
-                      router.push({
-                        pathname: "/(tabs)/meals/create",
-                        params: { mealType: suggestedSlot(), date: toDateKey() },
-                      }),
-                    0
-                  );
-                }}
-                className="bg-surface rounded-2xl p-7 items-center border-2 border-dashed border-border-strong"
+                onPress={() => addFood()}
+                className="bg-surface rounded-3xl p-7 items-center border border-dashed border-border-strong"
               >
                 <Text className="text-content-tertiary font-medium mb-2">
                   {t("home.fuelYourBody")}
                 </Text>
                 <View className="flex-row items-center gap-1.5">
-                  <Ionicons name="add" size={16} color={colors.brandPrimary} />
-                  <CapsLabel size={11} className="text-brand-primary font-extrabold">
+                  <Icon name="plus" size={16} color={colors.brandPrimaryDark} />
+                  <Text className="text-sm font-bold text-brand-primary-dark">
                     {t("home.logMeal")}
-                  </CapsLabel>
+                  </Text>
                 </View>
               </Pressable>
             ) : (
@@ -360,30 +405,46 @@ export default function HomeScreen() {
                       onPress={() => router.push("/(tabs)/meals")}
                       className="bg-surface rounded-2xl px-4 py-3.5 flex-row items-center gap-3.5 border border-border"
                     >
-                      <Ionicons
-                        name={summary.slot === "breakfast" ? "cafe-outline" : "restaurant-outline"}
-                        size={20}
-                        color={colors.brandPrimary}
-                      />
+                      <View className="h-10 w-10 items-center justify-center rounded-xl bg-surface-elevated">
+                        <Icon
+                          name={summary.slot === "breakfast" ? "coffee" : "utensils"}
+                          size={18}
+                          color={colors.brandPrimaryDark}
+                        />
+                      </View>
                       <View className="flex-1">
                         <Text className="text-sm font-bold text-content-primary capitalize">
                           {t(`meals.${summary.slot}`, { defaultValue: summary.slot })}
                         </Text>
-                        <Text className="text-content-muted text-[11px]">
+                        <Text className="text-content-muted text-xs">
                           {t("meals.itemCount", { count: summary.count })}
                         </Text>
                       </View>
                       <View className="flex-row items-baseline gap-1">
-                        <PosterText size={17} tabular>
+                        <DisplayText size={17} tabular>
                           {kcal(summary.kcal)}
-                        </PosterText>
-                        <Text className="text-[10px] text-content-muted">{t("home.kcal")}</Text>
+                        </DisplayText>
+                        <Text className="text-2xs text-content-muted">{t("home.kcal")}</Text>
                       </View>
                     </Pressable>
                   </AnimatedView>
                 ))}
               </View>
             )}
+
+            {/* Always-present quick log for the slot that fits the time of day */}
+            <Pressable
+              onPress={() => addFood()}
+              accessibilityRole="button"
+              className="flex-row items-center justify-center gap-2 rounded-2xl border border-dashed border-border-strong py-3.5"
+            >
+              <Icon name="camera" size={17} color={colors.brandPrimaryDark} />
+              <Text className="text-sm font-bold text-brand-primary-dark">
+                {t("meals.addToSlot", {
+                  slot: t(`meals.${suggestedSlot()}`),
+                })}
+              </Text>
+            </Pressable>
           </View>
 
           {/* Recent activity */}
@@ -397,50 +458,46 @@ export default function HomeScreen() {
             {activityRows.length === 0 ? (
               <Pressable
                 key="logs-empty"
-                onPress={() => {
-                  // Seed the Routines tab's own stack with its index first,
-                  // then push the target on the next tick — pushing both in
-                  // the same tick gets coalesced into one history entry (no
-                  // parent screen, no back button); yielding first makes
-                  // them two.
-                  router.push("/(tabs)/routines");
-                  setTimeout(() => {
-                    if (routines.length > 0) {
-                      router.push(`/(tabs)/routines/${routines[0].id}`);
-                    } else {
-                      router.push("/(tabs)/routines/create");
-                    }
-                  }, 0);
-                }}
-                className="bg-surface rounded-2xl p-7 items-center border-2 border-dashed border-border-strong"
+                onPress={() =>
+                  pushInTab("/(tabs)/routines", () =>
+                    router.push(
+                      routines.length > 0
+                        ? `/(tabs)/routines/${routines[0].id}`
+                        : "/(tabs)/routines/create",
+                    ),
+                  )
+                }
+                className="bg-surface rounded-3xl p-7 items-center border border-dashed border-border-strong"
               >
                 <Text className="text-content-tertiary font-medium mb-2">
                   {t("home.noActivityToday")}
                 </Text>
-                <CapsLabel size={11} className="text-brand-primary font-extrabold">
+                <Text className="text-sm font-bold text-brand-primary-dark">
                   {t("home.startRoutine")}
-                </CapsLabel>
+                </Text>
               </Pressable>
             ) : (
               <View key="logs-list" className="gap-2.5">
                 {activityRows.map((row, index) => (
-                  <AnimatedView
-                    key={row.key}
-                    entering={staggered(index)}
-                    exiting={exit()}
-                    className="bg-surface rounded-2xl px-4 py-3.5 flex-row items-center gap-3.5 border border-border"
-                  >
-                    <Ionicons name="checkmark-circle" size={22} color={colors.success} />
-                    <View className="flex-1">
-                      <Text className="text-sm font-bold text-content-primary" numberOfLines={1}>
-                        {row.title}
-                      </Text>
-                      {row.sub != null && (
-                        <Text className="text-content-muted text-[11px]" numberOfLines={1}>
-                          {row.sub}
+                  <AnimatedView key={row.key} entering={staggered(index)} exiting={exit()}>
+                    <Card className="flex-row items-center gap-3.5 rounded-2xl px-4 py-3.5">
+                      <View className="h-10 w-10 items-center justify-center rounded-xl bg-brand-primary-soft">
+                        <Icon name="check" size={18} color={colors.brandPrimaryDark} />
+                      </View>
+                      <View className="flex-1">
+                        <Text
+                          className="text-sm font-bold text-content-primary"
+                          numberOfLines={1}
+                        >
+                          {row.title}
                         </Text>
-                      )}
-                    </View>
+                        {row.sub != null && (
+                          <Text className="text-content-muted text-xs" numberOfLines={1}>
+                            {row.sub}
+                          </Text>
+                        )}
+                      </View>
+                    </Card>
                   </AnimatedView>
                 ))}
               </View>

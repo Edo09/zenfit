@@ -12,7 +12,7 @@ import { useRoutines } from "@/src/hooks/use-routines";
 import { kgToUnit1, useWeightUnit } from "@/src/lib/weight-unit";
 import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
-import { Ionicons } from "@expo/vector-icons";
+import { Icon } from "@/src/components/ui/icon";
 
 const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 
@@ -133,7 +133,7 @@ export default function CreateRoutineScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={t("routines.removeExercise")}
               >
-                <Ionicons name="trash-outline" size={18} color={colors.error} />
+                <Icon name="trash" size={18} color={colors.error} />
               </Pressable>
             </View>
           ))}

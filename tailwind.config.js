@@ -94,7 +94,7 @@ module.exports = {
         mono: 'var(--font-mono)',
         sans: 'var(--font-sans)',
         serif: 'var(--font-serif)',
-        // Brand wordmark only — the HOKAGE brush face. Not for UI/body text.
+        // Schibsted Grotesk — titles, card headings and every numeral.
         display: 'var(--font-display)',
         inter: ['var(--font-inter)'],
         georgia: ['Georgia'],
