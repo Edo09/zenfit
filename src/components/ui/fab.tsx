@@ -1,6 +1,7 @@
 import React from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { DOCK_CLEARANCE } from "@/src/components/floating-tab-bar";
 import { Icon, type IconName } from "@/src/components/ui/icon";
 import { exit, pop, PressableScale } from "@/src/lib/motion";
 import { useColors } from "@/src/theme/colors";
@@ -33,7 +34,7 @@ export function FAB({ icon = "plus", label, onPress, accessibilityLabel }: FABPr
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       className="absolute"
-      style={{ bottom: 96 + insets.bottom, right: 20 }}
+      style={{ bottom: DOCK_CLEARANCE + insets.bottom, right: 20 }}
     >
       <View
         className="flex-row items-center gap-1.5 rounded-full bg-brand-primary px-5 h-14"

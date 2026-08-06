@@ -10,7 +10,17 @@ import { Pressable, Text, View } from "@/src/tw";
  * Habbito floating dock. Active item = ink icon/label plus a 5px cyan dot
  * above the glyph — the dot, not color alone, signals the active tab.
  * Order/labels: Home · Train · Fuel · Progress · You.
+ *
+ * The dock is `position: absolute` and floats over EVERY screen inside the
+ * Tabs navigator — including screens pushed onto a tab's own nested Stack
+ * (e.g. a routine's detail view), not just the 5 tab roots. Anything with
+ * its own sticky bottom bar (a Screen `footer`, a FAB) must add
+ * DOCK_CLEARANCE + insets.bottom of space itself or the dock silently
+ * overlaps and hides it — scrollable content instead uses a flat pb-28
+ * since it can scroll clear on its own.
  */
+export const DOCK_CLEARANCE = 96;
+
 const ICONS: Record<string, IconName> = {
   index: "home",
   routines: "dumbbell",

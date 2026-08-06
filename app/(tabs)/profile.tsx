@@ -3,7 +3,9 @@ import { router, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ScrollView as RNScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { DOCK_CLEARANCE } from "@/src/components/floating-tab-bar";
 import { kgToUnit1, unitToKg, useWeightUnit } from "@/src/lib/weight-unit";
 
 import {
@@ -158,6 +160,7 @@ function ProfessionCard({
 
 export default function ProfileScreen() {
   const colors = useColors();
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const toast = useToast();
   const { user } = useAuth();
@@ -377,7 +380,10 @@ export default function ProfileScreen() {
       scrollRef={scrollRef}
       contentContainerClassName="px-5 pt-4 pb-28 gap-4"
       footer={
-        <View className="gap-2 border-t border-border bg-brand-dark px-5 pt-3 pb-6">
+        <View
+          className="gap-2 border-t border-border bg-brand-dark px-5 pt-3"
+          style={{ paddingBottom: DOCK_CLEARANCE + insets.bottom }}
+        >
           {formError != null && (
             <Text className="text-sm text-error">{formError}</Text>
           )}

@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { AddExerciseForm } from "@/src/components/add-exercise-form";
 import { ExerciseVideoModal } from "@/src/components/exercise-video-modal";
+import { DOCK_CLEARANCE } from "@/src/components/floating-tab-bar";
 import {
   Button,
   Card,
@@ -337,11 +338,12 @@ export default function RoutineDetailScreen() {
         footer={
           <View
             className="px-5 pt-3 bg-brand-dark border-t border-border"
-            style={{ paddingBottom: 16 + insets.bottom }}
+            style={{ paddingBottom: DOCK_CLEARANCE + insets.bottom }}
           >
             <Button
-              size="lg"
+              size="md"
               icon="play"
+              className="w-full py-3"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
                 setActiveStartedAt(Date.now());
@@ -349,6 +351,22 @@ export default function RoutineDetailScreen() {
             >
               {t("routines.startWorkout")}
             </Button>
+            {/* Manual-checklist path: ticking exercises here is local state
+                until a log is saved — without this, browsing-mode checks had
+                no way to persist unless the user also went through the full
+                Start-workout immersive flow. */}
+            {routine.routine_exercises.some((ex) => isExerciseCompleted(ex)) && (
+              <Button
+                variant="secondary"
+                size="md"
+                icon="check"
+                haptic={false}
+                onPress={openLogDialog}
+                className="w-full py-3 mt-2"
+              >
+                {t("routines.finishWorkout")}
+              </Button>
+            )}
           </View>
         }
       >
@@ -766,7 +784,7 @@ function ActiveWorkout({
       <AnimatedView
         entering={enterFade()}
         className="flex-1"
-        style={{ paddingTop: insets.top + 8, paddingBottom: insets.bottom + 16 }}
+        style={{ paddingTop: insets.top + 8, paddingBottom: insets.bottom + DOCK_CLEARANCE }}
       >
         {/* Close · name · timer */}
         <View className="flex-row items-center gap-3 px-5">

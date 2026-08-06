@@ -16,6 +16,7 @@ import {
   Screen,
   useToast,
 } from "@/src/components/ui";
+import { DOCK_CLEARANCE } from "@/src/components/floating-tab-bar";
 import { Icon } from "@/src/components/ui/icon";
 import { useAuth } from "@/src/hooks/use-auth";
 import { useMeals } from "@/src/hooks/use-meals";
@@ -214,7 +215,7 @@ export default function AddFoodScreen() {
       footer={
         <View
           className="px-5 pt-3 bg-brand-dark border-t border-border"
-          style={{ paddingBottom: 16 + insets.bottom }}
+          style={{ paddingBottom: DOCK_CLEARANCE + insets.bottom }}
         >
           <Button size="lg" icon="plus" onPress={handleAdd} loading={loading}>
             {t("meals.addToDiary")}
