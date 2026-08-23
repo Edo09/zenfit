@@ -2,8 +2,8 @@
 // JSON string from a system+user prompt pair (response constrained to JSON).
 
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-const GROQ_MODEL = "llama-3.3-70b-versatile";
-const GROQ_VISION_MODEL = "meta-llama/llama-prompt-guard-2-86m";
+const GROQ_MODEL = "openai/gpt-oss-120b";
+const GROQ_VISION_MODEL = "qwen/qwen3.6-27b";
 const GEMINI_MODEL = "gemini-3.6-flash";
 
 export type ImageInput = { base64: string; mimeType: string };
@@ -147,7 +147,7 @@ export async function completeJSON(system: string, user: string): Promise<unknow
   }
 }
 
-/** Vision variant: Groq llama-4-scout first, Gemini on any failure. */
+/** Vision variant: Groq qwen3.6-27b first, Gemini on any failure. */
 export async function completeJSONWithImage(
   system: string,
   user: string,
