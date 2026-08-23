@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { BrandMark } from "@/src/components/brand-mark";
-import { Button, DisplayText, Input, Screen } from "@/src/components/ui";
+import { Button, Input, Screen } from "@/src/components/ui";
 import { useAuth } from "@/src/hooks/use-auth";
 import { setLanguage } from "@/src/i18n";
 import { useIsOnline } from "@/src/lib/online";
@@ -58,10 +58,13 @@ export default function Login() {
       </Pressable>
 
       <View className="items-center gap-4 mb-10">
-        <BrandMark size={68} wordmarkSize={36} />
-        <DisplayText size={26} className="text-center px-2">
+        <BrandMark size={150} />
+        <Text
+          className="font-brand text-brand-blue text-center px-2"
+          style={{ fontSize: 22, lineHeight: 30 }}
+        >
           {t("auth.tagline")}
-        </DisplayText>
+        </Text>
       </View>
 
       <View className="gap-4">

@@ -62,7 +62,7 @@ export default {
     confirmEmailTitle: "Revisa tu correo",
     confirmEmailBody:
       "Enviamos un enlace de confirmación a {{email}}. Verifica tu dirección y luego inicia sesión.",
-    tagline: "Construye tu cuerpo, un hábito a la vez.",
+    tagline: "Evoluciona sin límites.",
     logIn: "Entrar",
     createAccountCta: "Crear una cuenta",
   },
@@ -197,7 +197,7 @@ export default {
     aiFocusLegs: "Piernas",
     aiFocusCore: "Core",
     aiFocusCardio: "Cardio",
-    aiFocusEmpty: "Aún no hay ejercicios de este enfoque en el catálogo",
+    aiFocusEmpty: "Aún no hay ejercicios del enfoque seleccionado en el catálogo",
     statWeight: "Peso",
     unitYears: "años",
     activityDailyTitle: "Actividad diaria",

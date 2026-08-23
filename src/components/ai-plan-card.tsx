@@ -74,7 +74,19 @@ export function AIPlanCard({
   const { exercises } = useExercises();
   const [generating, setGenerating] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
-  const [focus, setFocus] = useState<RoutineFocusKey>("mix");
+  const [focus, setFocus] = useState<RoutineFocusKey[]>(["mix"]);
+
+  // "Mixto" spans the whole catalog, so it can't coexist with a body-part
+  // pick: choosing it clears the rest, and choosing a part clears it.
+  // Emptying the list falls back to "mix" so there is always a valid target.
+  const toggleFocus = (key: RoutineFocusKey) => {
+    setFocus((current) => {
+      if (key === "mix") return ["mix"];
+      const rest = current.filter((f) => f !== "mix");
+      const next = rest.includes(key) ? rest.filter((f) => f !== key) : [...rest, key];
+      return next.length > 0 ? next : ["mix"];
+    });
+  };
 
   const handlePress = () => {
     if (!isProfileComplete(profile)) {
@@ -86,7 +98,7 @@ export function AIPlanCard({
       toast.show({ type: "info", message: t("routines.noExercisesInCatalog") });
       return;
     }
-    setFocus("mix");
+    setFocus(["mix"]);
     setConfirmVisible(true);
   };
 
@@ -97,10 +109,13 @@ export function AIPlanCard({
     // Narrow the catalog to the picked body-part bucket BEFORE it ever
     // reaches the model — the prompt also says "stay in this focus", but the
     // filter is the actual guarantee; the instruction alone is not.
-    const bucket = focus === "mix" ? null : ROUTINE_FOCUS[focus];
-    const matching = bucket
-      ? exercises.filter((e) => bucket.bodyParts.includes(e.body_part?.name ?? ""))
-      : exercises;
+    const bodyParts = focus
+      .filter((f): f is Exclude<RoutineFocusKey, "mix"> => f !== "mix")
+      .flatMap((f) => ROUTINE_FOCUS[f].bodyParts);
+    const matching =
+      bodyParts.length > 0
+        ? exercises.filter((e) => bodyParts.includes(e.body_part?.name ?? ""))
+        : exercises;
     if (matching.length === 0) {
       toast.show({ type: "info", message: t("profile.aiFocusEmpty") });
       return;
@@ -244,8 +259,8 @@ export function AIPlanCard({
                   <Chip
                     key={opt.key}
                     label={t(opt.labelKey)}
-                    selected={focus === opt.key}
-                    onPress={() => setFocus(opt.key)}
+                    selected={focus.includes(opt.key)}
+                    onPress={() => toggleFocus(opt.key)}
                   />
                 ))}
               </View>

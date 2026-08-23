@@ -1,14 +1,14 @@
 {
-  "name": "The Hokage Coaching",
-  "short_name": "The Hokage",
+  "name": "ZYRON",
+  "short_name": "ZYRON",
   "description": "Entrenamiento, nutrición y progreso con tu coach — rutinas personalizadas, plan con IA y seguimiento diario.",
   "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
+  "background_color": "#101317",
+  "theme_color": "#101317",
   "lang": "es",
   "icons": [
     {

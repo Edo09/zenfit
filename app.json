@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Habbito",
+    "name": "ZYRON",
     "slug": "habbito",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -53,6 +53,7 @@
             "node_modules/@expo-google-fonts/hanken-grotesk/700Bold/HankenGrotesk_700Bold.ttf",
             "node_modules/@expo-google-fonts/hanken-grotesk/800ExtraBold/HankenGrotesk_800ExtraBold.ttf",
             "node_modules/@expo-google-fonts/hanken-grotesk/900Black/HankenGrotesk_900Black.ttf",
+            "node_modules/@expo-google-fonts/orbitron/500Medium/Orbitron_500Medium.ttf",
             "node_modules/@expo-google-fonts/schibsted-grotesk/600SemiBold/SchibstedGrotesk_600SemiBold.ttf",
             "node_modules/@expo-google-fonts/schibsted-grotesk/700Bold/SchibstedGrotesk_700Bold.ttf",
             "node_modules/@expo-google-fonts/schibsted-grotesk/800ExtraBold/SchibstedGrotesk_800ExtraBold.ttf"

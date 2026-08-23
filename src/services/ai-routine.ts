@@ -20,6 +20,10 @@ export type AIRoutine = {
  * day, spanning the whole catalog). Anything else narrows the catalog to a
  * body-part bucket and asks for exactly ONE single-session routine — there's
  * no such thing as a week of all-chest days.
+ *
+ * Focus is picked as a LIST: several body parts combine into one session
+ * (chest + back = a push/pull day) over the union of their buckets. "mix"
+ * is exclusive — it is the absence of a focus, not another bucket.
  */
 export type RoutineFocusKey =
   | "mix"
@@ -55,6 +59,12 @@ export const ROUTINE_FOCUS: Record<
   core: { bodyParts: ["waist"], promptLabel: "core / abdominals" },
   cardio: { bodyParts: ["cardio"], promptLabel: "cardio / conditioning" },
 };
+
+/** "chest" / "chest and back" / "chest, back and arms" — prompt prose. */
+function joinLabels(labels: string[]): string {
+  if (labels.length <= 1) return labels[0] ?? "";
+  return `${labels.slice(0, -1).join(", ")} and ${labels[labels.length - 1]}`;
+}
 
 const VALID_DAYS = [
   "monday",
@@ -122,7 +132,7 @@ export async function generateRoutines(
   profile: Profile,
   language: string,
   catalogNames: string[],
-  focus: RoutineFocusKey = "mix",
+  focus: RoutineFocusKey[] = ["mix"],
 ): Promise<AIRoutine[]> {
   const availableDays = (profile.available_days ?? [])
     .map((d) => SHORT_TO_DAY[d.toLowerCase()] ?? d.toLowerCase())
@@ -134,8 +144,13 @@ export async function generateRoutines(
   // not "make every day of my week this one muscle group" — different shape
   // of request, so it gets its own single-routine rules instead of the
   // weekly-split ones.
-  const singleSession = focus !== "mix";
-  const focusLabel = singleSession ? ROUTINE_FOCUS[focus].promptLabel : null;
+  // "mix" is the absence of a focus, so any real pick alongside it wins
+  // (the picker keeps them exclusive, but don't depend on the caller).
+  const focused = focus.filter((f): f is Exclude<RoutineFocusKey, "mix"> => f !== "mix");
+  const singleSession = focused.length > 0;
+  const focusLabel = singleSession
+    ? joinLabels(focused.map((f) => ROUTINE_FOCUS[f].promptLabel))
+    : null;
 
   const system = [
     singleSession
@@ -156,7 +171,12 @@ export async function generateRoutines(
     "- Exercise names MUST be copied verbatim from `exercise_catalog` in the user message — do not invent, translate, or reword any exercise name. Pick the closest matches for the user's goals.",
     ...(singleSession
       ? [
-          `- EVERY exercise must target: ${focusLabel}. Do not include exercises for any other muscle group — exercise_catalog is already filtered to this focus, so pick from it freely.`,
+          `- EVERY exercise must target${focused.length > 1 ? " one of" : ""}: ${focusLabel}. Do not include exercises for any other muscle group — exercise_catalog is already filtered to this focus, so pick from it freely.`,
+        ]
+      : []),
+    ...(focused.length > 1
+      ? [
+          "- Balance the session across ALL of the focus areas listed above — do not spend every exercise on just one of them.",
         ]
       : []),
     "- Tailor exercise selection and set/rep ranges to the user's `goal`:",

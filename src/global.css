@@ -26,6 +26,9 @@
        CANVAS color, brand-light the INK color, in both schemes. */
     --hb-brand-primary: #22d3ee;
     --hb-brand-secondary: #4e6bf0;
+    /* ZYRON blue — the logo color, for brand lines only. Lifted in the
+       dark block: #1A56F0 on the dark canvas is only 3.2:1. */
+    --hb-brand-blue: #1A56F0;
     /* Violet — reserved exclusively for AI features. */
     --hb-brand-accent: #8e7bf0;
     --hb-brand-accent-soft: #eeeafb;
@@ -112,6 +115,7 @@
   :root {
     --hb-brand-primary: #3ee0f0;
     --hb-brand-secondary: #7a93ff;
+    --hb-brand-blue: #4b7bff;
     --hb-brand-accent: #a594ff;
     --hb-brand-accent-soft: #2a2540;
     --hb-brand-accent-border: rgba(165, 148, 255, 0.35);
@@ -184,6 +188,7 @@
 @theme inline {
   --color-brand-primary: var(--hb-brand-primary);
   --color-brand-secondary: var(--hb-brand-secondary);
+  --color-brand-blue: var(--hb-brand-blue);
   --color-brand-accent: var(--hb-brand-accent);
   --color-brand-accent-soft: var(--hb-brand-accent-soft);
   --color-brand-accent-border: var(--hb-brand-accent-border);
@@ -324,4 +329,11 @@
 }
 .font-display-extrabold {
   font-family: SchibstedGrotesk_800ExtraBold;
+}
+
+/* Orbitron — the ZYRON brand voice. Taglines and brand lines ONLY; it is a
+   wide geometric display face and turns to mush in paragraphs or at small
+   sizes. Literal + unlayered for the same reason as the display faces. */
+.font-brand {
+  font-family: Orbitron_500Medium;
 }

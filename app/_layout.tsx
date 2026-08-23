@@ -21,6 +21,7 @@ import {
   HankenGrotesk_800ExtraBold,
   HankenGrotesk_900Black,
 } from "@expo-google-fonts/hanken-grotesk";
+import { Orbitron_500Medium } from "@expo-google-fonts/orbitron";
 import {
   SchibstedGrotesk_600SemiBold,
   SchibstedGrotesk_700Bold,
@@ -95,6 +96,8 @@ export default function RootLayout() {
     SchibstedGrotesk_600SemiBold,
     SchibstedGrotesk_700Bold,
     SchibstedGrotesk_800ExtraBold,
+    // Brand voice — taglines only (`.font-brand`)
+    Orbitron_500Medium,
   });
 
   // Restore the saved theme before first paint (joins the splash gate with

@@ -27,6 +27,7 @@ const lightPalette = {
     brandPrimary: "#22d3ee",        // volt cyan — CTA/FAB/active FILL (ink text on it)
     brandPrimaryDark: "#0e7490",    // cyan-deep — readable cyan TEXT/icon on light
     brandSecondary: "#4e6bf0",      // periwinkle — links, protein, info data
+    brandBlue: "#1A56F0",           // ZYRON blue — brand lines only, not UI
     brandAccent: "#8e7bf0",         // violet — AI features
     brandDark: "#f4f5f7",           // CANVAS (cool slate)
     brandLight: "#12151a",          // INK
@@ -76,6 +77,7 @@ const darkPalette: Palette = {
     brandPrimary: "#3ee0f0",        // bright cyan reads as fill AND text on dark
     brandPrimaryDark: "#3ee0f0",
     brandSecondary: "#7a93ff",
+    brandBlue: "#4b7bff",           // lifted: #1A56F0 is 3.2:1 on the dark canvas
     brandAccent: "#a594ff",
     brandDark: "#101317",           // CANVAS (cool charcoal)
     brandLight: "#f2f4f7",          // INK

@@ -60,9 +60,9 @@ export default function Register() {
 
   return (
     <Screen keyboard contentContainerClassName="flex-1 justify-center px-6 py-12 gap-0">
-      {/* Ring-mark + wordmark, matching the login screen */}
+      {/* ZYRON lockup, matching the login screen */}
       <View className="items-center gap-4 mb-10">
-        <BrandMark size={60} wordmarkSize={32} />
+        <BrandMark size={132} />
         <DisplayText size={24} className="text-center">
           {t("auth.createAccount")}
         </DisplayText>

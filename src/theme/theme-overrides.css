@@ -13,6 +13,7 @@
 :root.light {
   --hb-brand-primary: #22d3ee;
   --hb-brand-secondary: #4e6bf0;
+  --hb-brand-blue: #1a56f0;
   --hb-brand-accent: #8e7bf0;
   --hb-brand-accent-soft: #eeeafb;
   --hb-brand-accent-border: rgba(142, 123, 240, 0.35);
@@ -82,6 +83,7 @@
 :root.dark {
   --hb-brand-primary: #3ee0f0;
   --hb-brand-secondary: #7a93ff;
+  --hb-brand-blue: #4b7bff;
   --hb-brand-accent: #a594ff;
   --hb-brand-accent-soft: #2a2540;
   --hb-brand-accent-border: rgba(165, 148, 255, 0.35);
