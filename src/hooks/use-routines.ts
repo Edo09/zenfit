@@ -1,4 +1,5 @@
 import { useAuth } from "@/src/hooks/use-auth";
+import { useRealtimeInvalidate } from "@/src/hooks/use-realtime-invalidate";
 import { enqueue } from "@/src/lib/outbox";
 import { overlayRoutines } from "@/src/lib/outbox-overlay";
 import { newId } from "@/src/lib/ids";
@@ -61,6 +62,16 @@ export function useRoutines() {
       ),
     enabled: !!user,
   });
+
+  // A coach assigning or editing a routine in the admin panel lands here
+  // immediately, rather than waiting for the next focus refetch — which on web
+  // is the only refresh there is. Own writes echo back too; that's the same
+  // invalidation the outbox flush already does, so it costs nothing.
+  useRealtimeInvalidate(
+    "routines",
+    user ? `user_id=eq.${user.id}` : undefined,
+    listKey,
+  );
 
   // Split by provenance: coach-assigned (read-only) vs the client's own.
   const assignedRoutines = useMemo(

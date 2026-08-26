@@ -4,6 +4,14 @@ export type UserRole = "user" | "coach";
 
 export type ProfileGoal = "lose_weight" | "gain_muscle" | "maintain";
 
+// Which mobile app a profile belongs to (20260826120000_zyron_app_scope.sql).
+// Both apps share one Supabase project; each admin panel filters on this so a
+// coach only sees the clients of the app they're managing.
+export type AppScope = "hokage" | "zyron";
+
+/** This build's scope. Stamped onto every profile this app touches. */
+export const APP_SCOPE: AppScope = "zyron";
+
 export type Profile = {
   id: string;
   // Denormalized from auth.users (20260717150000_profiles_email_sync.sql) —
@@ -25,6 +33,7 @@ export type Profile = {
   role: UserRole;
   whatsapp: string | null;
   onboarding_completed: boolean;
+  app: AppScope;
   created_at: string;
   updated_at: string;
 };
@@ -111,6 +120,10 @@ export type MealItem = {
   fat_g: number;
   portion: string | null;
   photo_path: string | null;
+  // Set when the client logged this from a prescribed option in the coach's
+  // nutrition plan (20260807120000_nutrition_plans.sql) — the adherence link
+  // the coach reads back in the panel. null for anything logged freehand.
+  plan_option_id: string | null;
   created_at: string;
 };
 
@@ -161,7 +174,13 @@ export type MealItemInsert = Pick<MealItem, "meal_id" | "name"> &
   Partial<
     Pick<
       MealItem,
-      "calories" | "protein_g" | "carbs_g" | "fat_g" | "portion" | "photo_path"
+      | "calories"
+      | "protein_g"
+      | "carbs_g"
+      | "fat_g"
+      | "portion"
+      | "photo_path"
+      | "plan_option_id"
     >
   >;
 
@@ -309,4 +328,151 @@ export type Membership = {
   notes: string | null;
   created_at: string;
   updated_at: string;
+};
+
+// ---- Coach Nutrition & Supplementation ------------------------------------
+// docs/COACH-NUTRITION-SPEC.md. Two INDEPENDENTLY assignable plans: a client may
+// have a diet, a supplement stack, both, or neither.
+//
+// A nutrition plan is: header -> meal slots -> rotation options -> foods, plus a
+// macro target table per day type. day_type sits on the FOOD, not the option:
+// "Almuerzo Dia 1-2" holds rice (training only) + chicken (both), which is how
+// carb cycling is expressed.
+//
+// Foods carry a NAME and nothing else. The coach prescribes what to eat; every
+// number is measured from the client's photo by the AI estimator.
+
+export type PlanStatus = "active" | "completed" | "archived";
+
+/** Which kind of day a food, slot, or supplement survives on. */
+export type DayType = "both" | "training" | "rest";
+
+/** Six slots, but meals.meal_type allows only four — pre/post_workout collapse
+ *  to "snack" on diary write-back (see mealTypeToDiarySlot). */
+export type PlanMealType = MealType | "pre_workout" | "post_workout";
+
+export type SupplementTier = "base" | "conditional" | "optional";
+
+export type SupplementTiming =
+  | "wake"
+  | "breakfast"
+  | "pre_workout"
+  | "intra_workout"
+  | "post_workout"
+  | "lunch"
+  | "dinner"
+  | "bedtime"
+  | "any";
+
+export type NutritionPlan = {
+  id: string;
+  user_id: string | null;
+  assigned_by: string | null;
+  source: "coach";
+  is_template: boolean;
+  template_id: string | null;
+  name: string;
+  description: string | null;
+  focus: string | null;
+  // null = open-ended phase; no week counter is shown.
+  duration_weeks: number | null;
+  start_date: string;
+  status: PlanStatus;
+  // false collapses the UI to a single day type and one "both" target row.
+  day_cycling: boolean;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type NutritionPlanTarget = {
+  id: string;
+  plan_id: string;
+  day_type: DayType;
+  kcal_min: number | null;
+  kcal_max: number | null;
+  protein_min_g: number | null;
+  protein_max_g: number | null;
+  carbs_min_g: number | null;
+  carbs_max_g: number | null;
+  fat_min_g: number | null;
+  fat_max_g: number | null;
+  notes: string | null;
+  created_at: string;
+};
+
+export type NutritionPlanOptionItem = {
+  id: string;
+  option_id: string;
+  name: string;
+  day_type: DayType;
+  sort_order: number;
+  created_at: string;
+};
+
+export type NutritionPlanOption = {
+  id: string;
+  plan_meal_id: string;
+  label: string | null;
+  notes: string | null;
+  sort_order: number;
+  created_at: string;
+  nutrition_plan_option_items: NutritionPlanOptionItem[];
+};
+
+export type NutritionPlanMeal = {
+  id: string;
+  plan_id: string;
+  slot_index: number;
+  label: string | null;
+  meal_type: PlanMealType;
+  time_hint: string | null;
+  // Gates the whole slot: post-workout is "training", so it disappears on a rest
+  // day — but its notes still carry the substitution to read.
+  applies_to: DayType;
+  is_optional: boolean;
+  notes: string | null;
+  sort_order: number;
+  created_at: string;
+  nutrition_plan_options: NutritionPlanOption[];
+};
+
+export type NutritionPlanWithDetails = NutritionPlan & {
+  nutrition_plan_meals: NutritionPlanMeal[];
+  nutrition_plan_targets: NutritionPlanTarget[];
+};
+
+export type SupplementPlan = {
+  id: string;
+  user_id: string | null;
+  assigned_by: string | null;
+  source: "coach";
+  is_template: boolean;
+  template_id: string | null;
+  name: string;
+  description: string | null;
+  start_date: string;
+  status: PlanStatus;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type SupplementPlanItem = {
+  id: string;
+  plan_id: string;
+  name: string;
+  tier: SupplementTier;
+  dose: string | null;
+  timing_slot: SupplementTiming;
+  timing_note: string | null;
+  purpose: string | null;
+  notes: string | null;
+  applies_to: DayType;
+  sort_order: number;
+  created_at: string;
+};
+
+export type SupplementPlanWithDetails = SupplementPlan & {
+  supplement_plan_items: SupplementPlanItem[];
 };

@@ -12,6 +12,7 @@ import {
   ActionsheetItemText,
 } from "@/components/ui/actionsheet";
 import { AIPlanCard } from "@/src/components/ai-plan-card";
+import { CoachRoutineCard } from "@/src/components/coach-routine-card";
 import { StatCard } from "@/src/components/stat-card";
 import {
   CapsLabel,
@@ -60,7 +61,9 @@ export default function HomeScreen() {
 
   const { todaysMeals } = meals;
   const { todaysLogs, logs } = progress;
-  const { routines } = routinesData;
+  // Coach-assigned work gets its own hero above the carousel, so the carousel
+  // stays "your routines" and nothing shows up twice.
+  const { routines, assignedRoutines, myRoutines } = routinesData;
 
   // Daily calorie KPIs — recompute whenever today's meals/logs change, so
   // logging a meal or workout updates the dashboard immediately.
@@ -359,6 +362,18 @@ export default function HomeScreen() {
             />
           </View>
 
+          {/* From your coach — only rendered once something is assigned. */}
+          {assignedRoutines.length > 0 && (
+            <View className="px-5 pt-7 gap-3">
+              <SectionHeader
+                title={t("coach.assignedRoutines")}
+                actionLabel={t("common.seeAll")}
+                onAction={() => router.push("/(tabs)/routines")}
+              />
+              <CoachRoutineCard assigned={assignedRoutines} />
+            </View>
+          )}
+
           {/* Up next — the user's routines + AI plan generator. */}
           <View className="pt-7">
             <SectionHeader
@@ -367,7 +382,7 @@ export default function HomeScreen() {
               onAction={() => router.push("/(tabs)/routines")}
               className="px-5 mb-3"
             />
-            <WorkoutCarousel routines={routines} />
+            <WorkoutCarousel routines={myRoutines} />
             <View className="px-5 pt-4">
               <AIPlanCard />
             </View>

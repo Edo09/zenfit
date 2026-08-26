@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import type { ScrollView as RNScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { CoachSection } from "@/src/components/coach-section";
 import { DOCK_CLEARANCE } from "@/src/components/floating-tab-bar";
 import { kgToUnit1, unitToKg, useWeightUnit } from "@/src/lib/weight-unit";
 
@@ -447,6 +448,9 @@ export default function ProfileScreen() {
           </Text>
         </FeatureCard>
       )}
+
+      {/* Your coach + membership. Renders nothing for a self-serve client. */}
+      <CoachSection />
 
       {/* Datos personales */}
       <Card className="gap-3.5">

@@ -5,7 +5,7 @@ import { Linking } from "react-native";
 
 import { MembershipCard } from "@/src/components/membership-card";
 import { Button, Card, DisplayText } from "@/src/components/ui";
-import { useCoach } from "@/src/hooks/use-coach";
+import { useCoach, useHasCoach } from "@/src/hooks/use-coach";
 import { useMembership } from "@/src/hooks/use-membership";
 import { useColors } from "@/src/theme/colors";
 import { Text, View } from "@/src/tw";
@@ -18,8 +18,14 @@ export function CoachSection() {
   const colors = useColors();
   const { coach } = useCoach();
   const { membership } = useMembership();
+  const hasCoach = useHasCoach();
 
   const hasWhatsapp = coach?.whatsapp != null && coach.whatsapp !== "";
+
+  // The coach profile is readable by every client, so its mere existence
+  // proves nothing — a self-serve user must not be shown a coach they don't
+  // have. useHasCoach() checks for actual assigned work instead.
+  if (!hasCoach) return null;
 
   const openWhatsapp = () => {
     if (!hasWhatsapp) return;

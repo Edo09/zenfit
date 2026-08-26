@@ -1,16 +1,22 @@
 import { router, Tabs } from "expo-router";
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { FloatingTabBar } from "@/src/components/floating-tab-bar";
+import { RestTimerBar } from "@/src/components/rest-timer-bar";
 import { Icon } from "@/src/components/ui/icon";
 import { useColors } from "@/src/theme/colors";
-import { Pressable } from "@/src/tw";
+import { Pressable, View } from "@/src/tw";
 
 export default function TabsLayout() {
   const colors = useColors();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
+  // Clear the dock's own top edge: it sits at bottom 14 + inset and is 66 tall.
+  const restBarBottom = 80 + insets.bottom;
   return (
+    <View className="flex-1">
     <Tabs
       // The dock floats over the scene, so screens add pb-28 to their scroll
       // content instead of the navigator reserving a bar-height inset.
@@ -52,5 +58,10 @@ export default function TabsLayout() {
         }}
       />
     </Tabs>
+
+    {/* Floats over every tab screen, above the dock. Renders nothing when no
+        rest is running. */}
+    <RestTimerBar bottom={restBarBottom} />
+    </View>
   );
 }

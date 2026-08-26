@@ -15,6 +15,11 @@ export const qk = {
   program: (userId: string | undefined) => ["program", userId] as const,
   // The client's completion checks + logged sets against a program.
   programLog: (userId: string | undefined) => ["program-log", userId] as const,
+  // Read-only coach-assigned diet + supplement stack. Independently assignable,
+  // so they get separate keys.
+  nutritionPlan: (userId: string | undefined) => ["nutrition-plan", userId] as const,
+  supplementPlan: (userId: string | undefined) =>
+    ["supplement-plan", userId] as const,
 };
 
 export const qkPrefixes = [

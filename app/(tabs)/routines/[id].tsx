@@ -39,6 +39,7 @@ import { useRoutineDetail, useRoutines } from "@/src/hooks/use-routines";
 import { enter, enterFade, exit, pop, staggered } from "@/src/lib/motion";
 import { useIsOnline } from "@/src/lib/online";
 import { kgToUnit1, useWeightUnit } from "@/src/lib/weight-unit";
+import { useRestTimer } from "@/src/providers/rest-timer-provider";
 import { useColors } from "@/src/theme/colors";
 import { Pressable, Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
@@ -102,8 +103,12 @@ export default function RoutineDetailScreen() {
   // state layers these on top of what's already logged today — see
   // isExerciseCompleted below.
   const [completedExercises, setCompletedExercises] = useState<Record<string, boolean>>({});
-  // Single active rest countdown (one timer at a time).
-  const [rest, setRest] = useState<{ exId: string; remaining: number } | null>(null);
+  // The countdown itself lives app-wide (one rest at a time, survives leaving
+  // this screen); all this screen tracks is WHICH row started it, so the right
+  // row shows the live clock. Never cleared on its own — every read pairs it
+  // with `restTimer.running`, so a stale id from a finished rest is inert.
+  const restTimer = useRestTimer();
+  const [restExId, setRestExId] = useState<string | null>(null);
   const [showInfo, setShowInfo] = useState(false);
   const [videoUri, setVideoUri] = useState<string | null>(null);
   // How-to steps expanded, per exercise row (collapsed by default).
@@ -130,28 +135,15 @@ export default function RoutineDetailScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isError]);
 
-  // Tick the active rest timer down to zero, then celebrate + clear.
-  useEffect(() => {
-    if (rest == null) return;
-    if (rest.remaining <= 0) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-      // Avoid calling setState synchronously inside the effect to prevent cascading renders
-      // Schedule state update on next tick
-      setTimeout(() => setRest(null), 0);
+  const toggleRest = (ex: RoutineExercise) => {
+    if (restExId === ex.id && restTimer.running) {
+      restTimer.stop();
+      setRestExId(null);
       return;
     }
-    const timer = setTimeout(
-      () => setRest((r) => (r ? { ...r, remaining: r.remaining - 1 } : null)),
-      1000,
-    );
-    return () => clearTimeout(timer);
-  }, [rest]);
-
-  const toggleRest = (ex: RoutineExercise) => {
-    Haptics.selectionAsync().catch(() => {});
-    setRest((prev) =>
-      prev?.exId === ex.id ? null : { exId: ex.id, remaining: ex.rest_seconds || 60 },
-    );
+    setRestExId(ex.id);
+    // Naming the exercise is what makes the bar readable from another screen.
+    restTimer.start(ex.rest_seconds || 60, ex.exercise?.name);
   };
 
   const handleConfirmRemove = async () => {
@@ -442,8 +434,10 @@ export default function RoutineDetailScreen() {
 
           {routine.routine_exercises.map((ex, index) => {
             const isCompleted = isExerciseCompleted(ex);
-            const isResting = rest?.exId === ex.id;
-            const restLabel = formatClock(isResting ? rest!.remaining : ex.rest_seconds || 60);
+            const isResting = restExId === ex.id && restTimer.running;
+            const restLabel = formatClock(
+              isResting ? restTimer.remaining : ex.rest_seconds || 60,
+            );
             const steps = stepsFor(ex);
             const stepsOpen = !!openSteps[ex.id];
             return (

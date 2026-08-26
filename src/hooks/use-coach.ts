@@ -1,5 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 
+import { useMembership } from "@/src/hooks/use-membership";
+import { useNutritionPlan } from "@/src/hooks/use-nutrition-plan";
+import { useRoutines } from "@/src/hooks/use-routines";
 import { qk } from "@/src/lib/query-keys";
 import type { Coach } from "@/src/types/database";
 import { supabase } from "@/src/utils/supabase";
@@ -23,4 +26,20 @@ export function useCoach() {
     queryFn: fetchCoach,
   });
   return { coach, loading };
+}
+
+/**
+ * Does this client actually have a coach, or are they self-serve?
+ *
+ * The single-coach model means `useCoach()` resolves for EVERYONE — the coach
+ * profile is world-readable — so it can't answer this on its own. What proves
+ * a relationship is the coach having done something for them: a membership
+ * row, an assigned routine, or an active nutrition plan. Every coaching
+ * surface gates on this, so a self-serve user never sees an empty one.
+ */
+export function useHasCoach(): boolean {
+  const { assignedRoutines } = useRoutines();
+  const { membership } = useMembership();
+  const { plan } = useNutritionPlan();
+  return membership != null || assignedRoutines.length > 0 || plan != null;
 }

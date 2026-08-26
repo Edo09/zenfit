@@ -5,6 +5,8 @@ import { useTranslation } from "react-i18next";
 import { RefreshControl } from "react-native";
 
 import { DiaryEntry, DiarySlot } from "@/src/components/diary-slot";
+import { NutritionPlanView } from "@/src/components/nutrition/nutrition-plan-view";
+import { SupplementStackView } from "@/src/components/nutrition/supplement-stack-view";
 import { Ring } from "@/src/components/progress/ring";
 import {
   Card,
@@ -17,17 +19,26 @@ import {
   Icon,
   LoadingBlock,
   ProgressBar,
+  Screen,
+  SegmentedControl,
   useToast,
 } from "@/src/components/ui";
 import { useAuth } from "@/src/hooks/use-auth";
 import { useMeals } from "@/src/hooks/use-meals";
+import { useNutritionPlan } from "@/src/hooks/use-nutrition-plan";
 import { useProfile } from "@/src/hooks/use-profile";
 import { useRefreshOnFocus } from "@/src/hooks/use-refresh-on-focus";
+import { useSupplementPlan } from "@/src/hooks/use-supplement-plan";
 import { PressableScale, slideEnter, staggered } from "@/src/lib/motion";
 import { useColors } from "@/src/theme/colors";
 import { Pressable, ScrollView, Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
-import type { MealItem, MealType } from "@/src/types/database";
+import type {
+  MealItem,
+  MealType,
+  NutritionPlanMeal,
+  NutritionPlanOption,
+} from "@/src/types/database";
 import {
   caloriesConsumed,
   macroTargets,
@@ -36,8 +47,129 @@ import {
 } from "@/src/utils/calories";
 import { addDays, formatDayLabel, toDateKey } from "@/src/utils/dates";
 import { MEAL_SLOTS, suggestedSlot } from "@/src/utils/meal-slots";
+import { mealTypeToDiarySlot, visibleItems } from "@/src/utils/nutrition-plan";
 
-export default function DiaryScreen() {
+type Pane = "plan" | "supplements" | "diary";
+
+/**
+ * The Nutrición tab. One pane for a self-serve client — their diary, exactly as
+ * it always was — and up to three once a coach assigns something:
+ *
+ *   Plan        — the coach's protocol for today's day type
+ *   Suplementos — the coach's stack, assigned SEPARATELY (a client may have
+ *                 either, both, or neither)
+ *   Diario      — the client's own log
+ *
+ * The segmented control only appears when there's a second pane to switch to,
+ * and a pane is never offered with nothing behind it.
+ */
+export default function NutritionScreen() {
+  const { t } = useTranslation();
+  const plan = useNutritionPlan();
+  const supplements = useSupplementPlan();
+  useRefreshOnFocus(plan.refresh);
+  useRefreshOnFocus(supplements.refresh);
+
+  const hasPlan = plan.plan != null;
+  const hasSupplements = supplements.plan != null;
+
+  // Seeded from what exists; after the first tap the client's choice wins, so a
+  // refetch can't yank the pane out from under them. Clamped to the panes that
+  // are actually available — a plan the coach archives mid-session falls back
+  // to the diary rather than rendering an empty screen.
+  const [pane, setPane] = useState<Pane | null>(null);
+  const available: Pane[] = [
+    ...(hasPlan ? (["plan"] as const) : []),
+    ...(hasSupplements ? (["supplements"] as const) : []),
+    "diary",
+  ];
+  const resolvedPane: Pane =
+    pane != null && available.includes(pane) ? pane : available[0];
+
+  // Hand the prescription to the existing add-food screen rather than writing a
+  // macro-less row: plan foods carry no numbers, so the photo + AI estimator is
+  // what makes the diary entry honest. planOptionId rides along as the
+  // adherence link.
+  const registerOption = (meal: NutritionPlanMeal, option: NutritionPlanOption) => {
+    const foods = visibleItems(option, plan.day);
+    router.push({
+      pathname: "/(tabs)/meals/create",
+      params: {
+        mealType: mealTypeToDiarySlot(meal.meal_type),
+        date: toDateKey(),
+        // The first visible food seeds the name; the client edits it to match
+        // what they actually plated before the photo goes in.
+        prefillName: foods[0]?.name ?? "",
+        planOptionId: option.id,
+      },
+    });
+  };
+
+  return (
+    <View className="flex-1 bg-brand-dark">
+      <HeaderPanel>
+        <DisplayText size={27}>
+          {available.length > 1 ? t("nutritionPlan.tabTitle") : t("meals.diary")}
+        </DisplayText>
+      </HeaderPanel>
+
+      {available.length > 1 && (
+        <View className="px-5 pb-2">
+          <SegmentedControl
+            segments={available.map((key) => ({
+              key,
+              label: t(
+                key === "plan"
+                  ? "nutritionPlan.segmentPlan"
+                  : key === "supplements"
+                    ? "nutritionPlan.segmentSupplements"
+                    : "nutritionPlan.segmentDiary",
+              ),
+            }))}
+            value={resolvedPane}
+            onChange={(k) => setPane(k as Pane)}
+          />
+        </View>
+      )}
+
+      {resolvedPane === "plan" && plan.plan != null ? (
+        <Screen
+          refreshing={plan.refreshing}
+          onRefresh={plan.refresh}
+          contentContainerClassName="px-5 pt-1 pb-32 gap-3"
+        >
+          <NutritionPlanView
+            plan={plan.plan}
+            day={plan.day}
+            autoDay={plan.autoDay}
+            overridden={plan.overridden}
+            onSelectDay={plan.setViewDay}
+            onRegister={registerOption}
+          />
+        </Screen>
+      ) : resolvedPane === "supplements" && supplements.plan != null ? (
+        <Screen
+          refreshing={supplements.refreshing}
+          onRefresh={supplements.refresh}
+          contentContainerClassName="px-5 pt-1 pb-32 gap-3"
+        >
+          <SupplementStackView
+            plan={supplements.plan}
+            day={plan.day}
+            cycling={plan.plan?.day_cycling ?? false}
+          />
+        </Screen>
+      ) : (
+        <DiaryPane />
+      )}
+    </View>
+  );
+}
+
+// The diary itself — date navigation, day summary, per-slot entries, the
+// add-food FAB and photo logging. Unchanged behaviour; it just no longer owns
+// the screen header.
+function DiaryPane() {
   const colors = useColors();
   const { t, i18n } = useTranslation();
   const toast = useToast();
@@ -161,10 +293,6 @@ export default function DiaryScreen() {
 
   return (
     <View className="flex-1 bg-brand-dark">
-      <HeaderPanel>
-        <DisplayText size={27}>{t("meals.diary")}</DisplayText>
-      </HeaderPanel>
-
       {/* ‹ Today › */}
       <View className="flex-row items-center justify-between px-5 pb-2">
         <PressableScale

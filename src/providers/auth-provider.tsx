@@ -1,5 +1,6 @@
 import { clearOutbox } from "@/src/lib/outbox";
 import { persister, queryClient } from "@/src/lib/query-client";
+import { APP_SCOPE } from "@/src/types/database";
 import { supabase } from "@/src/utils/supabase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Session, User } from "@supabase/supabase-js";
@@ -57,6 +58,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Both apps share one Supabase project and a DB trigger creates every
+  // profile with the default scope ('hokage'), so this build has to claim its
+  // own rows — that flag is what puts the client in the Zyron panel's list
+  // instead of the coaching app's. `neq` makes it a no-op after the first
+  // time, and it fails soft: offline, the next session start retries.
+  const claimAppScope = async (userId: string) => {
+    await supabase
+      .from("profiles")
+      .update({ app: APP_SCOPE })
+      .eq("id", userId)
+      .neq("app", APP_SCOPE);
+  };
+
   const markOnboarded = () => {
     const userId = session?.user?.id;
     setOnboardingCompleted(true);
@@ -71,6 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       if (session?.user) {
         loadOnboardingStatus(session.user.id);
+        void claimAppScope(session.user.id).catch(() => {});
       }
       setLoading(false);
     }).catch((error) => {
@@ -85,6 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       if (session?.user) {
         loadOnboardingStatus(session.user.id);
+        void claimAppScope(session.user.id).catch(() => {});
       } else {
         setOnboardingCompleted(null);
       }

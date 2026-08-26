@@ -1,4 +1,5 @@
 import { getPendingOps } from "@/src/lib/outbox";
+import { APP_SCOPE } from "@/src/types/database";
 import type {
   Exercise,
   Meal,
@@ -140,6 +141,8 @@ function emptyProfile(userId: string): Profile {
   const now = new Date().toISOString();
   return {
     id: userId,
+    email: null,
+    app: APP_SCOPE,
     display_name: null,
     avatar_url: null,
     age: null,

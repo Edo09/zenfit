@@ -1,7 +1,7 @@
 import { enqueue } from "@/src/lib/outbox";
 import { overlayProfile } from "@/src/lib/outbox-overlay";
 import { qk } from "@/src/lib/query-keys";
-import { Profile } from "@/src/types/database";
+import { APP_SCOPE, Profile } from "@/src/types/database";
 import { supabase } from "@/src/utils/supabase";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -35,6 +35,8 @@ export function useProfile(userId: string | undefined) {
       queryClient.setQueryData<Profile | null>(profileKey, (old) => ({
         ...(old ?? {
           id: userId!,
+          email: null,
+          app: APP_SCOPE,
           display_name: null,
           avatar_url: null,
           age: null,
