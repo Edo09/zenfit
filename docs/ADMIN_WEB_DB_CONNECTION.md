@@ -1,6 +1,6 @@
 # Admin Web Panel — Database Connection Guide
 
-**Project:** Hokage Coaching — Admin Web Panel
+**Project:** Zyron — Admin Web Panel
 **Stack:** React SPA (Vite) + `@supabase/supabase-js`
 **Backend:** the **same** Supabase project the mobile app already uses
 **Status:** the coaching database migration is applied and live (`supabase/migrations/20260707120000_coaching_platform.sql`)

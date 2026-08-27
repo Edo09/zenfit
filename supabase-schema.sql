@@ -1,5 +1,5 @@
 -- ============================================================
--- Hokage Coaching App Database Schema
+-- Zyron App Database Schema
 -- Run this in Supabase SQL Editor: https://supabase.com/dashboard
 -- ============================================================
 

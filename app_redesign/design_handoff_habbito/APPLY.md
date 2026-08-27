@@ -1,6 +1,6 @@
 # APPLY — porting Habbito into your Expo/RN app
 
-Concrete steps to get the redesign into `zenfit/` (Hokage → Habbito). Reference the live prototype `../Habbito.dc.html` and the spec `README.md`. Order matters — each step reskins a large chunk.
+Concrete steps to get the redesign into `zenfit/`. Reference the live prototype `../Habbito.dc.html` and the spec `README.md`. Order matters — each step reskins a large chunk.
 
 Starter files in `starters/` are ready to paste. All business logic, hooks, queries, i18n and data stay untouched.
 
@@ -21,7 +21,7 @@ npx expo install @expo-google-fonts/schibsted-grotesk @expo-google-fonts/hanken-
 ```
 - Load the faces where you currently load Inter/Anton (root `useFonts`): `HankenGrotesk_400Regular/500Medium/600SemiBold/700Bold/800ExtraBold` and `SchibstedGrotesk_600SemiBold/700Bold/800ExtraBold`.
 - In `src/global.css`: set `--font-sans: HankenGrotesk_400Regular` and `--font-display: SchibstedGrotesk_700Bold` in all three font blocks (`:root`, `@media android`, `@media ios`); update the `.font-normal…font-extrabold` weight→face map to Hanken faces.
-- Replace `.font-anton` (titles/numerals) with `.font-display` (Schibsted); **delete** the EdoSZ brush `.font-display` and the "The Hokage Coaching" wordmark → lowercase `habbito` in Schibsted 800.
+- Replace `.font-anton` (titles/numerals) with `.font-display` (Schibsted); **delete** the EdoSZ brush `.font-display` and the legacy brush wordmark → lowercase `habbito` in Schibsted 800.
 
 ## 3. Shape reset (shared components)
 In `Card`, `Button`, `SegmentedControl`, `Chip`, `Fab`, `SectionHeader`, headers:

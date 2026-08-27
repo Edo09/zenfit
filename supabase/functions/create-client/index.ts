@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
     const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
     const bytes = new Uint8Array(10);
     crypto.getRandomValues(bytes);
-    const temp_password = 'Hkg-' + Array.from(bytes, (b) => alphabet[b % alphabet.length]).join('');
+    const temp_password = 'Zyr-' + Array.from(bytes, (b) => alphabet[b % alphabet.length]).join('');
 
     const { data: created, error } = await admin.auth.admin.createUser({
       email,

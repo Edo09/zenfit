@@ -1,6 +1,6 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
 import { QueryClient } from "@tanstack/react-query";
+import { RQ_CACHE_KEY, persistStorage } from "@/src/lib/storage-keys";
 
 export const PERSIST_MAX_AGE = 1000 * 60 * 60 * 24 * 30;
 
@@ -24,7 +24,7 @@ export const queryClient = new QueryClient({
 });
 
 export const persister = createAsyncStoragePersister({
-  storage: AsyncStorage,
-  key: "hokage-rq-cache-v1",
+  storage: persistStorage,
+  key: RQ_CACHE_KEY,
   throttleTime: 2000,
 });

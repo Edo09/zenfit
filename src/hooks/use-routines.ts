@@ -96,6 +96,11 @@ export function useRoutines() {
         // 'user' unless the AI generator says otherwise ('coach' only ever
         // comes from the admin panel, never from this client-side path).
         source: data.source ?? "user",
+        // Explicit, not defaulted: this row is upserted straight to Supabase,
+        // and a client-made routine is never a library template. The shape
+        // CHECK would reject is_template with a non-null user_id anyway.
+        is_template: false,
+        template_id: null,
         created_at: now,
         updated_at: now,
       };

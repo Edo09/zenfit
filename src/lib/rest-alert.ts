@@ -44,7 +44,7 @@ let player: AudioPlayer | null = null;
 function getPlayer(): AudioPlayer | null {
   if (player != null) return player;
   try {
-    player = createAudioPlayer(require("@/assets/sounds/rest-done.wav"));
+    player = createAudioPlayer(require("@/assets/sounds/rest_done.wav"));
     return player;
   } catch {
     return null;
@@ -91,7 +91,7 @@ export function setupRestAlerts() {
     Notifications.setNotificationChannelAsync(CHANNEL_ID, {
       name: "Rest timer",
       importance: Notifications.AndroidImportance.HIGH,
-      sound: "rest-done.wav",
+      sound: "rest_done.wav",
       vibrationPattern: VIBRATION_PATTERN,
       lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
       enableVibrate: true,
@@ -197,7 +197,7 @@ export function scheduleRestDoneNotification(seconds: number, label?: string | n
             : i18n.t("restTimer.notifBody"),
           // iOS reads the sound off the notification; Android ignores this one
           // and uses the channel's.
-          sound: "rest-done.wav",
+          sound: "rest_done.wav",
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,

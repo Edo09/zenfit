@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { OUTBOX_KEY, readOutbox } from "@/src/lib/storage-keys";
 import { onlineManager } from "@tanstack/react-query";
 import { useSyncExternalStore } from "react";
 
@@ -34,7 +35,7 @@ export type OutboxOp = {
 
 export type FlushResult = "synced" | "dropped" | "paused";
 
-const STORAGE_KEY = "hokage-outbox-v1";
+
 
 let queue: OutboxOp[] = [];
 let hydration: Promise<void> | null = null;
@@ -53,7 +54,7 @@ function notifyResult(result: FlushResult) {
 
 function ready(): Promise<void> {
   if (!hydration) {
-    hydration = AsyncStorage.getItem(STORAGE_KEY)
+    hydration = readOutbox()
       .then((raw) => {
         if (raw) queue = JSON.parse(raw) as OutboxOp[];
       })
@@ -65,7 +66,7 @@ function ready(): Promise<void> {
 
 async function save() {
   try {
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(queue));
+    await AsyncStorage.setItem(OUTBOX_KEY, JSON.stringify(queue));
   } catch {}
   notifyCount();
 }
@@ -207,7 +208,7 @@ export async function clearOutbox(): Promise<void> {
   await ready();
   queue = [];
   try {
-    await AsyncStorage.removeItem(STORAGE_KEY);
+    await AsyncStorage.removeItem(OUTBOX_KEY);
   } catch {}
   notifyCount();
 }

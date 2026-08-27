@@ -15,6 +15,7 @@ import {
   FAB,
   HeaderPanel,
   LoadingBlock,
+  SectionHeader,
   useToast,
 } from "@/src/components/ui";
 import { useRefreshOnFocus } from "@/src/hooks/use-refresh-on-focus";
@@ -29,6 +30,12 @@ import type { Routine } from "@/src/types/database";
 // filter row splits routines by where they came from instead.
 type Filter = "all" | "coach" | "user" | "ai";
 
+// Headers and cards share one list so the group labels scroll with the
+// content. `id` covers both so keyExtractor stays a one-liner.
+type Row =
+  | { kind: "header"; id: string; title: string }
+  | { kind: "routine"; id: string; routine: Routine };
+
 // The client's own routines + the AI plan generator + whatever the coach
 // assigned from the admin panel. Assigned routines are read-only here: the
 // coach owns them, and RLS rejects a client write either way.
@@ -36,7 +43,7 @@ export default function RoutinesScreen() {
   const colors = useColors();
   const { t } = useTranslation();
   const toast = useToast();
-  const { routines, assignedRoutines, loading, error, refreshing, refresh, deleteRoutine } =
+  const { routines, assignedRoutines, myRoutines, loading, error, refreshing, refresh, deleteRoutine } =
     useRoutines();
   const [pendingDelete, setPendingDelete] = useState<Routine | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
@@ -44,19 +51,37 @@ export default function RoutinesScreen() {
 
   const hasAssigned = assignedRoutines.length > 0;
 
-  const visible = useMemo(() => {
-    // "All" pins the coach's work above the client's own — it's the thing they
-    // were told to do today, and it can't be reordered any other way.
-    if (filter === "all") {
-      return [...routines].sort(
-        (a, b) => Number(b.assigned_by != null) - Number(a.assigned_by != null),
-      );
+  // One flat list, but coach work and the client's own are kept in separate
+  // labelled groups rather than interleaved — what the coach prescribed and
+  // what the client made for themselves are different kinds of thing, and the
+  // coach's is read-only. A SectionList would cost the shared RefreshControl
+  // and itemLayoutAnimation, so headers ride in the same array as the cards.
+  const rows = useMemo<Row[]>(() => {
+    const card = (r: Routine): Row => ({ kind: "routine", id: r.id, routine: r });
+
+    // A chip already names the single group it produced; a header repeating it
+    // would be noise.
+    if (filter !== "all") {
+      // Coach-assigned is keyed off assigned_by, not source, so this filter and
+      // the read-only treatment on each card always agree.
+      if (filter === "coach") return assignedRoutines.map(card);
+      return routines.filter((r) => r.source === filter).map(card);
     }
-    // Coach-assigned is keyed off assigned_by, not source, so this filter and
-    // the read-only treatment on each card always agree.
-    if (filter === "coach") return assignedRoutines;
-    return routines.filter((r) => r.source === filter);
-  }, [routines, assignedRoutines, filter]);
+
+    // No coach: the screen title already reads "Mis Rutinas", so a second
+    // header saying the same thing earns nothing.
+    if (!hasAssigned) return myRoutines.map(card);
+
+    const out: Row[] = [
+      { kind: "header", id: "section-coach", title: t("coach.assignedRoutines") },
+      ...assignedRoutines.map(card),
+    ];
+    if (myRoutines.length > 0) {
+      out.push({ kind: "header", id: "section-own", title: t("routines.ownSection") });
+      out.push(...myRoutines.map(card));
+    }
+    return out;
+  }, [routines, assignedRoutines, myRoutines, hasAssigned, filter, t]);
 
   const handleConfirmDelete = async () => {
     const target = pendingDelete;
@@ -70,12 +95,19 @@ export default function RoutinesScreen() {
     }
   };
 
+  // Counts the client's OWN routines, matching the "Creadas por ti" group.
+  // The coach's are counted separately rather than folded in or dropped: a
+  // fully-coached client makes none of their own, and a bare "0 rutinas" above
+  // a screen full of visible coach cards reads as a bug.
+  const ownCount = t("routines.routineCount", { count: myRoutines.length });
+  const subtitle = hasAssigned
+    ? `${ownCount} · ${t("routines.assignedCount", { n: assignedRoutines.length })}`
+    : ownCount;
+
   const header = (
     <HeaderPanel className="px-0">
       <DisplayText size={27}>{t("routines.myRoutines")}</DisplayText>
-      <Text className="text-sm text-content-tertiary mt-1">
-        {t("routines.routineCount", { count: routines.length })}
-      </Text>
+      <Text className="text-sm text-content-tertiary mt-1">{subtitle}</Text>
     </HeaderPanel>
   );
 
@@ -109,7 +141,7 @@ export default function RoutinesScreen() {
   return (
     <View className="flex-1 bg-brand-dark">
       <RAnimated.FlatList
-        data={visible}
+        data={rows}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingHorizontal: 20, gap: 12, paddingBottom: 160 }}
         itemLayoutAnimation={Platform.OS !== "web" ? layout() : undefined}
@@ -139,14 +171,22 @@ export default function RoutinesScreen() {
           </AnimatedView>
         }
         renderItem={({ item, index }) => {
-          const assigned = item.assigned_by != null;
+          if (item.kind === "header") {
+            return (
+              <AnimatedView entering={staggered(index)}>
+                <SectionHeader title={item.title} className="mt-2" />
+              </AnimatedView>
+            );
+          }
+          const routine = item.routine;
+          const assigned = routine.assigned_by != null;
           return (
             <AnimatedView entering={staggered(index)} exiting={exit()}>
               <RoutineCard
-                routine={item}
+                routine={routine}
                 readOnly={assigned}
-                onPress={() => router.push(`/(tabs)/routines/${item.id}`)}
-                onDelete={assigned ? undefined : () => setPendingDelete(item)}
+                onPress={() => router.push(`/(tabs)/routines/${routine.id}`)}
+                onDelete={assigned ? undefined : () => setPendingDelete(routine)}
               />
             </AnimatedView>
           );

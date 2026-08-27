@@ -443,6 +443,8 @@ export default {
     // Source filter pills on the Train tab
     allFilter: "All",
     mineFilter: "Mine",
+    ownSection: "Created by you",
+    assignedCount: "{{n}} from your coach",
     aiFilter: "AI",
     routineCount_one: "{{count}} routine",
     routineCount_other: "{{count}} routines",

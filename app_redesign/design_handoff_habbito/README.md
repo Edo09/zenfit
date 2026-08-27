@@ -1,7 +1,7 @@
 # Handoff: Habbito — Full Rebrand & Redesign
 
 ## Overview
-Complete visual + UX redesign of the ZenFit / Hokage Coaching app (Expo + React Native + NativeWind/Tailwind). **Same features, navigation, hooks, data model and i18n** — only the design language and information hierarchy change. New brand: **Habbito**.
+Complete visual + UX redesign of the Zyron app (Expo + React Native + NativeWind/Tailwind). **Same features, navigation, hooks, data model and i18n** — only the design language and information hierarchy change. New brand: **Habbito**.
 
 Direction: **calm, premium, kinetic**. Warm-neutral canvas, a single electric-lime energy accent, near-black ink, big soft-rounded surfaces, a floating dock nav, and gradient/mini-bar data viz. It is a deliberate, total break from "Dojo Poster" (dark slate + red + condensed Anton + skewed sharp shapes + brush wordmark). **No skew anywhere. No red. No all-caps poster type. No top-accent bars or red-dash motif.**
 

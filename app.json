@@ -1,16 +1,16 @@
 {
   "expo": {
     "name": "ZYRON",
-    "slug": "habbito",
+    "slug": "zyron",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/app-icon/icon.png",
-    "scheme": "hokagecoaching",
+    "scheme": "zyron",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.edo09.hokagecoaching",
+      "bundleIdentifier": "com.edo09.zyron",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -21,7 +21,7 @@
         "foregroundImage": "./assets/images/app-icon/android-icon-foreground.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.edo09.hokagecoaching"
+      "package": "com.edo09.zyron"
     },
     "web": {
       "output": "single",
@@ -87,7 +87,9 @@
       [
         "expo-notifications",
         {
-          "sounds": ["./assets/sounds/rest-done.wav"]
+          "sounds": [
+            "./assets/sounds/rest_done.wav"
+          ]
         }
       ]
     ],
@@ -96,10 +98,7 @@
       "reactCompiler": true
     },
     "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "ab863b57-5202-4c06-8827-a0cd63b75311"
-      }
+      "router": {}
     },
     "owner": "edo09"
   }

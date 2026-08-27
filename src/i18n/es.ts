@@ -443,6 +443,8 @@ export default {
     // Filtros por origen en la pestaña Entrena
     allFilter: "Todas",
     mineFilter: "Mías",
+    ownSection: "Creadas por ti",
+    assignedCount: "{{n}} de tu coach",
     aiFilter: "IA",
     routineCount_one: "{{count}} rutina",
     routineCount_other: "{{count}} rutinas",

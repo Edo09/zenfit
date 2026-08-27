@@ -1,5 +1,6 @@
 import { clearOutbox } from "@/src/lib/outbox";
 import { persister, queryClient } from "@/src/lib/query-client";
+import { onboardedKey, readOnboarded } from "@/src/lib/storage-keys";
 import { APP_SCOPE } from "@/src/types/database";
 import { supabase } from "@/src/utils/supabase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -22,8 +23,6 @@ export const AuthContext = createContext<AuthContextType>({
   markOnboarded: () => {},
 });
 
-const ONBOARDED_KEY = (userId: string) => `hokage-onboarded-${userId}`;
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,7 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loadOnboardingStatus = async (userId: string) => {
     let cached: string | null = null;
     try {
-      cached = await AsyncStorage.getItem(ONBOARDED_KEY(userId));
+      cached = await readOnboarded(userId);
     } catch {}
     if (cached != null) setOnboardingCompleted(cached === "1");
 
@@ -48,7 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const completed = data?.onboarding_completed ?? false;
       setOnboardingCompleted(completed);
       try {
-        await AsyncStorage.setItem(ONBOARDED_KEY(userId), completed ? "1" : "0");
+        await AsyncStorage.setItem(onboardedKey(userId), completed ? "1" : "0");
       } catch {}
     } else if (cached == null) {
       // Unknown status and the fetch failed. Defaulting to true is the safe
@@ -75,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const userId = session?.user?.id;
     setOnboardingCompleted(true);
     if (userId) {
-      AsyncStorage.setItem(ONBOARDED_KEY(userId), "1").catch(() => {});
+      AsyncStorage.setItem(onboardedKey(userId), "1").catch(() => {});
     }
   };
 

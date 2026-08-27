@@ -4,17 +4,23 @@
     {
       "name": "web",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["expo", "start", "--web", "--port", "8081"],
+      "runtimeArgs": [
+        "expo",
+        "start",
+        "--web",
+        "--port",
+        "8081"
+      ],
       "port": 8081
     },
     {
-      "name": "coach-panel",
+      "name": "zyron-panel",
       "runtimeExecutable": "cmd",
       "runtimeArgs": [
         "/c",
-        "cd /d C:\\Users\\edgarcia\\Documents\\projects\\hokage-web-panel\\hokage-web-panel && npm run dev -- --port 5173"
+        "cd /d C:\\Users\\omare\\Documents\\habbito\\zyron-web-panel && npm run dev -- --port 5174"
       ],
-      "port": 5173
+      "port": 5174
     }
   ]
 }

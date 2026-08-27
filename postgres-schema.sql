@@ -1,5 +1,5 @@
 -- ============================================================================
--- Habbito / Hokage Coaching — standalone PostgreSQL schema (NO Supabase)
+-- Zyron — standalone PostgreSQL schema (NO Supabase)
 -- ============================================================================
 --
 -- This is the full current data model, ported off Supabase's managed

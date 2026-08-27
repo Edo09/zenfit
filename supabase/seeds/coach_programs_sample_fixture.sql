@@ -43,7 +43,7 @@ begin
   delete from public.programs
    where user_id = v_client
      and name in ('Hipertrofia — Glúteos y Piernas',
-                  'Hokage Elite System — Push/Pull/Legs');
+                  'Zyron Elite System — Push/Pull/Legs');
 
   -- ======================================================================
   -- PROGRAM 2 first (the one with the explicit weekly table)
@@ -159,7 +159,7 @@ begin
     (user_id, assigned_by, name, description, focus, duration_weeks, start_date, status,
      progression_rule, tempo_default, notes)
   values
-    (v_client, v_coach, 'Hokage Elite System — Push/Pull/Legs',
+    (v_client, v_coach, 'Zyron Elite System — Push/Pull/Legs',
      'Bloque de fuerza-hipertrofia de 5 semanas, split de 5 días.',
      'Fuerza e hipertrofia', 5, current_date, 'active',
      'Doble progresión: mantener el peso hasta lograr 8 reps en todas las series; al lograrlo, subir carga y reiniciar en 6 reps.',

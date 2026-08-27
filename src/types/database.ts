@@ -48,6 +48,10 @@ export type RoutineSource = "user" | "ai" | "coach";
 
 export type Routine = {
   id: string;
+  // Nullable in the DB since 20260827120000_routine_templates: a library
+  // template has no owner. Typed non-null here because this app never sees
+  // one — every client policy is `auth.uid() = user_id`, which is NULL for a
+  // template, and fetchRoutines filters .eq("user_id", me) on top of that.
   user_id: string;
   name: string;
   description: string | null;
@@ -55,6 +59,12 @@ export type Routine = {
   // null = self-made; a coach's profile id = assigned by the coach (read-only).
   assigned_by: string | null;
   source: RoutineSource;
+  // Panel-only (20260827120000_routine_templates.sql). is_template is always
+  // false in anything this app fetches; template_id records which library
+  // entry an assigned routine was copied from, and is a snapshot — editing the
+  // template never mutates this row.
+  is_template: boolean;
+  template_id: string | null;
   created_at: string;
   updated_at: string;
 };
