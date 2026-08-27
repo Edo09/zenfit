@@ -119,7 +119,13 @@ export default function RootLayout() {
 
   const ready = fontsLoaded && themeMode !== null;
 
+  // Production web only. The worker is network-first with a cache fallback,
+  // which in dev can hand back a stale Metro bundle after a reload — you'd be
+  // testing yesterday's JS with nothing to show for it. Registering it also
+  // fails noisily in embedded browsers that disallow service workers, which
+  // buries real errors in the console during testing.
   useEffect(() => {
+    if (__DEV__) return;
     if (Platform.OS === "web" && "serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js").catch(() => {});
     }

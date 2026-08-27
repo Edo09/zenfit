@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Platform, RefreshControl } from "react-native";
 import RAnimated from "react-native-reanimated";
@@ -8,14 +8,13 @@ import { AIPlanCard } from "@/src/components/ai-plan-card";
 import { EmptyState } from "@/src/components/empty-state";
 import { RoutineCard } from "@/src/components/routine-card";
 import {
-  Chip,
   ConfirmDialog,
   DisplayText,
   ErrorState,
   FAB,
   HeaderPanel,
   LoadingBlock,
-  SectionHeader,
+  SegmentedControl,
   useToast,
 } from "@/src/components/ui";
 import { useRefreshOnFocus } from "@/src/hooks/use-refresh-on-focus";
@@ -26,19 +25,14 @@ import { Text, View } from "@/src/tw";
 import { AnimatedView } from "@/src/tw/animated";
 import type { Routine } from "@/src/types/database";
 
-// Source, not modality: the data model has no strength/cardio field, so the
-// filter row splits routines by where they came from instead.
-type Filter = "all" | "coach" | "user" | "ai";
+// Provenance, not modality: the data model has no strength/cardio field. What
+// the coach prescribed and what the client made for themselves are different
+// kinds of thing — the coach's is read-only, and the client can't add to it —
+// so they get a tab each rather than one list with filters. AI-generated plans
+// are the client's own and live under "Mías", where their badge tells them
+// apart.
+type Tab = "coach" | "mine";
 
-// Headers and cards share one list so the group labels scroll with the
-// content. `id` covers both so keyExtractor stays a one-liner.
-type Row =
-  | { kind: "header"; id: string; title: string }
-  | { kind: "routine"; id: string; routine: Routine };
-
-// The client's own routines + the AI plan generator + whatever the coach
-// assigned from the admin panel. Assigned routines are read-only here: the
-// coach owns them, and RLS rejects a client write either way.
 export default function RoutinesScreen() {
   const colors = useColors();
   const { t } = useTranslation();
@@ -46,42 +40,18 @@ export default function RoutinesScreen() {
   const { routines, assignedRoutines, myRoutines, loading, error, refreshing, refresh, deleteRoutine } =
     useRoutines();
   const [pendingDelete, setPendingDelete] = useState<Routine | null>(null);
-  const [filter, setFilter] = useState<Filter>("all");
   useRefreshOnFocus(refresh);
 
   const hasAssigned = assignedRoutines.length > 0;
 
-  // One flat list, but coach work and the client's own are kept in separate
-  // labelled groups rather than interleaved — what the coach prescribed and
-  // what the client made for themselves are different kinds of thing, and the
-  // coach's is read-only. A SectionList would cost the shared RefreshControl
-  // and itemLayoutAnimation, so headers ride in the same array as the cards.
-  const rows = useMemo<Row[]>(() => {
-    const card = (r: Routine): Row => ({ kind: "routine", id: r.id, routine: r });
+  // Seeded from what exists, then the client's choice wins — a refetch must not
+  // yank the tab out from under them. Clamped to "mine" when the coach has
+  // nothing assigned, so archiving the last one can't strand an empty tab.
+  const [tab, setTab] = useState<Tab | null>(null);
+  const activeTab: Tab = hasAssigned ? (tab ?? "coach") : "mine";
+  const onCoachTab = activeTab === "coach";
 
-    // A chip already names the single group it produced; a header repeating it
-    // would be noise.
-    if (filter !== "all") {
-      // Coach-assigned is keyed off assigned_by, not source, so this filter and
-      // the read-only treatment on each card always agree.
-      if (filter === "coach") return assignedRoutines.map(card);
-      return routines.filter((r) => r.source === filter).map(card);
-    }
-
-    // No coach: the screen title already reads "Mis Rutinas", so a second
-    // header saying the same thing earns nothing.
-    if (!hasAssigned) return myRoutines.map(card);
-
-    const out: Row[] = [
-      { kind: "header", id: "section-coach", title: t("coach.assignedRoutines") },
-      ...assignedRoutines.map(card),
-    ];
-    if (myRoutines.length > 0) {
-      out.push({ kind: "header", id: "section-own", title: t("routines.ownSection") });
-      out.push(...myRoutines.map(card));
-    }
-    return out;
-  }, [routines, assignedRoutines, myRoutines, hasAssigned, filter, t]);
+  const visible = onCoachTab ? assignedRoutines : myRoutines;
 
   const handleConfirmDelete = async () => {
     const target = pendingDelete;
@@ -95,19 +65,14 @@ export default function RoutinesScreen() {
     }
   };
 
-  // Counts the client's OWN routines, matching the "Creadas por ti" group.
-  // The coach's are counted separately rather than folded in or dropped: a
-  // fully-coached client makes none of their own, and a bare "0 rutinas" above
-  // a screen full of visible coach cards reads as a bug.
-  const ownCount = t("routines.routineCount", { count: myRoutines.length });
-  const subtitle = hasAssigned
-    ? `${ownCount} · ${t("routines.assignedCount", { n: assignedRoutines.length })}`
-    : ownCount;
-
+  // Total across both tabs; the per-group numbers ride on the tab badges, so
+  // repeating the split here would say the same thing twice.
   const header = (
     <HeaderPanel className="px-0">
       <DisplayText size={27}>{t("routines.myRoutines")}</DisplayText>
-      <Text className="text-sm text-content-tertiary mt-1">{subtitle}</Text>
+      <Text className="text-sm text-content-tertiary mt-1">
+        {t("routines.routineCount", { count: routines.length })}
+      </Text>
     </HeaderPanel>
   );
 
@@ -129,19 +94,10 @@ export default function RoutinesScreen() {
     );
   }
 
-  // The coach chip only exists once there's something behind it — a self-serve
-  // client with no coach shouldn't be shown a filter that's always empty.
-  const filters: { key: Filter; label: string }[] = [
-    { key: "all", label: t("routines.allFilter") },
-    ...(hasAssigned ? [{ key: "coach" as const, label: t("coach.badge") }] : []),
-    { key: "user", label: t("routines.mineFilter") },
-    { key: "ai", label: t("routines.aiFilter") },
-  ];
-
   return (
     <View className="flex-1 bg-brand-dark">
       <RAnimated.FlatList
-        data={rows}
+        data={visible}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingHorizontal: 20, gap: 12, paddingBottom: 160 }}
         itemLayoutAnimation={Platform.OS !== "web" ? layout() : undefined}
@@ -157,69 +113,71 @@ export default function RoutinesScreen() {
         ListHeaderComponent={
           <AnimatedView entering={enterFade()} className="gap-4 mb-1">
             {header}
-            <View className="flex-row gap-2">
-              {filters.map((f) => (
-                <Chip
-                  key={f.key}
-                  label={f.label}
-                  selected={filter === f.key}
-                  onPress={() => setFilter(f.key)}
-                />
-              ))}
-            </View>
-            <AIPlanCard />
+            {/* The tabs only exist once there are two groups — a self-serve
+                client with no coach shouldn't be shown a tab that's always
+                empty, and their list is then just "their routines". */}
+            {hasAssigned && (
+              <SegmentedControl
+                segments={[
+                  {
+                    key: "coach",
+                    label: t("coach.badge"),
+                    count: assignedRoutines.length,
+                  },
+                  {
+                    key: "mine",
+                    label: t("routines.mineFilter"),
+                    count: myRoutines.length,
+                  },
+                ]}
+                value={activeTab}
+                onChange={(k) => setTab(k as Tab)}
+              />
+            )}
+            {/* Generating a plan belongs to the client's own routines; under
+                the coach's prescription it would just be noise. */}
+            {!onCoachTab && <AIPlanCard />}
           </AnimatedView>
         }
-        renderItem={({ item, index }) => {
-          if (item.kind === "header") {
-            return (
-              <AnimatedView entering={staggered(index)}>
-                <SectionHeader title={item.title} className="mt-2" />
-              </AnimatedView>
-            );
-          }
-          const routine = item.routine;
-          const assigned = routine.assigned_by != null;
-          return (
-            <AnimatedView entering={staggered(index)} exiting={exit()}>
-              <RoutineCard
-                routine={routine}
-                readOnly={assigned}
-                onPress={() => router.push(`/(tabs)/routines/${routine.id}`)}
-                onDelete={assigned ? undefined : () => setPendingDelete(routine)}
-              />
-            </AnimatedView>
-          );
-        }}
+        renderItem={({ item, index }) => (
+          <AnimatedView entering={staggered(index)} exiting={exit()}>
+            <RoutineCard
+              routine={item}
+              readOnly={onCoachTab}
+              onPress={() => router.push(`/(tabs)/routines/${item.id}`)}
+              onDelete={onCoachTab ? undefined : () => setPendingDelete(item)}
+            />
+          </AnimatedView>
+        )}
         ListEmptyComponent={
-          filter === "coach" ? (
+          onCoachTab ? (
             <EmptyState
               icon="award"
               title={t("coach.noAssignedRoutines")}
               subtitle={t("coach.noAssignedRoutinesHint")}
             />
-          ) : routines.length === 0 ? (
+          ) : (
             <EmptyState
               icon="dumbbell"
-              title={t("routines.noRoutinesYet")}
+              title={t("routines.noOwnRoutinesYet")}
               subtitle={t("routines.createFirstRoutine")}
               actionLabel={t("routines.createRoutine")}
               onAction={() => router.push("/(tabs)/routines/create")}
             />
-          ) : (
-            <Text className="text-center text-content-tertiary py-10">
-              {t("routines.noRoutinesForFilter")}
-            </Text>
           )
         }
       />
 
-      <FAB
-        icon="plus"
-        label={t("routines.newShort")}
-        onPress={() => router.push("/(tabs)/routines/create")}
-        accessibilityLabel={t("routines.createRoutine")}
-      />
+      {/* Creating only ever lands in the client's own routines, so the button
+          is hidden on the coach tab rather than silently switching tabs. */}
+      {!onCoachTab && (
+        <FAB
+          icon="plus"
+          label={t("routines.newShort")}
+          onPress={() => router.push("/(tabs)/routines/create")}
+          accessibilityLabel={t("routines.createRoutine")}
+        />
+      )}
 
       <ConfirmDialog
         visible={pendingDelete != null}
