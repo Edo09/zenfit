@@ -1,0 +1,13 @@
+{
+  "name": "migrate-from-shared-db",
+  "private": true,
+  "type": "module",
+  "description": "One-off: move Zyron's users and data from the old shared Supabase project to Zyron's own project.",
+  "scripts": {
+    "dry-run": "node --env-file=.env migrate.mjs",
+    "apply": "node --env-file=.env migrate.mjs --apply"
+  },
+  "dependencies": {
+    "pg": "^8.23.0"
+  }
+}
